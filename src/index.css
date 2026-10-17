@@ -1,0 +1,217 @@
+@import '@fontsource-variable/fraunces/full.css';
+@import '@fontsource-variable/fraunces/full-italic.css';
+@import '@fontsource-variable/manrope/index.css';
+@import '@fontsource/press-start-2p/index.css';
+@import '@fontsource-variable/pixelify-sans/index.css';
+
+:root {
+  /* night */
+  --night-0: #05061a;
+  --night-1: #0b0d2a;
+  --night-2: #15173f;
+  --night-3: #221f55;
+  --violet: #3b2b6e;
+  --frame: #3a3780;
+  --frame-light: #6d68c4;
+
+  /* moon & owl */
+  --moon: #fff1c9;
+  --amber: #ffb627;
+  --amber-deep: #c47a00;
+  --owl: #7f5236;
+  --owl-dark: #523220;
+
+  /* paper */
+  --cream: #f7f0e3;
+  --cream-2: #efe4cf;
+  --ink: #14163a;
+  --ink-soft: #4a4b6e;
+
+  /* skills */
+  --reading: #ffcf5c;
+  --listening: #6fe3cf;
+  --writing: #ff9a85;
+
+  --font-display: 'Fraunces Variable', 'Iowan Old Style', Georgia, serif;
+  --font-body: 'Manrope Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-pixel: 'Press Start 2P', ui-monospace, monospace;
+  --font-pixel-body: 'Pixelify Sans Variable', ui-monospace, monospace;
+
+  color-scheme: dark;
+  font-family: var(--font-body);
+  line-height: 1.55;
+  color: var(--ink);
+  background: var(--night-1);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  min-height: 100dvh;
+}
+
+img,
+svg,
+canvas {
+  display: block;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--amber);
+  outline-offset: 3px;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Small pixel-font label above headings. */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 26px;
+  color: var(--amber);
+  font-family: var(--font-pixel);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  line-height: 1.6;
+}
+
+.eyebrow--ink {
+  color: #9a5400;
+}
+
+/* A box with stepped "pixel" corners, drawn with four hard shadows. */
+.pixel-panel {
+  --px: 4px;
+  --panel-frame: var(--frame);
+  background: rgb(9 10 32 / 0.82);
+  box-shadow:
+    0 calc(var(--px) * -1) 0 0 var(--panel-frame),
+    0 var(--px) 0 0 var(--panel-frame),
+    calc(var(--px) * -1) 0 0 0 var(--panel-frame),
+    var(--px) 0 0 0 var(--panel-frame),
+    0 calc(var(--px) * 3) 0 0 rgb(0 0 0 / 0.35);
+}
+
+/* Notched-corner shape used by buttons across the site. */
+.notched {
+  clip-path: polygon(
+    0 4px,
+    4px 4px,
+    4px 0,
+    calc(100% - 4px) 0,
+    calc(100% - 4px) 4px,
+    100% 4px,
+    100% calc(100% - 4px),
+    calc(100% - 4px) calc(100% - 4px),
+    calc(100% - 4px) 100%,
+    4px 100%,
+    4px calc(100% - 4px),
+    0 calc(100% - 4px)
+  );
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 15px 24px 17px;
+  border: 0;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 750;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    filter 120ms ease,
+    background-color 120ms ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.06);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow:
+    inset 0 0 0 3px var(--ink),
+    inset 0 0 0 5px #fff;
+}
+
+.btn--amber {
+  background: var(--amber);
+  color: var(--ink);
+  box-shadow: inset 0 -5px 0 var(--amber-deep);
+}
+
+.btn--ink {
+  background: var(--ink);
+  color: var(--cream);
+  box-shadow: inset 0 -5px 0 #000;
+}
+
+.btn--ghost {
+  background: rgb(255 255 255 / 0.08);
+  color: var(--moon);
+  box-shadow: inset 0 0 0 2px rgb(255 241 201 / 0.35);
+}
+
+.btn--ghost:hover {
+  background: rgb(255 255 255 / 0.14);
+}
+
+.btn[disabled] {
+  opacity: 0.6;
+  cursor: progress;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

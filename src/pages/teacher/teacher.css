@@ -1,0 +1,69 @@
+.teacher {
+  min-height: 100dvh;
+  background-color: var(--cream);
+  background-image: radial-gradient(rgb(20 22 58 / 0.07) 1.2px, transparent 1.4px);
+  background-size: 26px 26px;
+  color: var(--ink);
+}
+
+.teacher__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px clamp(16px, 4vw, 56px);
+  border-bottom: 3px solid var(--ink);
+  background: #fffaf1;
+}
+
+.teacher__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.teacher__brand small {
+  padding: 6px 8px 5px;
+  background: var(--ink);
+  color: var(--amber);
+  font-family: var(--font-pixel);
+  font-size: 8px;
+}
+
+.teacher__nav .btn {
+  padding: 11px 18px 13px;
+  font-size: 15px;
+}
+
+.teacher__main {
+  width: min(880px, 100%);
+  margin: 0 auto;
+  padding: clamp(64px, 12vw, 140px) clamp(16px, 4vw, 32px);
+}
+
+.teacher__main h1 {
+  margin: 0 0 24px;
+  font-family: var(--font-display);
+  font-size: clamp(40px, 6vw, 72px);
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+}
+
+.teacher__main h1 em {
+  background: linear-gradient(transparent 60%, var(--listening) 60%, var(--listening) 92%, transparent 92%);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.teacher__main > p:last-child {
+  max-width: 36em;
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 19px;
+}

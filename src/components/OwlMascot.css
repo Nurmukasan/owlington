@@ -1,0 +1,119 @@
+.owl-mascot {
+  position: relative;
+}
+
+.owl-mascot__button {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.owl-mascot__button:focus-visible {
+  outline: 3px dashed var(--amber);
+  outline-offset: 8px;
+}
+
+.owl-mascot__svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.owl-mascot__head {
+  --tilt: 0deg;
+  transform: rotate(var(--tilt));
+  transform-origin: 130px 150px;
+  transition: transform 400ms cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+
+.owl-mascot__pupil {
+  transition: transform 120ms ease-out;
+}
+
+.owl-mascot__lid {
+  transform: scaleY(0);
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  transition: transform 70ms ease-in;
+}
+
+.is-blinking .owl-mascot__lid {
+  transform: scaleY(1);
+}
+
+.owl-mascot__happy,
+.owl-mascot__mouth {
+  opacity: 0;
+}
+
+.is-hooting .owl-mascot__happy {
+  opacity: 1;
+}
+
+.is-hooting .owl-mascot__lid {
+  transform: scaleY(1);
+  fill: #f3e3c3;
+}
+
+.is-hooting .owl-mascot__mouth {
+  animation: owl-beak 300ms steps(2) 3;
+}
+
+.is-hooting {
+  animation: owl-hop 300ms ease-out 3;
+}
+
+.owl-mascot__bubble {
+  position: absolute;
+  z-index: 2;
+  top: -6%;
+  left: 50%;
+  margin: 0;
+  padding: 12px 16px 13px;
+  background: var(--moon);
+  color: var(--ink);
+  font-family: var(--font-pixel);
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: nowrap;
+  transform: translate(-50%, -100%);
+  box-shadow:
+    0 -4px 0 0 var(--ink),
+    0 4px 0 0 var(--ink),
+    -4px 0 0 0 var(--ink),
+    4px 0 0 0 var(--ink);
+  animation: bubble-pop 220ms steps(3) both;
+}
+
+.owl-mascot__bubble::after {
+  content: '';
+  position: absolute;
+  left: calc(50% - 8px);
+  bottom: -16px;
+  width: 16px;
+  height: 12px;
+  background: var(--ink);
+  clip-path: polygon(0 0, 100% 0, 100% 4px, 75% 4px, 75% 8px, 50% 8px, 50% 12px, 25% 12px, 25% 4px, 0 4px);
+}
+
+@keyframes owl-hop {
+  40% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes owl-beak {
+  0% {
+    opacity: 1;
+  }
+}
+
+@keyframes bubble-pop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -80%);
+  }
+}
