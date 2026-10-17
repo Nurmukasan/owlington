@@ -12,6 +12,8 @@ interface NightSceneProps {
   seed?: number
   /** Show the owl on its branch. */
   owl?: boolean
+  /** Stop animating (e.g. while another page covers the scene). */
+  paused?: boolean
   onOwlClick?: () => void
   owlLabel?: string
   /** Render overlays positioned relative to the owl (e.g. a speech bubble). */
@@ -22,6 +24,7 @@ export function NightScene({
   className = '',
   seed,
   owl = true,
+  paused = false,
   onOwlClick,
   owlLabel = 'Say hi to the owl',
   children,
@@ -29,6 +32,8 @@ export function NightScene({
   const wrapRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const engineRef = useRef<NightSceneEngine | null>(null)
+  const pausedRef = useRef(paused)
+  const visibleRef = useRef(true)
   const [owlRect, setOwlRect] = useState<OwlRect | null>(null)
   const [size, setSize] = useState<SceneSize>({ width: 0, height: 0 })
 
@@ -53,7 +58,10 @@ export function NightScene({
     resizeObserver.observe(wrap)
 
     // Don't burn battery animating a scene nobody can see.
-    const visibilityObserver = new IntersectionObserver(([entry]) => engine.setActive(entry.isIntersecting))
+    const visibilityObserver = new IntersectionObserver(([entry]) => {
+      visibleRef.current = entry.isIntersecting
+      engine.setActive(entry.isIntersecting && !pausedRef.current)
+    })
     visibilityObserver.observe(wrap)
 
     return () => {
@@ -63,6 +71,11 @@ export function NightScene({
       engineRef.current = null
     }
   }, [seed, owl])
+
+  useEffect(() => {
+    pausedRef.current = paused
+    engineRef.current?.setActive(visibleRef.current && !paused)
+  }, [paused])
 
   const handleOwlClick = () => {
     engineRef.current?.hoot()

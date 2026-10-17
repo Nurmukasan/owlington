@@ -161,3 +161,35 @@ export const STAR_ICON: Sprite = {
   rows: ['..o..', '..o..', 'ooooo', '..o..', '..o..'],
   palette: { o: '#ffe9a8' },
 }
+
+export const FLAME_ICON: Sprite = {
+  rows: [
+    '...r....',
+    '...rr...',
+    '..rro...',
+    '..roor..',
+    '.rooyor.',
+    '.royyor.',
+    'royyyyor',
+    'royyyyor',
+    '.ryyyyr.',
+    '..rrrr..',
+  ],
+  palette: { r: '#ff5a36', o: '#ff9a1f', y: '#ffe066' },
+}
+
+export const TROPHY_ICON: Sprite = {
+  rows: [
+    'o.oooooo.o',
+    'ooyyyyyyoo',
+    'oyoyyhyoyo',
+    'oyoyyhyoyo',
+    '.ooyyyyoo.',
+    '..oyyyyo..',
+    '...oyyo...',
+    '....oo....',
+    '..oyyyyo..',
+    '..oooooo..',
+  ],
+  palette: { o: ICON_INK, y: '#ffb627', h: '#fff1c9' },
+}

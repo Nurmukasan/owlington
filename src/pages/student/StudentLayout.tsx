@@ -1,9 +1,12 @@
-import { useMemo, useRef } from 'react'
+import { Suspense, useMemo, useRef } from 'react'
 import { Outlet, useMatch } from 'react-router-dom'
 import { useUser } from '../../auth/auth-context'
 import { NightScene } from '../../components/NightScene'
+import { AchievementToaster } from '../../learn/components/AchievementToaster'
+import { useProgress } from '../../learn/useProgress'
 import { OwlDialog, type OwlDialogHandle } from './OwlDialog'
 import { StudentNav } from './StudentNav'
+import '../../learn/learn.css'
 import './student.css'
 
 const TIPS = [
@@ -24,23 +27,31 @@ function greeting(name: string) {
   return `Hoo-hoo! Good evening, ${first}. Welcome to your study forest.`
 }
 
+const SECTION_IDS = ['reading', 'listening', 'writing']
+
 export default function StudentLayout() {
   const user = useUser()
+  const progress = useProgress()
   const isHome = useMatch('/student') !== null
+  const sectionMatch = useMatch('/student/:section/*')
+  const isSection = SECTION_IDS.includes(sectionMatch?.params.section ?? '')
   const dialogRef = useRef<OwlDialogHandle>(null)
+  const streakDays = progress.streak.days
+  const activeToday = progress.streak.activeToday
 
-  const intro = useMemo(
-    () => [
-      greeting(user.name),
-      'Pick READING, LISTENING or WRITING up top to open the video lectures. Click me any time for a tip!',
-    ],
-    [user.name],
-  )
+  const intro = useMemo(() => {
+    const lines = [greeting(user.name)]
+    if (streakDays > 1 && activeToday) lines.push(`${streakDays} nights in a row! You’re a true night owl. Keep that flame burning.`)
+    else if (streakDays > 0 && !activeToday) lines.push(`Your ${streakDays}-day streak is waiting — one lecture or practice tonight keeps the flame alive!`)
+    lines.push('Pick READING, LISTENING or WRITING up top for lectures, practice tests and your progress. Click me any time for a tip!')
+    return lines
+  }, [user.name, streakDays, activeToday])
 
   return (
-    <div className={`student ${isHome ? 'student--home' : 'student--page'}`}>
+    <div className={`student ${isHome ? 'student--home' : isSection ? 'student--section' : 'student--page'}`}>
       <NightScene
         className="student__scene"
+        paused={isSection}
         owlLabel="Talk to the owl"
         onOwlClick={() => dialogRef.current?.advance()}
       >
@@ -52,8 +63,12 @@ export default function StudentLayout() {
       <StudentNav user={user} />
 
       <main className="student__main">
-        <Outlet />
+        <Suspense fallback={<p className="student__loading">LOADING…</p>}>
+          <Outlet />
+        </Suspense>
       </main>
+
+      <AchievementToaster />
     </div>
   )
 }

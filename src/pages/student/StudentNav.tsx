@@ -4,9 +4,15 @@ import type { User } from '../../auth/mockAuthApi'
 import { Avatar } from '../../components/Avatar'
 import { PixelSprite } from '../../components/PixelSprite'
 import { SECTIONS } from '../../data/sections'
+import { SoundToggle } from '../../learn/components/SoundToggle'
+import { StreakFlame } from '../../learn/components/ProgressWidgets'
+import { useProgress } from '../../learn/useProgress'
 import { OWL_HEAD } from '../../scene/sprites'
 
 export function StudentNav({ user }: { user: User }) {
+  const progress = useProgress()
+  const { level, streak, xp } = progress
+
   return (
     <header className="hud pixel-panel">
       <Link to="/student" className="hud__brand" aria-label="Owlington — dashboard">
@@ -27,6 +33,15 @@ export function StudentNav({ user }: { user: User }) {
           </NavLink>
         ))}
       </nav>
+
+      <div className="hud__stats" title={`Level ${level.level} · ${level.title} · ${xp} XP`}>
+        <StreakFlame streak={streak} scale={2} />
+        <span className="hud__level">
+          <span aria-hidden="true">LV</span>
+          <span className="visually-hidden">Level</span> {level.level}
+        </span>
+      </div>
+      <SoundToggle className="hud__sound" />
 
       <NavLink to="/student/profile" className="hud__avatar" title={user.name} aria-label="Your profile">
         <Avatar user={user} scale={2} />
