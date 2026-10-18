@@ -1,19 +1,406 @@
 import type { Lecture, PracticeInfo } from '../../../learn/types'
 
-// PLACEHOLDER — replaced by the Reading section build.
+/*
+ * The Moonlit Library — Reading lectures and practice sets.
+ *
+ * This file is imported by the shared catalogue (main bundle), so it only holds
+ * light metadata. The passages, questions and answer keys live in
+ * ./practice-data.ts, which only the lazy-loaded practice page imports.
+ */
 
 export const lectures: Lecture[] = [
   {
-    id: 'intro',
-    title: 'Skimming and scanning',
-    summary: 'Placeholder lecture.',
-    minutes: 8,
+    id: 'skim-scan',
+    title: 'Skimming & Scanning',
+    summary:
+      'Two reading speeds every IELTS candidate needs: map a whole passage in a couple of minutes, then hunt down names, dates and key terms in seconds.',
+    minutes: 12,
     level: 'Foundation',
     chapters: [
-      { title: 'Skimming', points: ['Read the title, the first paragraph and the first sentence of every other paragraph.', 'Your goal is the main idea of each paragraph, not every word.'] },
-      { title: 'Scanning', points: ['Pick a keyword from the question, then hunt for it — or a synonym — in the passage.', 'Names, dates and numbers are the easiest things to scan for.'] },
+      {
+        title: 'The shape of the test',
+        points: [
+          'Academic Reading gives you 60 minutes for 3 passages and 40 questions. That is about 20 minutes per passage, and on paper there is no extra time to transfer answers.',
+          'The passages get harder as you go and add up to roughly 2,150–2,750 words. Nobody reads all of that slowly, and you do not need to.',
+          'Every question is worth one mark. Around 30 correct answers out of 40 is roughly Band 7 on the Academic test.',
+        ],
+      },
+      {
+        title: 'Skimming for the map',
+        points: [
+          'Read the title, any subtitle and the first paragraph closely. They tell you the topic and often the writer’s angle.',
+          'Then read only the first one or two sentences of each paragraph. You are drawing a map of what each paragraph does, not collecting details.',
+          'Jot a two- or three-word label beside each paragraph, like “B – history” or “C – problems”. Headings and “which paragraph” questions get much faster.',
+          'Spend about two to three minutes skimming a passage. Any longer and you are reading; any shorter and you have learned nothing.',
+        ],
+      },
+      {
+        title: 'Scanning for the target',
+        points: [
+          'Scanning means sweeping your eyes fast for one specific thing: a name, a number, a date, a capitalised term or a technical word.',
+          'Pick the most scannable word in the question. “Rotterdam” or “1987” jumps off the page; “important” never will.',
+          'When you land on the keyword, slow right down and read the sentence before and after it. The answer lives in the detail.',
+          'The passage may use a synonym instead of the question’s word, so scan for the idea, not just the spelling.',
+        ],
+      },
+      {
+        title: 'Putting it together',
+        points: [
+          'Read the questions before you skim so you know what to look for, but do not try to memorise them.',
+          'Most question types follow the order of the passage: answer 4 usually comes after answer 3. Use that to narrow your search.',
+          'Matching headings and “which paragraph contains…” questions are the exceptions. They do not follow passage order.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'tfng',
+    title: 'True, False or Not Given',
+    summary:
+      'The question type that trips up even strong readers. Learn exactly what each answer means and a routine that separates FALSE from NOT GIVEN.',
+    minutes: 14,
+    level: 'Foundation',
+    chapters: [
+      {
+        title: 'What each answer means',
+        points: [
+          'TRUE: the passage gives the same information, usually in different words.',
+          'FALSE: the passage says the opposite. It directly contradicts the statement.',
+          'NOT GIVEN: the passage says nothing either way. There is no information to confirm or contradict it.',
+          'Judge only by the passage. Your own knowledge, however correct, earns nothing here.',
+        ],
+      },
+      {
+        title: 'FALSE vs NOT GIVEN',
+        points: [
+          'Ask yourself: does the passage tell me this is wrong? If yes, it is FALSE. If I simply cannot tell, it is NOT GIVEN.',
+          'Statement: “The library opened in 1850.” Passage: “It opened in 1872” — FALSE. Passage: “It was built in the nineteenth century” — NOT GIVEN.',
+          'A topic can appear in the passage and the statement can still be NOT GIVEN. What matters is the specific claim.',
+        ],
+      },
+      {
+        title: 'Words that change everything',
+        points: [
+          'Watch qualifiers: all or some, always or often, the first or one of the first. “Some birds migrate” does not prove that all birds do.',
+          'Comparatives and superlatives are traps. Check that the passage compares the same things, in the same direction.',
+          'Cause and effect: if the passage says two things happened together, it has not said that one caused the other.',
+        ],
+      },
+      {
+        title: 'A reliable routine',
+        points: [
+          'Underline the key idea and every qualifier in the statement before you scan.',
+          'Find the matching sentence, then compare piece by piece: who, what, how much, how often.',
+          'Statements follow passage order. If you cannot find one, locate its neighbours; the answer sits between them.',
+          'Do not burn minutes hunting for a NOT GIVEN. If you have checked the right place carefully and nothing matches, commit and move on.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'ynng',
+    title: 'Yes, No, Not Given: the Writer’s Views',
+    summary:
+      'When the passage is an argument, the questions test opinion, not fact. Learn to hear the writer’s voice through hedges, concessions and quoted critics.',
+    minutes: 13,
+    level: 'Intermediate',
+    chapters: [
+      {
+        title: 'Facts vs opinions',
+        points: [
+          'YES / NO / NOT GIVEN questions ask about the writer’s views or claims, not about plain facts.',
+          'YES: the statement agrees with the writer. NO: the writer thinks the opposite. NOT GIVEN: we cannot tell what the writer thinks about it.',
+          'These passages are usually argumentative: the writer persuades, criticises or recommends.',
+        ],
+      },
+      {
+        title: 'Hearing the writer’s voice',
+        points: [
+          'Attitude hides in evaluative language: “regrettably”, “a welcome change”, “far from convincing”, “I am not persuaded”.',
+          'Hedges change strength. “May”, “arguably” and “it seems likely” make a weaker claim than “clearly” or “undoubtedly”.',
+          'Separate the writer from the people they quote. “Critics claim…” is not the writer’s view unless the writer agrees.',
+        ],
+      },
+      {
+        title: 'Common traps',
+        points: [
+          'Concession: “Admittedly, X has benefits. However…” The writer’s real position usually follows the “however”.',
+          'Strength: compare the statement with the writer’s claim word by word. Is it stronger, weaker or exactly the same?',
+          'NOT GIVEN is common when a statement mentions a real topic from the text but asks for an opinion the writer never gives.',
+        ],
+      },
+      {
+        title: 'A routine that works',
+        points: [
+          'Find the part of the text on that topic, then ask one question: what does the writer think about it?',
+          'Look for evaluative words in that sentence and the one after it.',
+          'Like TRUE / FALSE / NOT GIVEN, the statements follow the order of the passage.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'headings',
+    title: 'Matching Headings',
+    summary:
+      'A list of headings, a row of paragraphs and plenty of decoys. Find each paragraph’s main idea fast and see through word-match distractors.',
+    minutes: 15,
+    level: 'Intermediate',
+    chapters: [
+      {
+        title: 'How the task works',
+        points: [
+          'You match headings (i, ii, iii…) to paragraphs. There are always more headings than paragraphs, so some are never used.',
+          'A heading sums up the main idea of the whole paragraph, not one detail inside it.',
+          'Many students like to do headings first, because it doubles as skimming the whole passage.',
+        ],
+      },
+      {
+        title: 'Finding the main idea',
+        points: [
+          'Read the first two sentences and the last one. The topic is usually set up early and sometimes summed up at the end.',
+          'Watch for turning words like “however” or “yet” mid-paragraph. The main idea often comes after the turn.',
+          'Ask what the paragraph is doing: describing a problem, explaining a cause, comparing, or offering a solution?',
+        ],
+      },
+      {
+        title: 'Avoiding the traps',
+        points: [
+          'Distractor headings borrow a word from the paragraph. A matching word is a warning sign, not proof.',
+          'If a heading fits only one sentence, it is a detail heading. Reject it.',
+          'Two headings seem to fit? Choose the one that covers the whole paragraph, and come back after matching the others.',
+        ],
+      },
+      {
+        title: 'A fast routine',
+        points: [
+          'Read the headings first and notice what kind of idea each one is: history, cause, effect, problem, solution.',
+          'Summarise each paragraph in a few words of your own, then compare your summary with the list.',
+          'Cross off headings as you use them, and if there is an example answer, cross that heading off straight away.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'completion',
+    title: 'Summary & Sentence Completion',
+    summary:
+      'Word limits, word forms and spelling: the small rules that cost big marks. Predict the gap, copy the passage exactly and check the finished sentence.',
+    minutes: 12,
+    level: 'Intermediate',
+    chapters: [
+      {
+        title: 'Read the instructions like a contract',
+        points: [
+          '“NO MORE THAN TWO WORDS” means one or two words. Three words, even correct ones, score zero.',
+          '“NO MORE THAN TWO WORDS AND/OR A NUMBER” allows answers like “3 days” or “1990”.',
+          'Hyphenated words such as “long-term” count as one word, and numbers can be written as figures.',
+          'If the instruction says “ONE WORD ONLY”, a perfect two-word answer is still wrong.',
+        ],
+      },
+      {
+        title: 'Predict before you scan',
+        points: [
+          'Read around each gap and predict the word type: a noun, a plural, a number, an adjective?',
+          'Grammar is a clue. “An ___” needs a word starting with a vowel sound; “several ___” needs a plural.',
+          'Answers usually come in passage order, and a summary often covers only one or two paragraphs.',
+        ],
+      },
+      {
+        title: 'Copy, don’t create',
+        points: [
+          'When there is no word box, the answers are words from the passage. Copy them exactly; do not change their form.',
+          'Spelling counts. A correct idea spelled wrongly is a wrong answer.',
+          'With a word box, the options are often paraphrases, so match the meaning, not the exact words of the text.',
+        ],
+      },
+      {
+        title: 'Check the finished sentence',
+        points: [
+          'Read the whole sentence with your answer in it. It must be grammatical and match the passage’s meaning.',
+          'Do not repeat words that are already printed next to the gap.',
+          'Capital letters do not matter in IELTS answers, but every letter of the spelling does.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'mcq',
+    title: 'Multiple-Choice Traps',
+    summary:
+      'Four options, three of them designed to look right. Learn the classic distractors and a cover-the-options routine that keeps you honest.',
+    minutes: 11,
+    level: 'Intermediate',
+    chapters: [
+      {
+        title: 'How IELTS multiple choice works',
+        points: [
+          'Usually you choose one answer from A–D, but some tasks ask for two or three answers from a longer list. Read the instruction carefully.',
+          'The questions normally follow the order of the passage.',
+          'The question stem tells you where to look; the options tell you what to compare.',
+        ],
+      },
+      {
+        title: 'The classic traps',
+        points: [
+          'Word match: the option repeats words from the passage but changes the meaning. Accurate paraphrase is the sign of the right answer.',
+          'True but irrelevant: the option is correct according to the passage, but it does not answer this question.',
+          'Half right: the first half matches, the second half adds something the passage never says.',
+          'Too extreme: “always”, “only”, “completely”. Stronger than the passage allows.',
+        ],
+      },
+      {
+        title: 'A three-step routine',
+        points: [
+          'Cover the options and read the stem. Find the place in the passage and form your own answer first.',
+          'Then read every option and eliminate. Note a reason beside each letter you cross out.',
+          'Never leave a blank. There is no penalty for a wrong answer, so always make your best guess.',
+        ],
+      },
+      {
+        title: 'Writer’s purpose questions',
+        points: [
+          '“Why does the writer mention…?” asks about function: to illustrate, contrast, criticise or support a claim.',
+          'Look at the sentence just before the mention. It usually states the point the example supports.',
+          'For “best title” or “main purpose” questions, choose the option that covers the whole passage, not one paragraph.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'paraphrase',
+    title: 'Paraphrase & Synonyms',
+    summary:
+      'The skill hiding behind every question type. Recognise the same idea in new words, and build a synonym bank that grows with every test.',
+    minutes: 16,
+    level: 'Advanced',
+    chapters: [
+      {
+        title: 'Why paraphrase is the real test',
+        points: [
+          'IELTS rarely repeats the passage’s words in its questions. It tests whether you recognise the same idea in different clothes.',
+          'Spotting paraphrase is the skill underneath almost every question type, from TRUE / FALSE to headings.',
+          'If an option copies the text word for word, be suspicious. If it rewords it accurately, take notice.',
+        ],
+      },
+      {
+        title: 'Four common disguises',
+        points: [
+          'Synonyms and word forms: “the economy expanded rapidly” becomes “rapid economic expansion”.',
+          'Grammar flips: active becomes passive. “Researchers tested the samples” becomes “the samples were examined”.',
+          'General and specific: “dogs, cats and rabbits” becomes “household pets”, and the other way round.',
+          'Negatives: “not uncommon” means fairly common; “few would deny” means most people agree.',
+        ],
+      },
+      {
+        title: 'Building your paraphrase bank',
+        points: [
+          'After every practice test, write down each question word and the passage word it matched. That is your personal synonym bank.',
+          'Learn word families, not single words: compete, competition, competitive, competitor.',
+          'Academic topics repeat: environment, history, technology, health. Collect vocabulary by topic.',
+        ],
+      },
+      {
+        title: 'Using it under pressure',
+        points: [
+          'Before scanning, think of two or three ways the passage might express the question’s key idea.',
+          'Scan for the concept, not the letters. “The elderly” might appear as “older people” or “retirees”.',
+          'When you think you have found it, check the whole meaning. Similar words can still say something different.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'timing',
+    title: 'Timing: 60 Minutes, 40 Questions',
+    summary:
+      'A minute-by-minute plan for the whole paper: how to budget three passages, when to move on, and how to train your pace before test day.',
+    minutes: 10,
+    level: 'Advanced',
+    chapters: [
+      {
+        title: 'Your time budget',
+        points: [
+          'Try about 17 minutes for Passage 1, 20 for Passage 2 and 23 for Passage 3. The passages get harder, so the budget grows.',
+          'On paper, write your answers straight onto the answer sheet. Unlike Listening, Reading gives no extra transfer time.',
+          'On computer, a clock is always on screen, and you can highlight text and flag questions to come back to.',
+        ],
+      },
+      {
+        title: 'Order of attack',
+        points: [
+          'Skim the passage first for two or three minutes, then work through the question sets.',
+          'Within a passage you can answer the sets in any order, so bank the quick marks first.',
+          'Give every question a limit. Stuck for more than about 90 seconds? Guess, flag it and move on.',
+        ],
+      },
+      {
+        title: 'Staying in control',
+        points: [
+          'Check the clock at the end of each passage, not after every question.',
+          'Running late? Target the question types that point to one spot in the text, like completion and TRUE / FALSE.',
+          'Never leave a blank. A guess can earn a mark; an empty box cannot.',
+        ],
+      },
+      {
+        title: 'Training your pace',
+        points: [
+          'Practise single passages against a 20-minute timer before attempting full tests.',
+          'Log your time and accuracy after every test. Speed without accuracy is not progress.',
+          'In the final week, sit full 60-minute tests at the same time of day as your real exam.',
+        ],
+      },
     ],
   },
 ]
 
-export const practiceSets: PracticeInfo[] = []
+export const practiceSets: PracticeInfo[] = [
+  {
+    id: 'night-shift',
+    title: 'The Night Shift',
+    summary: 'Moths, moonlight and the pollinators that keep working while the bees sleep.',
+    minutes: 20,
+    questionCount: 12,
+    kinds: ['Matching headings', 'True / False / Not Given', 'Sentence completion'],
+    level: 'Foundation',
+  },
+  {
+    id: 'owls-and-larks',
+    title: 'Owls and Larks',
+    summary: 'The biology of body clocks, and why most teenagers find it so hard to fall asleep early.',
+    minutes: 20,
+    questionCount: 11,
+    kinds: ['Multiple choice', 'Matching information', 'Summary completion'],
+    level: 'Intermediate',
+  },
+  {
+    id: 'slow-reading',
+    title: 'In Praise of Slow Reading',
+    summary: 'An opinionated essay on speed-reading apps. Can you keep track of what the writer really thinks?',
+    minutes: 20,
+    questionCount: 12,
+    kinds: ['Yes / No / Not Given', 'Multiple choice', 'Sentence completion'],
+    level: 'Intermediate',
+  },
+  {
+    id: 'iron-gall',
+    title: 'The Ink That Eats Its Words',
+    summary: 'A thousand years of iron gall ink, and the race to save the manuscripts it is slowly destroying.',
+    minutes: 22,
+    questionCount: 13,
+    kinds: ['Matching headings', 'True / False / Not Given', 'Summary completion', 'Multiple choice'],
+    level: 'Advanced',
+  },
+]
+
+/** The practice set that best rehearses each lecture's skill. */
+export const LECTURE_PRACTICE: Record<string, string> = {
+  'skim-scan': 'night-shift',
+  tfng: 'night-shift',
+  ynng: 'slow-reading',
+  headings: 'iron-gall',
+  completion: 'owls-and-larks',
+  mcq: 'owls-and-larks',
+  paraphrase: 'iron-gall',
+  timing: 'iron-gall',
+}
