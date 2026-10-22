@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { profileResultPath } from '../../../learn/results/results'
 import { ProgressRing } from '../../../learn/components/ProgressWidgets'
 import { TalkingOwl } from '../../../learn/components/TalkingOwl'
 import { floatText, pixelConfetti } from '../../../learn/fx'
@@ -183,7 +184,7 @@ export function Results({ info, prompt, attempt, checks, text, analysis, history
             <div className="wr-sealed__xp">
               <span className="wr-sealed__xp-n">+{Math.round(shownXp)}</span>
               <span className="wr-sealed__xp-l">XP earned</span>
-              <span className="wr-sealed__xp-s">{analysis.words} words added to your manuscript</span>
+              <span className="wr-sealed__xp-s">{analysis.words} words added to your total</span>
             </div>
             <div className="wr-sealed__owl">
               <TalkingOwl happy={accuracy >= 0.5} scale={4} />
@@ -200,8 +201,11 @@ export function Results({ info, prompt, attempt, checks, text, analysis, history
                 Next assignment <span className="wr-btn__arrow" aria-hidden="true">→</span>
               </Link>
             )}
-            <Link to="/student/writing" className="wr-btn wr-btn--ghost">
-              Back to the study
+            <Link to="/student/writing/practice" className="wr-btn wr-btn--ghost">
+              All assignments
+            </Link>
+            <Link to={profileResultPath(attempt)} className="wr-sealed__profile">
+              Saved to your profile →
             </Link>
           </div>
         </div>

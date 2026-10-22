@@ -14,6 +14,7 @@ import { clearDraft, hasContent, loadDraft, saveDraft } from './drafts'
 import { PracticeIntro } from './PracticeIntro'
 import { checkEssay, estimateBand, findPrompt, type WritingPrompt } from './prompts'
 import { Results } from './Results'
+import { CRITERIA } from './stats'
 import { Studio } from './Studio'
 import { handInFloor, plural } from './words'
 import './world.css'
@@ -184,6 +185,15 @@ function Practice({ info, prompt }: { info: PracticeInfo; prompt: WritingPrompt 
       total: 10,
       durationSec: submission.durationSec,
       band,
+      words: submission.analysis.words,
+      criteria: CRITERIA.flatMap((c) => (typeof scores[c.id] === 'number' ? [{ label: c.name, band: scores[c.id] as number }] : [])),
+      items: submission.checks.map((c, i) => ({
+        n: i + 1,
+        type: CRITERIA.find((k) => k.id === c.criterion)?.name ?? c.criterion,
+        label: c.label,
+        correct: c.met,
+        given: c.found,
+      })),
       detail: {
         words: submission.analysis.words,
         text: submission.text,

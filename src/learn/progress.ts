@@ -20,6 +20,21 @@ export interface LectureProgress {
   updatedAt: string
 }
 
+/** One scored item of an attempt, in a shape every section shares (used by the profile's results). */
+export interface AttemptItem {
+  /** Question number as printed in the test. */
+  n: number
+  /** Question or task type, e.g. "True / False / Not Given". */
+  type: string
+  /** What was checked, when the number alone doesn't say (e.g. a writing checklist point). */
+  label?: string
+  correct: boolean
+  /** What the student answered (readable), if anything. */
+  given?: string
+  /** The correct answer (readable). */
+  answer?: string
+}
+
 export interface AttemptInput {
   practiceId: string
   /** Correct answers (or rubric points for writing). */
@@ -28,7 +43,13 @@ export interface AttemptInput {
   durationSec: number
   /** Optional band estimate (e.g. self-assessed writing band). */
   band?: number
-  /** Anything section-specific worth keeping: answers, word count, the essay… */
+  /** Per-question results for the unified results view. */
+  items?: AttemptItem[]
+  /** Writing: the band given for each assessment criterion. */
+  criteria?: { label: string; band: number }[]
+  /** Writing: words written. */
+  words?: number
+  /** Anything section-specific worth keeping: answers, the essay… */
   detail?: Record<string, unknown>
 }
 

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
+import { profileResultPath } from '../../../../learn/results/results'
 import { ProgressRing } from '../../../../learn/components/ProgressWidgets'
 import { ScrollLink } from '../../../../learn/components/ScrollLink'
 import { floatText, pixelConfetti } from '../../../../learn/fx'
@@ -423,10 +424,17 @@ export function Report({ info, set, station, result, answers, voices, cast, rate
             </li>
           )}
           <li>
-            <Link to="/student/listening" className="ls-after__card" onClick={() => sfx.click()}>
-              <span className="ls-after__k">BACK TO THE STATION</span>
-              <span className="ls-after__t">Owl FM hub</span>
-              <span className="ls-after__d">See your signal strength, tape rack and every station on the dial.</span>
+            <Link to={profileResultPath(attempt)} className="ls-after__card" onClick={() => sfx.click()}>
+              <span className="ls-after__k">SAVED TO YOUR PROFILE</span>
+              <span className="ls-after__t">This result, every answer</span>
+              <span className="ls-after__d">Your band over time sits there too, next to Reading and Writing.</span>
+            </Link>
+          </li>
+          <li>
+            <Link to="/student/listening/practice" className="ls-after__card" onClick={() => sfx.click()}>
+              <span className="ls-after__k">BACK TO THE DIAL</span>
+              <span className="ls-after__t">All practice tests</span>
+              <span className="ls-after__d">Pick the next broadcast: a full test or one question type at a time.</span>
             </Link>
           </li>
         </ul>

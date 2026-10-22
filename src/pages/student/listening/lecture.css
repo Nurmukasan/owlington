@@ -1010,3 +1010,9 @@
     width: 96px;
   }
 }
+
+/* Tracks ahead of what's been played stay locked until reached. */
+.ls-track.is-locked {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

@@ -369,6 +369,7 @@ export const practiceSets: PracticeInfo[] = [
     minutes: 20,
     questionCount: 10,
     kinds: ['Task 1 · Academic', 'Line graph'],
+    tags: ['Task 1 · Academic'],
     level: 'Foundation',
   },
   {
@@ -379,6 +380,7 @@ export const practiceSets: PracticeInfo[] = [
     minutes: 20,
     questionCount: 10,
     kinds: ['Task 1 · Academic', 'Process diagram'],
+    tags: ['Task 1 · Academic'],
     level: 'Intermediate',
   },
   {
@@ -389,6 +391,7 @@ export const practiceSets: PracticeInfo[] = [
     minutes: 20,
     questionCount: 10,
     kinds: ['Task 1 · General Training', 'Letter'],
+    tags: ['Task 1 · General Training'],
     level: 'Foundation',
   },
   {
@@ -399,6 +402,7 @@ export const practiceSets: PracticeInfo[] = [
     minutes: 40,
     questionCount: 10,
     kinds: ['Task 2', 'Opinion essay'],
+    tags: ['Task 2'],
     level: 'Intermediate',
   },
   {
@@ -409,6 +413,7 @@ export const practiceSets: PracticeInfo[] = [
     minutes: 40,
     questionCount: 10,
     kinds: ['Task 2', 'Discussion essay'],
+    tags: ['Task 2'],
     level: 'Advanced',
   },
   {
@@ -419,6 +424,7 @@ export const practiceSets: PracticeInfo[] = [
     minutes: 40,
     questionCount: 10,
     kinds: ['Task 2', 'Problem–solution essay'],
+    tags: ['Task 2'],
     level: 'Intermediate',
   },
 ]

@@ -17,7 +17,10 @@ import { HUB_PATH, SECTION, bandEstimate, callNumber, practiceIndex } from './li
 import { Passage } from './Passage'
 import { PRACTICE, type PracticeSet } from './practice-data'
 import {
+  KIND_LABEL,
   clearDraft,
+  correctText,
+  describe,
   grade,
   highlightCount,
   isAnswered,
@@ -296,6 +299,13 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
       total: questions.length,
       durationSec: Math.max(1, Math.round(readClock())),
       band: bandEstimate(score, questions.length),
+      items: graded.map((g) => ({
+        n: g.x.n,
+        type: KIND_LABEL[g.x.group.kind],
+        correct: g.correct,
+        given: describe(g.x, g.answer) || undefined,
+        answer: correctText(g.x),
+      })),
       detail: {
         answers,
         flagged: [...flagged],
@@ -358,7 +368,7 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
     <div className={`rd-desk rd-desk--${mode} is-view-${view}`}>
       <div className="rd-deskbar">
         {mode === 'test' ? (
-          <Link to={HUB_PATH} className="rd-deskbar__leave" title="Your answers are kept as a bookmark" onClick={saveNow}>
+          <Link to={`${HUB_PATH}/practice`} className="rd-deskbar__leave" title="Your answers are kept as a bookmark" onClick={saveNow}>
             <span aria-hidden="true">←</span>
             <span className="rd-deskbar__leave-text">Leave</span>
             <span className="visually-hidden"> the reading room (your answers are saved)</span>

@@ -40,7 +40,19 @@ export interface PracticeInfo {
   /** Short labels for the task types, e.g. ["True / False / Not Given", "Matching headings"]. */
   kinds: string[]
   level: Level
+  /**
+   * 'full' — a complete IELTS paper section (Reading: 3 passages / 40 questions / 60 min;
+   * Listening: 4 parts / 40 questions; Writing: Task 1 + Task 2 / 60 min).
+   * 'focused' — a shorter practice on particular question or task types. Defaults to 'focused'.
+   */
+  format?: PracticeFormat
+  /** Filter tags for the practice catalogue (question / task types). Defaults to `kinds`. */
+  tags?: string[]
+  /** When the test was added (YYYY-MM-DD), so the catalogue can sort newest first. */
+  added?: string
 }
+
+export type PracticeFormat = 'full' | 'focused'
 
 export interface SectionCourse {
   lectures: Lecture[]

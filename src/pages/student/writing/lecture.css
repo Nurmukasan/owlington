@@ -795,3 +795,9 @@
     transition-duration: 1ms !important;
   }
 }
+
+/* Notes ahead of what's been read stay locked until reached. */
+.wr-margin__list li.is-locked .wr-margin__item {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

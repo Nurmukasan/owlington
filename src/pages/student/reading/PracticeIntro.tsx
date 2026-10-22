@@ -50,7 +50,7 @@ export function PracticeIntro({ info, set, callNumber, attempts, best, draft, qu
           <span aria-hidden="true">←</span> The Moonlit Library
         </Link>
         <span aria-hidden="true">/</span>
-        <Link to={`${HUB_PATH}#rd-catalogue`}>Card Catalogue</Link>
+        <Link to={`${HUB_PATH}/practice`}>Practice</Link>
         <span aria-hidden="true">/</span>
         <span aria-current="page">{callNumber}</span>
       </nav>
@@ -122,7 +122,7 @@ export function PracticeIntro({ info, set, callNumber, attempts, best, draft, qu
                   <span className="rd-ticket__flame" aria-hidden="true" />
                   Light the candle &amp; begin <span aria-hidden="true">→</span>
                 </button>
-                <Link to={`${HUB_PATH}#rd-catalogue`} className="rd-ticket__back">
+                <Link to={`${HUB_PATH}/practice`} className="rd-ticket__back">
                   Back to the catalogue
                 </Link>
               </>

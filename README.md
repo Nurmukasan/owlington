@@ -13,9 +13,10 @@ makes studying feel like an adventure.
 | **Landing page**: night-sky hero, interactive owl mascot (eyes follow your cursor, it blinks and hoots when clicked), skill cards, how-it-works, student/teacher “doors” with a live preview of the student world | ✅ |
 | **Sign up / log in**: choose **Student** or **Teacher** at registration; each role gets its own dashboard | ✅ (temporary, browser-only auth, see below) |
 | **Student dashboard**: full-screen animated pixel night (see below) with a HUD on top: `READING` · `LISTENING` · `WRITING` tabs and the student's avatar on the right | ✅ |
-| **Reading, Listening and Writing sections**: each its own animated world with video lectures, practice tests and progress tracking (see below) | ✅ (lectures play as animated notes until videos are uploaded) |
-| **Progress & motivation**: XP, levels, daily streaks, achievements, score history, celebrations, 8-bit sounds | ✅ (stored in the browser for now) |
-| **Student profile** (opened from the avatar) | 🟡 placeholder |
+| **Reading, Listening and Writing sections**: each its own animated world. The section home shows an overview and two doors, **Lectures** and **Practice**, each on its own page (see below) | ✅ (lectures play as animated notes until videos are uploaded) |
+| **Practice catalogue**: built for 20–30 tests per section, split into **Full tests** and **By question type**, with type filters, search, status/level filters and sorting | ✅ (the test content is still being written) |
+| **Student profile** (opened from the avatar): progress, every result in one shared design, avatar and account settings | ✅ |
+| **Progress & motivation**: XP, levels, daily streaks, achievements, band history, celebrations, 8-bit sounds | ✅ (stored in the browser for now) |
 | **Teacher dashboard** | 🟡 placeholder |
 
 ![Student dashboard](docs/screenshots/student-dashboard.png)
@@ -40,7 +41,15 @@ It pauses when it's off-screen and respects `prefers-reduced-motion`.
 ## The three sections
 
 All three share one goal — **video lectures → practice tests → progress you can see** — but each is its own world
-with its own metaphor, layout and motion.
+with its own metaphor, layout and motion. Every section has the same three pages:
+
+- **Home** (`/student/<section>`): the world's hero, a few headline numbers and two doors, *Lectures* and *Practice*.
+- **Lectures** (`/student/<section>/lectures`): the bookshelf, the tape rack or the corkboard of letters.
+- **Practice** (`/student/<section>/practice`): the shared practice catalogue, themed per section. Tests are tabbed
+  into **Full tests** (a complete IELTS paper section) and **By question type** (focused drills, e.g. only
+  Yes / No / Not Given), with filters by type, status and level, search and sorting. Filters live in the URL.
+
+![Practice catalogue](docs/screenshots/practice-catalogue.png)
 
 | | Concept | Lectures | Practice |
 | --- | --- | --- | --- |
@@ -66,7 +75,17 @@ video: { kind: 'file', src: '/videos/skimming.mp4', poster: '/videos/skimming.jp
 video: { kind: 'youtube', id: 'VIDEO_ID' }
 ```
 
-Progress tracking keeps working the same way for real videos.
+Lectures **can't be skipped forward**, only rewound: the timeline, chapter list and "next" button only go as far as
+the student has already watched. This works for the notes preview, uploaded files and YouTube videos.
+
+### Adding practice tests
+
+Each section's `content.ts` lists its practice tests (`practiceSets`). Two fields drive the catalogue:
+
+```ts
+format: 'full' | 'focused' // which tab the test sits in (default: 'focused')
+tags: ['Yes / No / Not Given'] // question types for the filter chips (default: `kinds`)
+```
 
 ### Progress & motivation
 
@@ -76,8 +95,26 @@ Progress tracking keeps working the same way for real videos.
   Levels run from *Owlet* to *Legend of the Night*.
 - **Daily streaks** (the flame in the top bar) and **achievements** (*First Light*, *Night Owl*, *Bookworm*,
   *Golden Ears*, *Inkslinger*…) that pop up with confetti and a chiptune.
-- **Score history and best scores** per practice test, and **lecture progress** with resume.
+- **Lecture progress** with resume, and best scores per practice test.
 - A **sound toggle** in the top bar for the 8-bit effects.
+
+### The student profile
+
+`/student/profile` gathers everything that used to be spread over the sections:
+
+- **Progress**: level and XP, streak, tonight's goal (adjustable), a card per skill with its current band, a
+  **band-over-time chart** (one line per section, with hover, keyboard and table views), a 12-week **study-nights**
+  calendar and all achievements.
+- **Results**: every test from every section in **one design**: the estimated band up front, the raw score, a strip
+  of right/wrong squares, and the change since the last try. Opening a result shows the breakdown by question type
+  (or by criterion for Writing) and every answer next to the correct one. Each section's results screen links here.
+- **Settings**: pick one of eight owlet feather colours or upload a photo, change name, email or password, sounds,
+  daily goal, log out.
+
+<p>
+  <img src="docs/screenshots/profile.png" alt="Student profile — progress" width="49%" />
+  <img src="docs/screenshots/profile-result.png" alt="Student profile — one result" width="49%" />
+</p>
 
 ## Tech stack
 
@@ -116,12 +153,13 @@ src/
 ├── index.css                # design tokens, buttons, pixel panels
 ├── auth/                    # AuthProvider, useAuth(), <RequireRole>, temporary mock API
 ├── learn/                   # shared learning layer: progress store + useProgress(), lecture player,
+│                            #   section doors, practice catalogue, unified results (results/),
 │                            #   progress widgets, achievement toasts, confetti, sound effects, ScrollLink
 ├── components/
 │   ├── NightScene.tsx       # React wrapper around the canvas engine
 │   ├── OwlMascot.tsx        # the vector owl from the landing page
 │   ├── PixelSprite.tsx      # renders text sprites as crisp SVG
-│   └── Avatar.tsx           # every student is an owlet
+│   └── Avatar.tsx           # an owlet in the student's feathers, or their photo
 ├── data/sections.ts         # Reading / Listening / Writing: copy, colours, real test format
 ├── scene/
 │   ├── NightSceneEngine.ts  # the procedural, animated pixel night
@@ -130,7 +168,8 @@ src/
 └── pages/
     ├── landing/             # marketing page
     ├── auth/                # register (student/teacher) + login
-    ├── student/             # layout + HUD, owl dialog, profile
+    ├── student/             # layout + HUD, owl dialog
+    │   ├── profile/         # progress, results and settings tabs, band chart, study calendar
     │   ├── reading/         # The Moonlit Library (content.ts, practice-data.ts, hub, lecture, practice)
     │   ├── listening/       # Owl FM (content.ts, practice-data.ts, speech.ts, hub, lecture, practice)
     │   └── writing/         # The Inkwell Study (content.ts, prompts.ts, analysis.ts, hub, lecture, studio)
@@ -146,10 +185,12 @@ src/
 | `/register?role=student\|teacher` | everyone | Sign up |
 | `/login` | everyone | Log in |
 | `/student` | students | Dashboard (pixel night) |
-| `/student/reading`, `/listening`, `/writing` | students | Section hub: lectures, practice tests, progress |
+| `/student/reading`, `/listening`, `/writing` | students | Section home: overview + Lectures / Practice |
+| `/student/<section>/lectures` | students | All lectures of a section |
 | `/student/<section>/lecture/:lectureId` | students | Lecture player |
+| `/student/<section>/practice` | students | Practice catalogue (`?tab=full\|focused`, filters in the URL) |
 | `/student/<section>/practice/:practiceId` | students | Practice test |
-| `/student/profile` | students | Profile (placeholder) |
+| `/student/profile` | students | Profile (`?tab=progress\|results\|settings`) |
 | `/teacher` | teachers | Teacher dashboard (placeholder) |
 
 ## ⚠️ About authentication (temporary)
@@ -181,8 +222,9 @@ Pages…). Configure the host to serve `index.html` for unknown paths so routes 
 ## Roadmap
 
 - [x] Reading, Listening and Writing sections with lectures, practice tests and progress tracking
+- [x] Student profile: progress, unified results, avatar and account settings
+- [ ] Write 20–30 practice tests per section (half full tests, half by question type)
 - [ ] Record and upload the real video lectures
-- [ ] Design the student profile page (progress overview, target band, achievements, settings)
 - [ ] Design the teacher dashboard (upload lectures, organise courses, see students, review essays)
 - [ ] Real backend: accounts, sessions, progress, video storage
 - [ ] Teacher feedback on writing; recorded audio for Listening (today it uses the browser's voices)

@@ -37,7 +37,7 @@ export function LectureStacks({ stats, progress }: { stats: SectionStats; progre
         : `${stats.lecturesCompleted} of ${stats.lecturesTotal} volumes finished. Gold stars mark the books you’ve closed.`
 
   return (
-    <section className="rd-section rd-stacks" id="rd-stacks" aria-labelledby="rd-stacks-title">
+    <section className="rd-section rd-stacks" aria-labelledby="rd-stacks-title">
       <SectionHeader id="rd-stacks-title" plate={`VOLUMES I–${roman(lectures.length)}`} title="The Lecture Stacks" note={note} />
 
       <div ref={ref} className={`rd-stacks__layout ${inView ? 'is-in' : ''}`}>

@@ -255,6 +255,52 @@
   cursor: default;
 }
 
+.lp-btn.is-locked {
+  opacity: 0.45;
+}
+
+.lp-lock-hint {
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  bottom: 14px;
+  margin: 0;
+  padding: 9px 14px 8px;
+  background: rgb(10 10 30 / 0.92);
+  color: #fff;
+  font-family: var(--font-pixel-body);
+  font-size: clamp(13px, 1.9cqi, 16px);
+  white-space: nowrap;
+  transform: translateX(-50%);
+  box-shadow:
+    0 -3px 0 0 var(--lp-accent),
+    0 3px 0 0 var(--lp-accent),
+    -3px 0 0 0 var(--lp-accent),
+    3px 0 0 0 var(--lp-accent);
+  pointer-events: none;
+  animation: lp-hint 2.6s ease both;
+}
+
+.lecture-player--video .lp-lock-hint {
+  top: 14px;
+  bottom: auto;
+}
+
+@keyframes lp-hint {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+  10%,
+  85% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 .lp-btn--play {
   min-width: 48px;
   background: var(--lp-accent);
@@ -292,6 +338,15 @@
   touch-action: none;
 }
 
+.lp-timeline__locked {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(135deg, rgb(0 0 0 / 0.28) 0 4px, transparent 4px 8px);
+  cursor: not-allowed;
+}
+
 .lp-timeline__seen,
 .lp-timeline__fill {
   position: absolute;
@@ -322,6 +377,10 @@
   background: #fff;
   transform: translateX(-50%);
   box-shadow: 0 3px 0 rgb(0 0 0 / 0.4);
+}
+
+.lp-video-wrap {
+  position: relative;
 }
 
 .lp-video {

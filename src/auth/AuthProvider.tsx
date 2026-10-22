@@ -22,6 +22,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         api.logout()
         setUser(null)
       },
+      updateProfile: async (changes) => {
+        if (!user) throw new api.AuthError('Please log in first.')
+        const updated = await api.updateProfile(user.id, changes)
+        setUser(updated)
+        return updated
+      },
+      changePassword: async (current, next) => {
+        if (!user) throw new api.AuthError('Please log in first.')
+        await api.changePassword(user.id, current, next)
+      },
     }),
     [user],
   )

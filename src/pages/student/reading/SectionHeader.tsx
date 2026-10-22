@@ -17,9 +17,9 @@ export function SectionHeader({ id, plate, title, note }: SectionHeaderProps) {
       <p className="rd-sechead__plate">
         <span>{plate}</span>
       </p>
-      <h2 id={id} className="rd-sechead__title">
+      <h1 id={id} className="rd-sechead__title">
         {title}
-      </h2>
+      </h1>
       {note && (
         <p className="rd-sechead__note">
           <PixelSprite sprite={OWL_HEAD} scale={2} className="rd-sechead__owl" />

@@ -33,6 +33,35 @@ export const groupRange = (g: TaskGroup): Range => [g.questions[0].n, g.question
 export const inRange = (n: number, r: Range | null) => Boolean(r && n >= r[0] && n <= r[1])
 export const rangeText = ([a, b]: Range) => (a === b ? `Question ${a}` : `Questions ${a}–${b}`)
 
+/** How each task type is named on the catalogue and in results. */
+export const GROUP_LABEL: Record<TaskGroup['type'], string> = {
+  form: 'Form completion',
+  notes: 'Note completion',
+  choice: 'Multiple choice',
+  map: 'Map labelling',
+  matching: 'Matching',
+}
+
+/** Per-question results in the shape the profile's results view reads. */
+export function attemptItems(set: PracticeSet, marks: Marked[]) {
+  return set.groups.flatMap((g) =>
+    g.questions.map((q) => {
+      const m = marks.find((x) => x.n === q.n)
+      const withText = (key: string) => {
+        const text = optionText(set, q, key)
+        return text ? `${key} — ${text}` : key
+      }
+      return {
+        n: q.n,
+        type: GROUP_LABEL[g.type],
+        correct: Boolean(m?.correct),
+        given: m?.given ? (q.kind === 'gap' ? m.given : withText(m.given)) : undefined,
+        answer: q.kind === 'gap' ? q.answer : withText(q.answer),
+      }
+    }),
+  )
+}
+
 export function markAll(set: PracticeSet, answers: Answers): Marked[] {
   const heard = wordsHeard(spokenLines(set).map((l) => l.t))
   return set.groups.flatMap((g) => g.questions.map((q) => mark(q, answers[q.n], g.limit, heard)))

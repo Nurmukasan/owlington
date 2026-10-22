@@ -42,6 +42,8 @@ function Studio({ lecture }: { lecture: Lecture }) {
   const screen = useRef<HTMLDivElement>(null)
   const [chapter, setChapter] = useState(-1)
   const [justDone, setJustDone] = useState(false)
+  /** Furthest chapter unlocked so far — later tracks open as they're played. */
+  const [reach, setReach] = useState(0)
 
   const index = lectures.findIndex((l) => l.id === lecture.id)
   const prev = lectures[index - 1]
@@ -71,15 +73,17 @@ function Studio({ lecture }: { lecture: Lecture }) {
     const ch = lecture.chapters[i]
     const heard = watched * times.total >= times.ends[i] - 0.5 || completed
     const current = chapter === i
+    const locked = !completed && i > reach
     const label = `${i < sideA ? 'A' : 'B'}${i < sideA ? i + 1 : i - sideA + 1}`
     return (
       <li key={ch.title}>
         <button
           type="button"
-          className={`ls-track ${current ? 'is-current' : ''} ${heard ? 'is-heard' : ''}`}
+          className={`ls-track ${current ? 'is-current' : ''} ${heard ? 'is-heard' : ''} ${locked ? 'is-locked' : ''}`}
           onClick={() => seek(i)}
           aria-current={current ? 'true' : undefined}
-          aria-label={`Play chapter ${i + 1}: ${ch.title}${heard ? ', heard' : ''}`}
+          aria-disabled={locked || undefined}
+          aria-label={`${locked ? 'Locked until you reach it' : 'Play'}: chapter ${i + 1}, ${ch.title}${heard ? ', heard' : ''}`}
         >
           <span className="ls-track__no">{label}</span>
           <span className="ls-track__body">
@@ -89,7 +93,7 @@ function Studio({ lecture }: { lecture: Lecture }) {
             </span>
           </span>
           <span className="ls-track__state" aria-hidden="true">
-            {current ? <Equalizer bars={4} seed={i + 2} playing={false} className="ls-track__eq" /> : heard ? '✓' : '○'}
+            {current ? <Equalizer bars={4} seed={i + 2} playing={false} className="ls-track__eq" /> : heard ? '✓' : locked ? '🔒' : '○'}
           </span>
         </button>
       </li>
@@ -109,6 +113,8 @@ function Studio({ lecture }: { lecture: Lecture }) {
             <span className="ls-crumbs__back" aria-hidden="true" />
             Owl FM
           </Link>
+          <span aria-hidden="true">/</span>
+          <Link to="/student/listening/lectures">Tapes</Link>
           <span aria-hidden="true">/</span>
           <span aria-current="page">Tape {tapeNo(index)}</span>
         </nav>
@@ -166,6 +172,7 @@ function Studio({ lecture }: { lecture: Lecture }) {
                 className="ls-player"
                 onChapterChange={setChapter}
                 onComplete={() => setJustDone(true)}
+                onReachChange={setReach}
               />
             </div>
             <div className="ls-monitor__base" aria-hidden="true">
@@ -183,7 +190,7 @@ function Studio({ lecture }: { lecture: Lecture }) {
               <h2 className="ls-jcard__title" id="ls-tracklist">
                 Tracklist
               </h2>
-              <p className="ls-jcard__hint">Pick a track to jump straight to it.</p>
+              <p className="ls-jcard__hint">Tracks unlock as you listen. You can always rewind.</p>
               <h3 className="ls-jcard__side">SIDE A</h3>
               <ol className="ls-tracks">{lecture.chapters.slice(0, sideA).map((_, i) => track(i))}</ol>
               {lecture.chapters.length > sideA && (
@@ -285,7 +292,7 @@ function Studio({ lecture }: { lecture: Lecture }) {
               </span>
             </Link>
           ) : (
-            <Link to="/student/listening#ls-dial" className="ls-tapenav__link ls-tapenav__link--next">
+            <Link to="/student/listening/practice" className="ls-tapenav__link ls-tapenav__link--next">
               <span className="ls-tapenav__text">
                 <span className="ls-tapenav__dir">
                   END OF THE RACK

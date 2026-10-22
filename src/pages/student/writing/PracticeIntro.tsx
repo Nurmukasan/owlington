@@ -58,8 +58,8 @@ export function PracticeIntro({ info, prompt, number, history, draft, onStart }:
   return (
     <div className="wr-intro">
       <nav className="wr-intro__crumbs" aria-label="Breadcrumb">
-        <Link to="/student/writing" className="wr-backlink">
-          <span aria-hidden="true">←</span> The Inkwell Study
+        <Link to="/student/writing/practice" className="wr-backlink">
+          <span aria-hidden="true">←</span> All assignments
         </Link>
         <span className="wr-intro__no">Assignment No. {String(number).padStart(2, '0')}</span>
       </nav>

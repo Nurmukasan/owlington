@@ -1,24 +1,12 @@
 import type { CSSProperties } from 'react'
-import { Link } from 'react-router-dom'
 import { PixelSprite } from '../../../components/PixelSprite'
+import { SectionGateway } from '../../../learn/components/SectionGateway'
 import { PENCIL_ICON } from '../../../scene/sprites'
 import { DeskScene } from './DeskScene'
 import { useCountUp } from './hooks'
 import { formatBand } from './stats'
 
-export interface ContinueAction {
-  eyebrow: string
-  title: string
-  meta: string
-  to: string
-  cta: string
-  kind: 'draft' | 'lecture' | 'practice'
-}
-
 interface HubHeroProps {
-  name: string
-  next: ContinueAction
-  secondary?: ContinueAction
   lettersRead: number
   lettersTotal: number
   essays: number
@@ -27,7 +15,7 @@ interface HubHeroProps {
   tips: string[]
 }
 
-export function HubHero({ next, secondary, lettersRead, lettersTotal, essays, words, bestBand, tips }: HubHeroProps) {
+export function HubHero({ lettersRead, lettersTotal, essays, words, bestBand, tips }: HubHeroProps) {
   const shownWords = useCountUp(words)
   return (
     <header className="wr-hero">
@@ -49,26 +37,11 @@ export function HubHero({ next, secondary, lettersRead, lettersTotal, essays, wo
           <span className="wr-hero__word wr-hero__word--2">Study</span>
         </h1>
         <p className="wr-hero__lead">
-          Sealed letters from the professor, timed assignments on lined paper and a manuscript that grows with every word
-          you write. Pull up a chair — the ink is fresh.
+          Sealed letters from the professor and timed assignments on lined paper, marked against the four IELTS criteria.
+          Pull up a chair — the ink is fresh.
         </p>
 
-        <div className="wr-continue">
-          <span className="wr-continue__pin" aria-hidden="true" />
-          <p className="wr-continue__eyebrow">{next.eyebrow}</p>
-          <p className="wr-continue__title wr-display">{next.title}</p>
-          <p className="wr-continue__meta">{next.meta}</p>
-          <div className="wr-continue__actions">
-            <Link to={next.to} className="wr-btn">
-              {next.cta} <span className="wr-btn__arrow" aria-hidden="true">→</span>
-            </Link>
-            {secondary && (
-              <Link to={secondary.to} className="wr-continue__alt">
-                or {secondary.cta.toLowerCase()}: <span>{secondary.title}</span>
-              </Link>
-            )}
-          </div>
-        </div>
+        <SectionGateway section="writing" icon={PENCIL_ICON} lectureNoun="letter" className="wr-gateway" />
 
         <dl className="wr-ledger">
           <div className="wr-ledger__card" style={{ '--wr-tilt': '-2deg' } as CSSProperties}>

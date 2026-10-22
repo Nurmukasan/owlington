@@ -2453,6 +2453,18 @@
   margin-top: 6px;
 }
 
+.wr-sealed__profile {
+  align-self: center;
+  color: var(--wr-text-soft);
+  font-weight: 650;
+  text-decoration-color: var(--wr-brass);
+  text-underline-offset: 4px;
+}
+
+.wr-sealed__profile:hover {
+  color: var(--wr-brass-light);
+}
+
 /* tabs */
 
 .wr-tabs {

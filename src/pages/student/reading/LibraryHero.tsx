@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
-import { Link } from 'react-router-dom'
-import { formatClock } from '../../../learn/useTimer'
 import { PixelSprite } from '../../../components/PixelSprite'
-import { ScrollLink } from '../../../learn/components/ScrollLink'
+import { SectionGateway } from '../../../learn/components/SectionGateway'
 import { sfx } from '../../../learn/sfx'
 import type { ProgressView, SectionStats } from '../../../learn/useProgress'
 import { BOOK_ICON, FLAME_ICON, STAR_ICON, TROPHY_ICON } from '../../../scene/sprites'
@@ -10,7 +8,7 @@ import { Bookcase } from './Bookcase'
 import { FloatingCandle } from './Candle'
 import { DustMotes } from './DustMotes'
 import { LibrarianOwl } from './LibrarianOwl'
-import { HUB_PATH, LIBRARIAN_TIPS, accuracyOf, bookStyle, lectureIndex, pct, roman, type NextStep } from './library'
+import { LIBRARIAN_TIPS, accuracyOf, lectureIndex, pct, roman, type NextStep } from './library'
 import { useCountUp, useReducedMotion } from './hooks'
 
 interface LibraryHeroProps {
@@ -77,8 +75,6 @@ export function LibraryHero({ firstName, stats, progress, step }: LibraryHeroPro
     setWiggle((w) => w + 1)
     nextTip()
   }
-
-  const stepStyle = step?.kind === 'lecture' ? bookStyle(lectureIndex(step.lecture.id)) : bookStyle(5)
 
   return (
     <section className="rd-hero" aria-labelledby="rd-hero-title">
@@ -171,9 +167,11 @@ export function LibraryHero({ firstName, stats, progress, step }: LibraryHeroPro
           </h1>
         </div>
         <p className="rd-hero__tagline">
-          Lectures, practice tests and a librarian who never sleeps. Learn to skim, scan and see straight through every
-          “Not Given” — one candlelit page at a time.
+          Lectures and practice tests, from single question types to full 60-minute papers — and a librarian who never
+          sleeps. Learn to skim, scan and see straight through every “Not Given”.
         </p>
+
+        <SectionGateway section="reading" icon={BOOK_ICON} lectureNoun="book" className="rd-gateway" />
 
         <dl className="rd-plaques">
           <div className="rd-plaque" style={{ '--rd-i': 0 } as CSSProperties}>
@@ -207,71 +205,7 @@ export function LibraryHero({ firstName, stats, progress, step }: LibraryHeroPro
             </dd>
           </div>
         </dl>
-
-        {step && (
-          <div className="rd-continue">
-            <Link
-              to={step.kind === 'lecture' ? `${HUB_PATH}/lecture/${step.lecture.id}` : `${HUB_PATH}/practice/${step.practice.id}`}
-              className="rd-bookmark"
-              style={{ '--rd-cloth': stepStyle.cloth, '--rd-edge': stepStyle.edge, '--rd-foil': stepStyle.foil } as CSSProperties}
-            >
-              <span className="rd-bookmark__spine" aria-hidden="true">
-                {step.kind === 'lecture' ? roman(lectureIndex(step.lecture.id) + 1) : '✦'}
-              </span>
-              <span className="rd-bookmark__body">
-                <span className="rd-bookmark__eyebrow">
-                  {step.kind === 'lecture'
-                    ? step.started
-                      ? 'PICK UP WHERE YOU LEFT OFF'
-                      : isNew
-                        ? 'YOUR FIRST BOOK'
-                        : 'NEXT ON THE SHELF'
-                    : step.reason === 'resume'
-                      ? 'FINISH WHAT YOU STARTED'
-                      : step.reason === 'new'
-                        ? 'NEXT IN THE CATALOGUE'
-                        : 'BEAT YOUR BEST'}
-                </span>
-                <span className="rd-bookmark__title">{step.kind === 'lecture' ? step.lecture.title : step.practice.title}</span>
-                <span className="rd-bookmark__meta">
-                  {step.kind === 'lecture'
-                    ? `${step.lecture.level} · ${step.lecture.minutes} min · ${step.started ? `${pct(step.watched)} read` : `${step.lecture.chapters.length} chapters`}`
-                    : step.reason === 'resume'
-                      ? `${step.draft.answered} of ${step.practice.questionCount} answered · ${
-                          step.draft.elapsed < step.practice.minutes * 60
-                            ? `${formatClock(step.practice.minutes * 60 - step.draft.elapsed)} left on the candle`
-                            : 'in overtime'
-                        }`
-                      : step.reason === 'improve' && step.best
-                        ? `Best so far ${step.best.score}/${step.best.total} · ${step.practice.minutes} min`
-                        : `${step.practice.level} · ${step.practice.minutes} min · ${step.practice.questionCount} questions`}
-                </span>
-                {step.kind === 'lecture' && step.started && (
-                  <span className="rd-bookmark__bar" aria-hidden="true">
-                    <span style={{ width: pct(step.watched) }} />
-                  </span>
-                )}
-                {step.kind === 'practice' && step.reason === 'resume' && (
-                  <span className="rd-bookmark__bar" aria-hidden="true">
-                    <span style={{ width: pct(step.draft.answered / Math.max(1, step.practice.questionCount)) }} />
-                  </span>
-                )}
-              </span>
-              <span className="rd-bookmark__go" aria-hidden="true">
-                {step.kind === 'lecture' ? (step.started ? 'Continue' : 'Open') : step.reason === 'resume' ? 'Resume' : 'Borrow'}{' '}
-                <span>→</span>
-              </span>
-            </Link>
-            <ScrollLink className="rd-continue__alt" to="rd-catalogue">
-              or browse the practice tests ↓
-            </ScrollLink>
-          </div>
-        )}
       </div>
-
-      <ScrollLink className="rd-hero__scroll" to="rd-stacks" aria-label="Scroll to the lecture stacks">
-        <span aria-hidden="true">▾</span>
-      </ScrollLink>
     </section>
   )
 }

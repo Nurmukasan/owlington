@@ -47,6 +47,8 @@ function LectureRoom({ lecture }: { lecture: Lecture }) {
   const user = useUser()
   const progress = useProgress()
   const playerRef = useRef<LecturePlayerHandle>(null)
+  /** Furthest chapter unlocked so far — later chapters open as they're watched. */
+  const [reach, setReach] = useState(0)
   const stageRef = useRef<HTMLDivElement>(null)
   const [chapter, setChapter] = useState(-1)
   /** The furthest chapter opened during this visit (a chapter you have moved past counts as read). */
@@ -85,7 +87,7 @@ function LectureRoom({ lecture }: { lecture: Lecture }) {
             <span aria-hidden="true">←</span> The Moonlit Library
           </Link>
           <span aria-hidden="true">/</span>
-          <Link to={`${HUB_PATH}#rd-stacks`}>Lecture Stacks</Link>
+          <Link to={`${HUB_PATH}/lectures`}>Lecture Stacks</Link>
           <span aria-hidden="true">/</span>
           <span aria-current="page">Volume {roman(index + 1)}</span>
         </nav>
@@ -122,6 +124,7 @@ function LectureRoom({ lecture }: { lecture: Lecture }) {
                     setFurthest((f) => Math.max(f, i))
                   }}
                   onComplete={() => setJustCompleted(true)}
+                  onReachChange={setReach}
                 />
               </div>
             </div>
@@ -157,7 +160,7 @@ function LectureRoom({ lecture }: { lecture: Lecture }) {
                         Open Volume {roman(lectureIndex(nextUnread.id) + 1)} <span aria-hidden="true">→</span>
                       </Link>
                     ) : (
-                      <Link to={`${HUB_PATH}#rd-catalogue`} className="rd-btn rd-btn--gold">
+                      <Link to={`${HUB_PATH}/practice`} className="rd-btn rd-btn--gold">
                         To the card catalogue <span aria-hidden="true">→</span>
                       </Link>
                     )}
@@ -182,14 +185,19 @@ function LectureRoom({ lecture }: { lecture: Lecture }) {
                 {lecture.chapters.map((c, i) => {
                   const isCurrent = chapter === i
                   const isRead = done || furthest > i || watched >= marks[i].end - 0.001
+                  const isLocked = !done && i > reach
                   return (
-                    <li key={c.title} className={`rd-toc__row ${isCurrent ? 'is-current' : ''} ${isRead ? 'is-read' : ''}`}>
+                    <li
+                      key={c.title}
+                      className={`rd-toc__row ${isCurrent ? 'is-current' : ''} ${isRead ? 'is-read' : ''} ${isLocked ? 'is-locked' : ''}`}
+                    >
                       <button
                         type="button"
                         className="rd-toc__item"
                         onClick={() => seek(i)}
                         aria-current={isCurrent ? 'step' : undefined}
-                        aria-label={`Chapter ${i + 1}: ${c.title}${isRead ? ' (read)' : ''}. Jump to this chapter.`}
+                        aria-disabled={isLocked || undefined}
+                        aria-label={`Chapter ${i + 1}: ${c.title}${isRead ? ' (read)' : ''}${isLocked ? ' (locked until you reach it)' : '. Jump to this chapter.'}`}
                       >
                         <span className="rd-toc__num" aria-hidden="true">
                           {roman(i + 1)}.
@@ -199,14 +207,14 @@ function LectureRoom({ lecture }: { lecture: Lecture }) {
                         </span>
                         <span className="rd-toc__leader" aria-hidden="true" />
                         <span className="rd-toc__pg" aria-hidden="true">
-                          {isRead ? '✓' : `p. ${marks[i].page}`}
+                          {isRead ? '✓' : isLocked ? '🔒' : `p. ${marks[i].page}`}
                         </span>
                       </button>
                     </li>
                   )
                 })}
               </ol>
-              <p className="rd-toc__hint">Click a chapter to turn straight to it.</p>
+              <p className="rd-toc__hint">Chapters unlock as you read. You can always turn back.</p>
 
               <div className="rd-toc__progress">
                 <div className="rd-toc__progress-head">
@@ -279,7 +287,7 @@ function LectureRoom({ lecture }: { lecture: Lecture }) {
               </span>
             </Link>
           ) : (
-            <Link to={`${HUB_PATH}#rd-catalogue`} className="rd-volnav__link rd-volnav__link--next">
+            <Link to={`${HUB_PATH}/practice`} className="rd-volnav__link rd-volnav__link--next">
               <span>
                 <small>End of the stacks →</small>
                 Practice tests

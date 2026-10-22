@@ -43,7 +43,7 @@ export default function StudentLayout() {
     const lines = [greeting(user.name)]
     if (streakDays > 1 && activeToday) lines.push(`${streakDays} nights in a row! You’re a true night owl. Keep that flame burning.`)
     else if (streakDays > 0 && !activeToday) lines.push(`Your ${streakDays}-day streak is waiting — one lecture or practice tonight keeps the flame alive!`)
-    lines.push('Pick READING, LISTENING or WRITING up top for lectures, practice tests and your progress. Click me any time for a tip!')
+    lines.push('Pick READING, LISTENING or WRITING up top for lectures and practice tests. Your scores and progress live in your profile — the owlet in the corner. Click me any time for a tip!')
     return lines
   }, [user.name, streakDays, activeToday])
 

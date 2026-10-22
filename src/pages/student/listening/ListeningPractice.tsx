@@ -16,7 +16,7 @@ import { Briefing } from './practice/Briefing'
 import { clearDraft, readDraft, saveDraft, type Draft } from './practice/draft'
 import { QuestionPaper } from './practice/QuestionPaper'
 import { Report, type Result } from './practice/Report'
-import { answeredCount, focusQuestion, liveRanges, markAll, type Answers, type AudioSource, type Mode } from './practice/script'
+import { answeredCount, attemptItems, focusQuestion, liveRanges, markAll, type Answers, type AudioSource, type Mode } from './practice/script'
 import { autoCast, Broadcast, type Cast, type Driver, type VoiceStatus, useVoices } from './speech'
 import { formatFreq, LECTURE_PRACTICE, stationFor, type Station } from './stations'
 import './listening.css'
@@ -237,6 +237,7 @@ function OnAir({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
       total,
       durationSec,
       band: bandForAccuracy(total ? score / total : 0),
+      items: attemptItems(set, marks),
       detail: { answers, mode: prefs.mode, audio: driver },
     })
     setResult({ marks, score, total, attempt, prevBest, durationSec, mode: prefs.mode, transcript: driver === 'text' })
@@ -285,7 +286,7 @@ function OnAir({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
             Owl FM
           </Link>
           <span aria-hidden="true">/</span>
-          <Link to="/student/listening#ls-dial">The dial</Link>
+          <Link to="/student/listening/practice">Practice</Link>
           <span aria-hidden="true">/</span>
           <span aria-current="page">{formatFreq(station.freq)} FM</span>
         </nav>

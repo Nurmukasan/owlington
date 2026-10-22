@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useRef, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
+import { profileResultPath } from '../../../learn/results/results'
 import { floatText, pixelConfetti } from '../../../learn/fx'
 import type { Attempt } from '../../../learn/progress'
 import { sfx } from '../../../learn/sfx'
@@ -217,8 +218,11 @@ export function PracticeResults({ info, attempt, graded, previousBest, firstName
               Next test: {next.title} <span aria-hidden="true">→</span>
             </Link>
           )}
-          <Link to={HUB_PATH} className="rd-verdict__home">
-            Back to the library
+          <Link to={`${HUB_PATH}/practice`} className="rd-verdict__home">
+            Back to all tests
+          </Link>
+          <Link to={profileResultPath(attempt)} className="rd-verdict__home">
+            Saved to your profile →
           </Link>
         </div>
         <div className="rd-verdict__lower">

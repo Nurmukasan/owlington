@@ -6,7 +6,6 @@ import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
 import Landing from './pages/landing/Landing'
 import NotFound from './pages/NotFound'
-import ProfilePage from './pages/student/ProfilePage'
 import StudentHome from './pages/student/StudentHome'
 import StudentLayout from './pages/student/StudentLayout'
 import TeacherDashboard from './pages/teacher/TeacherDashboard'
@@ -23,14 +22,22 @@ function ScrollToTop() {
   return null
 }
 
+const ProfilePage = lazy(() => import('./pages/student/profile/ProfilePage'))
+
 // Each section is its own world, loaded on demand.
 const ReadingHub = lazy(() => import('./pages/student/reading/ReadingHub'))
+const ReadingLectures = lazy(() => import('./pages/student/reading/ReadingLectures'))
+const ReadingPracticeList = lazy(() => import('./pages/student/reading/ReadingPracticeList'))
 const ReadingLecture = lazy(() => import('./pages/student/reading/ReadingLecture'))
 const ReadingPractice = lazy(() => import('./pages/student/reading/ReadingPractice'))
 const ListeningHub = lazy(() => import('./pages/student/listening/ListeningHub'))
+const ListeningLectures = lazy(() => import('./pages/student/listening/ListeningLectures'))
+const ListeningPracticeList = lazy(() => import('./pages/student/listening/ListeningPracticeList'))
 const ListeningLecture = lazy(() => import('./pages/student/listening/ListeningLecture'))
 const ListeningPractice = lazy(() => import('./pages/student/listening/ListeningPractice'))
 const WritingHub = lazy(() => import('./pages/student/writing/WritingHub'))
+const WritingLectures = lazy(() => import('./pages/student/writing/WritingLectures'))
+const WritingPracticeList = lazy(() => import('./pages/student/writing/WritingPracticeList'))
 const WritingLecture = lazy(() => import('./pages/student/writing/WritingLecture'))
 const WritingPractice = lazy(() => import('./pages/student/writing/WritingPractice'))
 
@@ -56,14 +63,20 @@ export default function App() {
             <Route path="profile" element={<ProfilePage />} />
 
             <Route path="reading" element={<ReadingHub />} />
+            <Route path="reading/lectures" element={<ReadingLectures />} />
+            <Route path="reading/practice" element={<ReadingPracticeList />} />
             <Route path="reading/lecture/:lectureId" element={<ReadingLecture />} />
             <Route path="reading/practice/:practiceId" element={<ReadingPractice />} />
 
             <Route path="listening" element={<ListeningHub />} />
+            <Route path="listening/lectures" element={<ListeningLectures />} />
+            <Route path="listening/practice" element={<ListeningPracticeList />} />
             <Route path="listening/lecture/:lectureId" element={<ListeningLecture />} />
             <Route path="listening/practice/:practiceId" element={<ListeningPractice />} />
 
             <Route path="writing" element={<WritingHub />} />
+            <Route path="writing/lectures" element={<WritingLectures />} />
+            <Route path="writing/practice" element={<WritingPracticeList />} />
             <Route path="writing/lecture/:lectureId" element={<WritingLecture />} />
             <Route path="writing/practice/:practiceId" element={<WritingPractice />} />
 
