@@ -1,0 +1,418 @@
+/*
+ * The Inkwell Study — shared world styles (tokens, typography, buttons).
+ * Every class, custom property and keyframe is prefixed with "wr-".
+ */
+
+.wr-world {
+  --wr-ink: #1b2a4a;
+  --wr-ink-deep: #0f1830;
+  --wr-ink-soft: #3c4a6b;
+  --wr-night: #090f22;
+  --wr-wall: #121c3a;
+  --wr-paper: #fbf4e4;
+  --wr-parchment: #f3e6c8;
+  --wr-parchment-2: #e9d8b2;
+  --wr-paper-line: #c9d6ee;
+  --wr-paper-margin: #e8a196;
+  --wr-paper-ink: #1b2a4a;
+  --wr-paper-muted: #6b5a43;
+  --wr-brass: #d9b464;
+  --wr-brass-light: #f2d796;
+  --wr-brass-deep: #8a6424;
+  --wr-wax: #b3262e;
+  --wr-wax-deep: #7a161d;
+  --wr-coral: var(--writing);
+  --wr-coral-deep: #e9785f;
+  --wr-coral-ink: #b4442f;
+  --wr-wood: #2e1d12;
+  --wr-wood-2: #4a2f1c;
+  --wr-wood-light: #6e4a2e;
+  --wr-lantern: #ffc875;
+  --wr-text: #f4ecdc;
+  --wr-text-soft: #c9c2d6;
+  --wr-text-muted: #9c97b4;
+  --wr-good: #199e70;
+  --wr-font-hand: var(--font-display);
+  --wr-font-typed: 'Courier Prime', 'Courier New', Courier, ui-monospace, monospace;
+  --wr-gutter: clamp(16px, 4vw, 56px);
+
+  position: relative;
+  min-height: 100dvh;
+  overflow-x: clip;
+  background:
+    radial-gradient(70% 55% at 22% 38%, rgb(255 186 102 / 0.1), transparent 70%),
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 0.016) 0 2px, transparent 2px 44px),
+    linear-gradient(180deg, #0b1330 0%, var(--wr-wall) 48%, #151d36 100%);
+  color: var(--wr-text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.wr-world *,
+.wr-world *::before,
+.wr-world *::after {
+  box-sizing: border-box;
+}
+
+.wr-world :focus-visible {
+  outline: 3px solid var(--wr-brass-light);
+  outline-offset: 3px;
+}
+
+/* Zero-specificity resets, so any single class can set its own margins. */
+:where(.wr-world) :where(h1, h2, h3, h4, p, ul, ol, figure, dl, dd) {
+  margin: 0;
+}
+
+:where(.wr-world) :where(ul, ol) {
+  padding: 0;
+  list-style: none;
+}
+
+.wr-display {
+  font-family: var(--font-display);
+  font-variation-settings:
+    'SOFT' 100,
+    'WONK' 1;
+  font-optical-sizing: auto;
+  letter-spacing: -0.02em;
+}
+
+.wr-hand {
+  font-family: var(--wr-font-hand);
+  font-style: italic;
+  font-variation-settings:
+    'SOFT' 100,
+    'WONK' 1;
+}
+
+/* Small pixel label above headings. */
+.wr-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--wr-brass);
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  letter-spacing: 1.4px;
+  line-height: 1.7;
+  text-transform: uppercase;
+}
+
+.wr-eyebrow--ink {
+  color: var(--wr-coral-ink);
+}
+
+/* ------------------------------------------------------------- buttons --- */
+
+.wr-btn {
+  --wr-btn-bg: var(--wr-coral);
+  --wr-btn-fg: var(--wr-ink-deep);
+  --wr-btn-edge: #c7614c;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 12px 22px 14px;
+  border: 0;
+  background: var(--wr-btn-bg);
+  color: var(--wr-btn-fg);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow:
+    inset 0 -5px 0 var(--wr-btn-edge),
+    0 0 0 0 transparent;
+  clip-path: polygon(
+    0 4px,
+    4px 4px,
+    4px 0,
+    calc(100% - 4px) 0,
+    calc(100% - 4px) 4px,
+    100% 4px,
+    100% calc(100% - 4px),
+    calc(100% - 4px) calc(100% - 4px),
+    calc(100% - 4px) 100%,
+    4px 100%,
+    4px calc(100% - 4px),
+    0 calc(100% - 4px)
+  );
+  transition:
+    transform 140ms cubic-bezier(0.3, 1.4, 0.5, 1),
+    filter 140ms ease;
+}
+
+.wr-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.07);
+}
+
+.wr-btn:active {
+  transform: translateY(1px);
+}
+
+.wr-btn:focus-visible {
+  outline: none;
+  box-shadow:
+    inset 0 -5px 0 var(--wr-btn-edge),
+    inset 0 0 0 3px var(--wr-ink-deep),
+    inset 0 0 0 5px #fff;
+}
+
+.wr-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  filter: grayscale(0.4);
+}
+
+.wr-btn--brass {
+  --wr-btn-bg: var(--wr-brass);
+  --wr-btn-fg: var(--wr-ink-deep);
+  --wr-btn-edge: var(--wr-brass-deep);
+}
+
+.wr-btn--wax {
+  --wr-btn-bg: var(--wr-wax);
+  --wr-btn-fg: #fff3ea;
+  --wr-btn-edge: var(--wr-wax-deep);
+}
+
+.wr-btn--ink {
+  --wr-btn-bg: var(--wr-ink);
+  --wr-btn-fg: var(--wr-paper);
+  --wr-btn-edge: #070c1c;
+}
+
+.wr-btn--ghost {
+  --wr-btn-bg: rgb(255 255 255 / 0.06);
+  --wr-btn-fg: var(--wr-text);
+  --wr-btn-edge: rgb(255 255 255 / 0.1);
+  box-shadow:
+    inset 0 0 0 2px rgb(244 236 220 / 0.32),
+    inset 0 -5px 0 var(--wr-btn-edge);
+}
+
+.wr-btn--ghost:hover {
+  --wr-btn-bg: rgb(255 255 255 / 0.12);
+}
+
+.wr-btn--paper-ghost {
+  --wr-btn-bg: transparent;
+  --wr-btn-fg: var(--wr-ink);
+  --wr-btn-edge: rgb(27 42 74 / 0.18);
+  box-shadow:
+    inset 0 0 0 2px rgb(27 42 74 / 0.35),
+    inset 0 -5px 0 var(--wr-btn-edge);
+}
+
+.wr-btn--paper-ghost:hover {
+  --wr-btn-bg: rgb(27 42 74 / 0.06);
+}
+
+.wr-btn--small {
+  min-height: 38px;
+  padding: 8px 14px 10px;
+  font-size: 0.88rem;
+}
+
+.wr-btn__arrow {
+  display: inline-block;
+  transition: transform 160ms ease;
+}
+
+.wr-btn:hover .wr-btn__arrow {
+  transform: translateX(3px);
+}
+
+/* A text link styled as a pixel back-link. */
+.wr-backlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--wr-text-soft);
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  letter-spacing: 1px;
+  line-height: 1.7;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.wr-backlink:hover {
+  color: var(--wr-brass-light);
+}
+
+.wr-backlink span[aria-hidden] {
+  transition: transform 140ms ease;
+}
+
+.wr-backlink:hover span[aria-hidden] {
+  transform: translateX(-3px);
+}
+
+/* ------------------------------------------------------ section heads --- */
+
+.wr-section {
+  position: relative;
+  width: min(1240px, 100%);
+  margin: 0 auto;
+  padding: 0 var(--wr-gutter);
+}
+
+.wr-section-head {
+  display: grid;
+  gap: 12px;
+  max-width: 760px;
+  margin-bottom: 36px;
+}
+
+.wr-section-head h2 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 1.2rem + 2.6vw, 3.2rem);
+  font-weight: 560;
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  font-variation-settings:
+    'SOFT' 100,
+    'WONK' 1;
+  color: #fff8ea;
+}
+
+.wr-section-head h2 em {
+  color: var(--wr-coral);
+  font-style: italic;
+  font-weight: 480;
+}
+
+.wr-section-head p:not(.wr-eyebrow) {
+  max-width: 62ch;
+  color: var(--wr-text-soft);
+  font-size: 1.05rem;
+}
+
+/* Paper chip (level / minutes / counts). */
+.wr-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px 4px;
+  background: rgb(255 255 255 / 0.07);
+  color: var(--wr-text-soft);
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  letter-spacing: 0.8px;
+  line-height: 1.6;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.wr-chip--paper {
+  background: rgb(27 42 74 / 0.08);
+  color: var(--wr-ink);
+}
+
+/* Rubber-stamp label. */
+.wr-stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px 5px;
+  border: 2.5px solid currentColor;
+  border-radius: 3px;
+  color: var(--wr-coral-ink);
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  letter-spacing: 1px;
+  line-height: 1.6;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: inset 0 0 0 1.5px var(--wr-stamp-inner, transparent);
+  mask-image: radial-gradient(circle at 30% 40%, #000 60%, rgb(0 0 0 / 0.75) 61%, #000 75%);
+  opacity: 0.9;
+}
+
+/* A tiny shimmering "+XP" style tag. */
+.wr-tag {
+  display: inline-block;
+  padding: 3px 7px 2px;
+  background: var(--wr-coral);
+  color: var(--wr-ink-deep);
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  letter-spacing: 0.5px;
+  line-height: 1.6;
+}
+
+/* Generic reveal-on-scroll entrance (paired with useRevealed). */
+.wr-reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 700ms ease,
+    transform 800ms cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+
+.wr-reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wr-reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Rain on a window pane — reused by every page that shows the window. */
+.wr-rain {
+  position: absolute;
+  inset: -20% 0 0;
+  background-image:
+    repeating-linear-gradient(
+      104deg,
+      transparent 0 22px,
+      rgb(190 210 255 / 0.22) 22px 23px,
+      transparent 23px 41px
+    ),
+    repeating-linear-gradient(
+      100deg,
+      transparent 0 31px,
+      rgb(190 210 255 / 0.14) 31px 32px,
+      transparent 32px 57px
+    );
+  background-size:
+    100% 120px,
+    100% 180px;
+  mask-image: repeating-linear-gradient(180deg, #000 0 26px, transparent 26px 60px);
+  animation: wr-rain 0.9s linear infinite;
+  pointer-events: none;
+}
+
+.wr-rain--slow {
+  opacity: 0.6;
+  animation-duration: 1.6s;
+  mask-image: repeating-linear-gradient(180deg, #000 0 14px, transparent 14px 44px);
+}
+
+@keyframes wr-rain {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-12px, 60px, 0);
+  }
+}
+
+.wr-paused,
+.wr-paused * {
+  animation-play-state: paused !important;
+}

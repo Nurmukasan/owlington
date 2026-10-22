@@ -1,19 +1,439 @@
 import type { Lecture, PracticeInfo } from '../../../learn/types'
 
-// PLACEHOLDER — replaced by the Writing section build.
+/*
+ * The Inkwell Study — Writing lectures and practice prompts.
+ *
+ * This file lands in the main bundle (catalog.ts imports it), so it only holds
+ * light metadata. Prompts, charts, model answers and checklists live in
+ * prompts.ts, which only the lazy Practice page imports.
+ */
 
 export const lectures: Lecture[] = [
   {
-    id: 'intro',
-    title: 'Planning a Task 2 essay',
-    summary: 'Placeholder lecture.',
-    minutes: 8,
+    id: 'essay-types',
+    title: 'Task 2 essay types, decoded',
+    summary:
+      'Every Task 2 question is one of five types in disguise. Learn to spot the instruction, answer every part of it, and pick the essay shape that fits.',
+    minutes: 12,
     level: 'Foundation',
     chapters: [
-      { title: 'Read the question', points: ['Underline the topic and the exact instruction: agree or disagree, discuss both views, or problem and solution.', 'Answer every part of the question, or your Task Response score suffers.'] },
-      { title: 'Plan in five minutes', points: ['Decide your position before you write a single sentence.', 'Give each body paragraph one main idea with a clear example.'] },
+      {
+        title: 'Five questions in disguise',
+        points: [
+          'Opinion: “To what extent do you agree or disagree?” You must take a clear position and keep it to the last line.',
+          'Discussion: “Discuss both views and give your own opinion.” That is three jobs: view one, view two, and where you stand.',
+          'Advantages and disadvantages: if it asks whether the advantages outweigh the disadvantages, you have to weigh them and say which side wins.',
+          'Problem–solution and two-part questions: answer every question you are asked. Two questions means two clearly answered halves.',
+        ],
+      },
+      {
+        title: 'Read the instruction, not just the topic',
+        points: [
+          'Underline two things: the topic (what it is about) and the instruction (what you must do with it).',
+          'The most common Task 2 mistake is writing a good essay about the topic that never answers the actual question.',
+          'Watch the limiting words. “Children under 12”, “in your country”, “in cities” narrow what you should discuss.',
+        ],
+      },
+      {
+        title: 'Match the shape to the type',
+        points: [
+          'Opinion: introduction with your position, two body paragraphs that support it, conclusion that restates it in fresh words.',
+          'Discussion: one body paragraph per view, with your opinion stated in the introduction and confirmed in the conclusion.',
+          'Problem–solution: one paragraph of causes or problems, one of solutions — and make each solution answer a problem you named.',
+        ],
+      },
+      {
+        title: 'Time and length',
+        points: [
+          'Give Task 2 about 40 minutes: roughly 5 to plan, 30 to write and 5 to check.',
+          'The minimum is 250 words and short answers lose marks. Aim for 270–320 well-controlled words rather than 400 rushed ones.',
+          'Task 2 counts twice as much as Task 1, and you may do the tasks in either order — many candidates start with Task 2.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'thesis-paragraphs',
+    title: 'Building a thesis & paragraph structure',
+    summary:
+      'A thesis is a promise and every paragraph keeps part of it. Write introductions that earn their place, PEEL body paragraphs and conclusions that close the loop.',
+    minutes: 14,
+    level: 'Foundation',
+    chapters: [
+      {
+        title: 'The thesis is a promise',
+        points: [
+          'Your thesis is one sentence that answers the question directly: “I firmly believe that…” or “While X has merits, I would argue that…”.',
+          'A strong thesis previews your two main reasons, so the examiner can predict your body paragraphs.',
+          'Everything after the thesis should support it. If a paragraph does not, cut it or change the thesis.',
+        ],
+      },
+      {
+        title: 'Introductions that earn their place',
+        points: [
+          'Two sentences are enough: paraphrase the question, then state your thesis.',
+          'Do not copy the question. Text copied from the prompt does not show your language and is not counted towards your words.',
+          'Skip empty openers like “Nowadays this is a hot topic”. Every sentence should do a job.',
+        ],
+      },
+      {
+        title: 'PEEL body paragraphs',
+        points: [
+          'Point: open with a topic sentence that states the paragraph’s one main idea.',
+          'Explain: say why or how it is true. This is where your reasoning and complex sentences live.',
+          'Example and Link: give one specific, realistic example, then link back to the question or your position.',
+          'One idea per paragraph. Two half-developed ideas score lower than one idea explained well.',
+        ],
+      },
+      {
+        title: 'Conclusions that close the loop',
+        points: [
+          'Restate your position in new words — never introduce a new argument at the end.',
+          'Briefly sum up the two main reasons in one sentence.',
+          'Signal it clearly with “In conclusion” or “To sum up”, and keep it to two or three sentences.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'coherence-cohesion',
+    title: 'Coherence & cohesion: linking and referencing',
+    summary:
+      'A quarter of your Writing score is how easily the reader can follow you. Use linking words with precise jobs, avoid mechanical overuse and master referencing.',
+    minutes: 15,
+    level: 'Intermediate',
+    chapters: [
+      {
+        title: 'Coherence vs cohesion',
+        points: [
+          'Coherence is the logic: ideas in a sensible order, one clear purpose per paragraph.',
+          'Cohesion is the glue: linking words, pronouns, “this/these” and synonyms that tie sentences together.',
+          'Together they make up one of the four equally weighted criteria — 25% of your Writing band.',
+        ],
+      },
+      {
+        title: 'Linkers with precise jobs',
+        points: [
+          'Addition: moreover, in addition, furthermore. Contrast: however, whereas, in contrast. Result: as a result, consequently, therefore.',
+          'Choose by meaning, not by sound. “On the other hand” must introduce a genuinely opposite side, not just another point.',
+          'Mix sentence linkers (However, …) with clause linkers (although, whereas, because) for natural rhythm.',
+        ],
+      },
+      {
+        title: 'Overuse is a red flag',
+        points: [
+          'Starting every sentence with a linker reads as mechanical, and examiners mark it down.',
+          'Move linkers inside the sentence for variety: “This approach, however, is expensive.”',
+          'If the logic is already obvious from the order of your ideas, you do not need a linker at all.',
+        ],
+      },
+      {
+        title: 'Referencing and substitution',
+        points: [
+          '“This/These + summary noun” links ideas elegantly: “This trend…”, “Such policies…”, “These figures…”.',
+          'Every “it” and “they” needs one clear antecedent. If the reader could ask “which?”, use a noun.',
+          'Substitute sensibly: “cars… vehicles… they” keeps the thread without repeating the same word five times.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'lexical-resource',
+    title: 'Lexical resource: collocations & avoiding repetition',
+    summary:
+      'Precision beats fancy words. Learn the collocations that sound natural, vary key terms without changing their meaning and protect your score from spelling slips.',
+    minutes: 13,
+    level: 'Intermediate',
+    chapters: [
+      {
+        title: 'Range with precision',
+        points: [
+          'A precise everyday word beats a rare word used wrongly. “A serious problem” is better than “a gargantuan problem”.',
+          'Upgrade vague words: “good” → beneficial, effective, worthwhile; “bad” → harmful, damaging, counterproductive.',
+          'Use less common words only when you know their meaning, grammar and typical partners.',
+        ],
+      },
+      {
+        title: 'Collocations sound native',
+        points: [
+          'Natural pairs: pose a threat, play a crucial role, a sharp rise, heavy traffic, reach a consensus.',
+          'Learn verb + noun pairs as one chunk: “conduct research”, never “make research”; “make a decision”, not “do a decision”.',
+          'Keep a notebook of collocations by topic: environment, education, technology, health, work.',
+        ],
+      },
+      {
+        title: 'Repeating without repeating',
+        points: [
+          'Some repetition of key topic words is fine — but the same word in every sentence looks limited.',
+          'Rotate synonyms and word families: economy, economic, financially; teenagers, young people, adolescents.',
+          'Never swap in a synonym that changes your meaning. “Pupils” and “students” are close; “kids” is too informal.',
+        ],
+      },
+      {
+        title: 'Spelling & word formation',
+        points: [
+          'Errors in spelling and word formation lower Lexical Resource. Check suffixes: economic (of the economy) vs economical (saves money).',
+          'Usual suspects: environment, government, necessary, accommodation, definitely, receive.',
+          'British and American spelling are both accepted — pick one and be consistent.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'grammar-range',
+    title: 'Grammatical range without errors',
+    summary:
+      'Band 7 needs a variety of complex structures and frequent error-free sentences. Build range on purpose, then run a quick accuracy audit before time runs out.',
+    minutes: 16,
+    level: 'Advanced',
+    chapters: [
+      {
+        title: 'Range means variety',
+        points: [
+          'Mix simple, compound and complex sentences. A paragraph of only short sentences, or only long ones, limits your band.',
+          'Useful structures: relative clauses, conditionals, passives, participle clauses and comparatives.',
+          'Range only counts if it is controlled. Frequent error-free sentences are the band 7 signal.',
+        ],
+      },
+      {
+        title: 'Complex sentences that work',
+        points: [
+          'Lead with a subordinate clause: “Although public transport is cheaper, many commuters still drive.”',
+          'Add information with a relative clause: “Cities that invest in cycle lanes see fewer short car trips.”',
+          'One complex structure per sentence is plenty. Stacking three clauses is where errors creep in.',
+        ],
+      },
+      {
+        title: 'The accuracy audit',
+        points: [
+          'Articles: “the government”, “a significant rise”, and no article for general uncountable nouns like “education”.',
+          'Agreement and countability: “the number of cars is…”, “much information”, never “informations” or “advices”.',
+          'Task 1 tenses: past simple for past data, present for no date, and “is projected to” for predictions.',
+        ],
+      },
+      {
+        title: 'Punctuation that carries meaning',
+        points: [
+          'Put a comma after an opening clause or phrase: “In many countries, …”.',
+          'Never join two full sentences with just a comma. Use a full stop, a semicolon or a linking word.',
+          'Leave the final five minutes to reread for missing words, plurals and verb endings.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'task1-overview',
+    title: 'Task 1 Academic: the overview & key features',
+    summary:
+      'Task 1 is a report, not an essay. Write an overview that captures the big picture, select the features that matter and back every claim with data.',
+    minutes: 12,
+    level: 'Foundation',
+    chapters: [
+      {
+        title: 'What Task 1 asks',
+        points: [
+          'At least 150 words in about 20 minutes, summarising the main features and making comparisons where relevant.',
+          'Report only what the visual shows. No opinions, no causes you invented, no recommendations.',
+          'You may get a line graph, bar chart, pie chart, table, map or process diagram — or a combination.',
+        ],
+      },
+      {
+        title: 'The overview is the heart',
+        points: [
+          'In two sentences, describe the biggest picture: the main trends, the extremes or the number of stages.',
+          'An overview usually needs no numbers. “Overall, X rose steadily while Y fell” is enough.',
+          'Without a clear overview, your Task Achievement score is held back however accurate the details are.',
+        ],
+      },
+      {
+        title: 'Selecting key features',
+        points: [
+          'Do not describe every number. Group similar items and highlight the highest, lowest, biggest change and any exception.',
+          'Crossing points are gold: “By 2016, the youngest group had overtaken the oldest.”',
+          'For a process, mention where it starts, where it ends and the stages that change something.',
+        ],
+      },
+      {
+        title: 'A reliable four-paragraph shape',
+        points: [
+          'Paragraph 1: paraphrase what the visual shows, with the place, time period and units.',
+          'Paragraph 2: the overview. Paragraphs 3–4: details for each group of features, with figures.',
+          'Support every claim with data and units, and check that each number matches the visual.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'trends-comparisons',
+    title: 'Describing trends & comparisons',
+    summary:
+      'The vocabulary and grammar of change: verbs and nouns of movement, precise numbers, comparison structures and the right tenses for every time frame.',
+    minutes: 14,
+    level: 'Intermediate',
+    chapters: [
+      {
+        title: 'Verbs and nouns of change',
+        points: [
+          'Up: rise, increase, climb, grow. Down: fall, decline, drop, decrease. Also: fluctuate, peak at, level off.',
+          'Switch between verbs and nouns: “Sales rose sharply” / “There was a sharp rise in sales.”',
+          'Grade the change with adverbs: slightly, gradually, steadily, considerably, dramatically.',
+        ],
+      },
+      {
+        title: 'Numbers with precision',
+        points: [
+          '“From 20% to 35%” is a rise of 15 percentage points, not 15 percent.',
+          'Approximate naturally: just over a third, roughly half, nearly doubled, almost quadrupled.',
+          'Always include units — hours per week, millions of tonnes, percentage of households.',
+        ],
+      },
+      {
+        title: 'Comparison structures',
+        points: [
+          'Comparatives and superlatives: higher than, the lowest, twice as many as, the same as.',
+          'Contrast two items in one sentence: “Car use fell, whereas cycling doubled.”',
+          'Compare at the key moments — start, end, peaks, crossings — not at every single year.',
+        ],
+      },
+      {
+        title: 'Tenses and time phrases',
+        points: [
+          'Past simple for finished periods; past perfect for “by 2016, it had overtaken…”.',
+          'Future data needs prediction language: “is projected to”, “is expected to reach”.',
+          'Vary time phrases: over the period, between 2000 and 2020, by the end of the decade.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'gt-letters',
+    title: 'General Training letters & tone',
+    summary:
+      'For General Training Task 1 you write a letter. Read the relationship, choose the right tone, cover all three bullet points and open and close like a native writer.',
+    minutes: 11,
+    level: 'Foundation',
+    chapters: [
+      {
+        title: 'Know your reader',
+        points: [
+          'Formal: someone you do not know, such as a company or an official. Semi-formal: someone you know a little, like a manager or landlord.',
+          'Informal: a friend or relative. The relationship decides your vocabulary, contractions and greeting.',
+          'Whatever the tone, the letter must stay clear and polite — tone is part of your Task Achievement score.',
+        ],
+      },
+      {
+        title: 'Openings and sign-offs',
+        points: [
+          '“Dear Sir or Madam” closes with “Yours faithfully”; “Dear Ms Okafor” closes with “Yours sincerely”.',
+          'Friends get “Dear Sam” or “Hi Sam”, closed with “Best wishes” or “Take care”.',
+          'Say why you are writing in the first line: “I am writing to…”. No addresses are needed.',
+        ],
+      },
+      {
+        title: 'Cover every bullet point',
+        points: [
+          'Each bullet point usually becomes one paragraph. Missing one limits your Task Achievement band.',
+          'Develop each bullet with a detail or reason; invented details are fine as long as they are believable.',
+          'Aim for 160–190 words: enough to develop all three bullets without rushing.',
+        ],
+      },
+      {
+        title: 'The tone toolkit',
+        points: [
+          'Formal requests: “I would be grateful if you could…”. Informal: “Could you…?” or “It’d be great if…”.',
+          'Formal letters avoid contractions and slang; informal letters can use them naturally.',
+          'Keep the tone consistent from greeting to sign-off. A switch mid-letter is noticeable.',
+        ],
+      },
     ],
   },
 ]
 
-export const practiceSets: PracticeInfo[] = []
+/** Which Writing task a prompt belongs to; used for grouping, stamps and timers. */
+export type WritingTask = 'task1-academic' | 'task1-gt' | 'task2'
+
+export interface PromptMeta {
+  task: WritingTask
+  /** Minimum words. */
+  minWords: number
+  /** Short stamp text, e.g. "LINE GRAPH". */
+  stamp: string
+}
+
+export const practiceSets: PracticeInfo[] = [
+  {
+    id: 't1-volunteering',
+    title: 'Volunteering hours by age group',
+    summary:
+      'A line graph of weekly volunteering hours for three age groups in one city, 2000–2020. Write the overview, find the crossing points and compare.',
+    minutes: 20,
+    questionCount: 10,
+    kinds: ['Task 1 · Academic', 'Line graph'],
+    level: 'Foundation',
+  },
+  {
+    id: 't1-coffee-kits',
+    title: 'From coffee grounds to mushrooms',
+    summary:
+      'A process diagram showing how used coffee grounds become home mushroom-growing kits. Sequence eight stages with the passive voice.',
+    minutes: 20,
+    questionCount: 10,
+    kinds: ['Task 1 · Academic', 'Process diagram'],
+    level: 'Intermediate',
+  },
+  {
+    id: 'gt-festival-letter',
+    title: 'A letter to the festival organiser',
+    summary:
+      'General Training: give feedback on a reading festival you helped at. Cover all three bullet points in the right semi-formal tone.',
+    minutes: 20,
+    questionCount: 10,
+    kinds: ['Task 1 · General Training', 'Letter'],
+    level: 'Foundation',
+  },
+  {
+    id: 't2-cooking-school',
+    title: 'Cooking lessons for every teenager',
+    summary:
+      'An opinion essay: should every secondary school student learn to cook healthy meals? Take a clear position and keep it to the last line.',
+    minutes: 40,
+    questionCount: 10,
+    kinds: ['Task 2', 'Opinion essay'],
+    level: 'Intermediate',
+  },
+  {
+    id: 't2-language-abroad',
+    title: 'Learning a language: abroad or at home?',
+    summary:
+      'A discussion essay: is living abroad the best way to learn a language, or can technology do it at home? Discuss both views and give your own.',
+    minutes: 40,
+    questionCount: 10,
+    kinds: ['Task 2', 'Discussion essay'],
+    level: 'Advanced',
+  },
+  {
+    id: 't2-outdoor-play',
+    title: 'Why children play outdoors less',
+    summary:
+      'A problem–solution essay: why do city children spend less time outdoors, and what can be done? Match every solution to a cause.',
+    minutes: 40,
+    questionCount: 10,
+    kinds: ['Task 2', 'Problem–solution essay'],
+    level: 'Intermediate',
+  },
+]
+
+/** Light per-prompt facts the hub needs (the heavy material is in prompts.ts). */
+export const PROMPT_META: Record<string, PromptMeta> = {
+  't1-volunteering': { task: 'task1-academic', minWords: 150, stamp: 'LINE GRAPH' },
+  't1-coffee-kits': { task: 'task1-academic', minWords: 150, stamp: 'PROCESS' },
+  'gt-festival-letter': { task: 'task1-gt', minWords: 150, stamp: 'LETTER' },
+  't2-cooking-school': { task: 'task2', minWords: 250, stamp: 'OPINION' },
+  't2-language-abroad': { task: 'task2', minWords: 250, stamp: 'DISCUSSION' },
+  't2-outdoor-play': { task: 'task2', minWords: 250, stamp: 'PROBLEM–SOLUTION' },
+}
+
+export const metaFor = (id: string): PromptMeta => PROMPT_META[id] ?? { task: 'task2', minWords: 250, stamp: 'ESSAY' }
+
+/** localStorage key for a prompt's autosaved draft. */
+export const draftKey = (userId: string, practiceId: string) => `wr-draft:${userId}:${practiceId}`
