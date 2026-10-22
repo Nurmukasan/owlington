@@ -111,6 +111,17 @@ functions in that one file with API calls. The rest of the app only talks to `Au
 
 ## Deploying
 
+### GitHub Pages
+
+The `Deploy to GitHub Pages` workflow builds and publishes changes pushed to `main`.
+In repository **Settings → Pages → Build and deployment**, choose **GitHub Actions**
+as the source. Run the workflow manually from **Actions** if it has not deployed yet.
+The published address is `https://nurmukasan.github.io/owlington/`.
+
+Pages builds use `GITHUB_PAGES=true npm run build`, setting the asset base to
+`/owlington/` and using hash routes so refreshing a page works on static hosting.
+Regular local development continues to use normal browser routes.
+
 It's a static single-page app: deploy the `dist/` folder anywhere (Vercel, Netlify, Cloudflare Pages, GitHub
 Pages…). Configure the host to serve `index.html` for unknown paths so routes like `/student` work on refresh.
 

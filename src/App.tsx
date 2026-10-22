@@ -1,5 +1,5 @@
 import { lazy } from 'react'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './auth/AuthProvider'
 import { RequireRole } from './auth/RequireRole'
 import LoginPage from './pages/auth/LoginPage'
@@ -10,6 +10,8 @@ import ProfilePage from './pages/student/ProfilePage'
 import StudentHome from './pages/student/StudentHome'
 import StudentLayout from './pages/student/StudentLayout'
 import TeacherDashboard from './pages/teacher/TeacherDashboard'
+
+const Router = import.meta.env.BASE_URL === '/owlington/' ? HashRouter : BrowserRouter
 
 // Each section is its own world, loaded on demand.
 const ReadingHub = lazy(() => import('./pages/student/reading/ReadingHub'))
@@ -25,7 +27,7 @@ const WritingPractice = lazy(() => import('./pages/student/writing/WritingPracti
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <Router>
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/register" element={<RegisterPage />} />
@@ -68,7 +70,7 @@ export default function App() {
 
           <Route path="*" element={<NotFound />} />
         </Routes>
-      </BrowserRouter>
+      </Router>
     </AuthProvider>
   )
 }
