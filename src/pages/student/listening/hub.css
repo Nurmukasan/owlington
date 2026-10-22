@@ -2207,3 +2207,42 @@
 .ls-hub .ls-section[id]:focus {
   outline: none;
 }
+
+/* ============================================== lectures / practice doors === */
+
+.ls-gateway {
+  --gw-bg: linear-gradient(160deg, rgb(18 34 74 / 0.92), rgb(6 13 38 / 0.94));
+  --gw-ink: var(--ls-ink);
+  --gw-muted: var(--ls-ink-2);
+  --gw-accent: var(--ls-teal);
+  --gw-accent-ink: var(--ls-teal-ink);
+  --gw-border: rgb(111 227 207 / 0.35);
+  --gw-shadow: rgb(0 0 0 / 0.45);
+}
+
+.ls-gateway .gateway__door {
+  backdrop-filter: blur(6px);
+}
+
+.ls-gateway .gateway__door:hover,
+.ls-gateway .gateway__door:focus-visible {
+  box-shadow:
+    9px 9px 0 var(--gw-shadow),
+    0 0 26px rgb(111 227 207 / 0.25);
+}
+
+.ls-gateway .gateway__icon {
+  background: rgb(111 227 207 / 0.14);
+  box-shadow: inset 0 0 0 2px rgb(111 227 207 / 0.5);
+}
+
+.ls-gateway .gateway__title {
+  font-style: italic;
+}
+
+/* ======================================================== lectures page === */
+
+.ls-tapes-page .ls-tapes {
+  width: 100%;
+  padding: 20px 0 0;
+}

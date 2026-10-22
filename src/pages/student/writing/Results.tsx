@@ -200,8 +200,8 @@ export function Results({ info, prompt, attempt, checks, text, analysis, history
                 Next assignment <span className="wr-btn__arrow" aria-hidden="true">→</span>
               </Link>
             )}
-            <Link to="/student/writing" className="wr-btn wr-btn--ghost">
-              Back to the study
+            <Link to="/student/writing/practice" className="wr-btn wr-btn--ghost">
+              All assignments
             </Link>
           </div>
         </div>

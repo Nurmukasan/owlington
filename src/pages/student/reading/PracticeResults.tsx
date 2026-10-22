@@ -217,8 +217,8 @@ export function PracticeResults({ info, attempt, graded, previousBest, firstName
               Next test: {next.title} <span aria-hidden="true">→</span>
             </Link>
           )}
-          <Link to={HUB_PATH} className="rd-verdict__home">
-            Back to the library
+          <Link to={`${HUB_PATH}/practice`} className="rd-verdict__home">
+            Back to all tests
           </Link>
         </div>
         <div className="rd-verdict__lower">

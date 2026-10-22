@@ -47,6 +47,8 @@ function LectureDesk({ lectureId }: { lectureId: string }) {
   const sheetRef = useRef<HTMLDivElement>(null)
   const [chapter, setChapter] = useState(-1)
   const [justSealed, setJustSealed] = useState(false)
+  /** Furthest chapter unlocked so far — later notes open as they're read. */
+  const [reach, setReach] = useState(0)
   const practice = practiceSets.find((p) => p.id === PRACTICE_FOR[lecture.id]) ?? practiceSets[0]
 
   // The first unread letter after this one, wrapping round to the start of the board.
@@ -72,8 +74,8 @@ function LectureDesk({ lectureId }: { lectureId: string }) {
     <div className="wr-world wr-lec">
       <div className="wr-lec__inner">
         <nav className="wr-lec__crumbs" aria-label="Breadcrumb">
-          <Link to="/student/writing" className="wr-backlink">
-            <span aria-hidden="true">←</span> The Inkwell Study
+          <Link to="/student/writing/lectures" className="wr-backlink">
+            <span aria-hidden="true">←</span> All letters
           </Link>
           <span className="wr-lec__count">
             Letter No. {ROMAN[index]} <span aria-hidden="true">of</span>
@@ -105,6 +107,7 @@ function LectureDesk({ lectureId }: { lectureId: string }) {
               className="wr-lp"
               onChapterChange={setChapter}
               onComplete={() => setJustSealed(true)}
+              onReachChange={setReach}
             />
           </div>
 
@@ -134,7 +137,8 @@ function LectureDesk({ lectureId }: { lectureId: string }) {
             <h2 className="wr-margin__head wr-hand">Margin notes</h2>
             <ol className="wr-margin__list">
               {lecture.chapters.map((c, i) => {
-                const state = chapter === i ? 'is-now' : complete || chapter > i ? 'is-done' : ''
+                const locked = !complete && i > reach
+                const state = chapter === i ? 'is-now' : complete || chapter > i ? 'is-done' : locked ? 'is-locked' : ''
                 return (
                   <li key={c.title} className={state}>
                     <button
@@ -142,10 +146,11 @@ function LectureDesk({ lectureId }: { lectureId: string }) {
                       className="wr-margin__item"
                       onClick={() => seek(i)}
                       aria-current={chapter === i ? 'step' : undefined}
-                      aria-label={`Chapter ${i + 1}: ${c.title}. ${c.points.length} points.${chapter === i ? ' Now playing.' : ''}`}
+                      aria-disabled={locked || undefined}
+                      aria-label={`Chapter ${i + 1}: ${c.title}. ${c.points.length} points.${chapter === i ? ' Now playing.' : ''}${locked ? ' Locked until you reach it.' : ''}`}
                     >
                       <span className="wr-margin__num" aria-hidden="true">
-                        {state === 'is-done' ? '✓' : i + 1}
+                        {state === 'is-done' ? '✓' : locked ? '🔒' : i + 1}
                       </span>
                       <span className="wr-margin__title wr-hand">{c.title}</span>
                       <span className="wr-margin__meta">{c.points.length} points</span>
@@ -159,7 +164,8 @@ function LectureDesk({ lectureId }: { lectureId: string }) {
               <p>{lecture.summary}</p>
             </div>
             <p className="wr-margin__tip">
-              Tip: press <kbd>Space</kbd> to play or pause, <kbd>←</kbd> <kbd>→</kbd> to step through points.
+              Tip: press <kbd>Space</kbd> to play or pause, <kbd>←</kbd> <kbd>→</kbd> to step through points. Notes unlock as you
+              read them — you can always go back.
             </p>
           </aside>
         </div>

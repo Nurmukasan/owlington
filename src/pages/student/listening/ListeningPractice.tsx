@@ -285,7 +285,7 @@ function OnAir({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
             Owl FM
           </Link>
           <span aria-hidden="true">/</span>
-          <Link to="/student/listening#ls-dial">The dial</Link>
+          <Link to="/student/listening/practice">Practice</Link>
           <span aria-hidden="true">/</span>
           <span aria-current="page">{formatFreq(station.freq)} FM</span>
         </nav>

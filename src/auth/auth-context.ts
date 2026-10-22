@@ -1,11 +1,13 @@
 import { createContext, useContext } from 'react'
-import type { RegisterInput, Role, User } from './mockAuthApi'
+import type { ProfileChanges, RegisterInput, Role, User } from './mockAuthApi'
 
 export interface AuthContextValue {
   user: User | null
   register: (input: RegisterInput) => Promise<User>
   login: (email: string, password: string) => Promise<User>
   logout: () => void
+  updateProfile: (changes: ProfileChanges) => Promise<User>
+  changePassword: (current: string, next: string) => Promise<void>
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null)

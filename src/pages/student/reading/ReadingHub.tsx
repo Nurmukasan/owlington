@@ -2,10 +2,7 @@ import { useEffect, useState } from 'react'
 import { useLocation, useNavigationType } from 'react-router-dom'
 import { useUser } from '../../../auth/auth-context'
 import { useProgress } from '../../../learn/useProgress'
-import { CardCatalogue } from './CardCatalogue'
-import { LectureStacks } from './LectureStacks'
 import { LibraryHero } from './LibraryHero'
-import { ReadingLog } from './ReadingLog'
 import { useReducedMotion } from './hooks'
 import { LIBRARIAN_TIPS, SECTION, draftsFor, nextStep } from './library'
 import './reading.css'
@@ -45,9 +42,6 @@ export default function ReadingHub() {
     <div className="rd-world rd-hub">
       <LibraryHero firstName={firstName} stats={stats} progress={progress} step={step} />
       <div className="rd-hub__rooms">
-        <LectureStacks stats={stats} progress={progress} />
-        <CardCatalogue stats={stats} drafts={drafts} />
-        <ReadingLog readerName={user.name} stats={stats} progress={progress} step={step} />
         <footer className="rd-hub__footer">
           <p className="rd-hub__footer-eyebrow">TIP OF THE NIGHT</p>
           <blockquote className="rd-hub__footer-quote">“{tipOfTheNight}”</blockquote>

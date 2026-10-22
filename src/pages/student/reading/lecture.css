@@ -857,3 +857,9 @@
     max-width: none;
   }
 }
+
+/* Chapters ahead of what's been read stay locked until reached. */
+.rd-toc__row.is-locked .rd-toc__item {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

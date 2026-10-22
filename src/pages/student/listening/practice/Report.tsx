@@ -423,10 +423,10 @@ export function Report({ info, set, station, result, answers, voices, cast, rate
             </li>
           )}
           <li>
-            <Link to="/student/listening" className="ls-after__card" onClick={() => sfx.click()}>
-              <span className="ls-after__k">BACK TO THE STATION</span>
-              <span className="ls-after__t">Owl FM hub</span>
-              <span className="ls-after__d">See your signal strength, tape rack and every station on the dial.</span>
+            <Link to="/student/listening/practice" className="ls-after__card" onClick={() => sfx.click()}>
+              <span className="ls-after__k">BACK TO THE DIAL</span>
+              <span className="ls-after__t">All practice tests</span>
+              <span className="ls-after__d">Pick the next broadcast: a full test or one question type at a time.</span>
             </Link>
           </li>
         </ul>

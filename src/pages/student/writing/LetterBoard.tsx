@@ -27,9 +27,9 @@ export function LetterBoard({ lectures, progressFor, nextId }: LetterBoardProps)
     <section className="wr-section wr-letters" aria-labelledby="wr-letters-title">
       <div className="wr-section-head">
         <p className="wr-eyebrow">Lectures · {lectures.length} letters</p>
-        <h2 id="wr-letters-title">
+        <h1 id="wr-letters-title">
           Letters from <em>the Professor</em>
-        </h2>
+        </h1>
         <p>
           Each lecture arrives as a sealed letter. Watch it and the letter slides out of its envelope; finish it and it earns
           the owl’s wax seal.{' '}

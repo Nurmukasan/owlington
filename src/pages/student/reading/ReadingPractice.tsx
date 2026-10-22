@@ -358,7 +358,7 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
     <div className={`rd-desk rd-desk--${mode} is-view-${view}`}>
       <div className="rd-deskbar">
         {mode === 'test' ? (
-          <Link to={HUB_PATH} className="rd-deskbar__leave" title="Your answers are kept as a bookmark" onClick={saveNow}>
+          <Link to={`${HUB_PATH}/practice`} className="rd-deskbar__leave" title="Your answers are kept as a bookmark" onClick={saveNow}>
             <span aria-hidden="true">←</span>
             <span className="rd-deskbar__leave-text">Leave</span>
             <span className="visually-hidden"> the reading room (your answers are saved)</span>

@@ -8,12 +8,25 @@
 
 export type Role = 'student' | 'teacher'
 
+/** A pixel owlet in one of the preset feather colours, or an uploaded photo (a small data URL). */
+export type AvatarChoice = { kind: 'owl'; feathers: number } | { kind: 'photo'; src: string }
+
 export interface User {
   id: string
   name: string
   email: string
   role: Role
   createdAt: string
+  avatar?: AvatarChoice
+}
+
+export interface ProfileChanges {
+  name?: string
+  email?: string
+  /** null removes a custom avatar. */
+  avatar?: AvatarChoice | null
+  /** Required when the email changes (the password hash is tied to the email). */
+  password?: string
 }
 
 interface StoredUser extends User {
@@ -45,7 +58,14 @@ function writeUsers(users: StoredUser[]) {
   localStorage.setItem(USERS_KEY, JSON.stringify(users))
 }
 
-const toUser = ({ id, name, email, role, createdAt }: StoredUser): User => ({ id, name, email, role, createdAt })
+const toUser = ({ id, name, email, role, createdAt, avatar }: StoredUser): User => ({
+  id,
+  name,
+  email,
+  role,
+  createdAt,
+  ...(avatar ? { avatar } : {}),
+})
 
 const normalizeEmail = (email: string) => email.trim().toLowerCase()
 
@@ -91,6 +111,61 @@ export async function login(rawEmail: string, password: string): Promise<User> {
   }
   localStorage.setItem(SESSION_KEY, user.id)
   return toUser(user)
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+export const MIN_PASSWORD = 8
+
+export async function updateProfile(id: string, changes: ProfileChanges): Promise<User> {
+  const users = readUsers()
+  const user = users.find((u) => u.id === id)
+  if (!user) throw new AuthError('Your session has expired. Please log in again.')
+  const next: StoredUser = { ...user }
+
+  if (changes.name !== undefined) {
+    const name = changes.name.trim()
+    if (!name) throw new AuthError('Your name can’t be empty.')
+    next.name = name
+  }
+
+  if (changes.email !== undefined) {
+    const email = normalizeEmail(changes.email)
+    if (email !== user.email) {
+      if (!EMAIL_RE.test(email)) throw new AuthError('That doesn’t look like an email address.')
+      if (users.some((u) => u.id !== id && u.email === email)) {
+        throw new AuthError('Another account already uses this email.')
+      }
+      if (!changes.password || user.passwordHash !== (await hashPassword(user.email, changes.password))) {
+        throw new AuthError('Enter your current password to change your email.')
+      }
+      next.email = email
+      next.passwordHash = await hashPassword(email, changes.password)
+    }
+  }
+
+  if (changes.avatar === null) delete next.avatar
+  else if (changes.avatar) next.avatar = changes.avatar
+
+  try {
+    writeUsers(users.map((u) => (u.id === id ? next : u)))
+  } catch {
+    throw new AuthError('Couldn’t save your changes — the photo may be too large. Try a smaller one.')
+  }
+  return toUser(next)
+}
+
+export async function changePassword(id: string, current: string, password: string) {
+  const users = readUsers()
+  const user = users.find((u) => u.id === id)
+  if (!user) throw new AuthError('Your session has expired. Please log in again.')
+  if (user.passwordHash !== (await hashPassword(user.email, current))) {
+    throw new AuthError('Your current password isn’t right.')
+  }
+  if (password.length < MIN_PASSWORD) {
+    throw new AuthError(`Your new password needs at least ${MIN_PASSWORD} characters.`)
+  }
+  const passwordHash = await hashPassword(user.email, password)
+  writeUsers(users.map((u) => (u.id === id ? { ...u, passwordHash } : u)))
 }
 
 export function logout() {

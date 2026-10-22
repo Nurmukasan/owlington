@@ -1,0 +1,5 @@
+.avatar-photo {
+  display: block;
+  object-fit: cover;
+  background: #1c1b4d;
+}

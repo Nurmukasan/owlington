@@ -193,3 +193,21 @@ export const TROPHY_ICON: Sprite = {
   ],
   palette: { o: ICON_INK, y: '#ffb627', h: '#fff1c9' },
 }
+
+export const TEST_ICON: Sprite = {
+  rows: [
+    'oooooooo..',
+    'owwwwwwoo.',
+    'owaawwwowo',
+    'owwwwwwooo',
+    'owaaaawwwo',
+    'owwwwwwwwo',
+    'owaaawwwwo',
+    'owwwwwwwgo',
+    'owaaawwggo',
+    'owwwgwggwo',
+    'owwwwggwwo',
+    'oooooooooo',
+  ],
+  palette: { o: ICON_INK, w: '#fff7e6', a: '#9a9ab5', g: '#2f9e6e' },
+}

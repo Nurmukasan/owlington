@@ -2995,3 +2995,53 @@
     transform: none;
   }
 }
+
+/* ================================================ lectures page === */
+
+.rd-shelfpage .rd-section {
+  position: relative;
+  padding-top: 36px;
+}
+
+.rd-shelfpage__next {
+  position: relative;
+  max-width: 1240px;
+  margin: 8px auto 0;
+  color: var(--rd-text-2);
+  font-size: 16px;
+}
+
+.rd-shelfpage__next a {
+  color: var(--rd-gold);
+  text-underline-offset: 4px;
+}
+
+/* ============================================== lectures / practice doors === */
+
+.rd-gateway {
+  --gw-bg: linear-gradient(180deg, var(--rd-card), var(--rd-parchment));
+  --gw-ink: var(--rd-paper-ink);
+  --gw-muted: var(--rd-paper-ink-2);
+  --gw-accent: var(--rd-wine);
+  --gw-accent-ink: var(--rd-parchment);
+  --gw-border: var(--rd-gold-deep);
+  --gw-shadow: rgb(8 3 4 / 0.55);
+
+  margin: 4px 0 26px;
+}
+
+.rd-gateway .gateway__icon {
+  background: var(--rd-mahogany-2);
+  box-shadow:
+    inset 0 0 0 2px var(--rd-gold-deep),
+    inset 0 -5px 0 rgb(0 0 0 / 0.25);
+}
+
+.rd-gateway .gateway__profile {
+  color: var(--rd-text-2);
+  text-decoration-color: var(--rd-gold);
+}
+
+.rd-gateway .gateway__profile:hover {
+  color: var(--rd-gold);
+}
