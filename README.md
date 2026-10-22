@@ -13,7 +13,8 @@ makes studying feel like an adventure.
 | **Landing page**: night-sky hero, interactive owl mascot (eyes follow your cursor, it blinks and hoots when clicked), skill cards, how-it-works, student/teacher “doors” with a live preview of the student world | ✅ |
 | **Sign up / log in**: choose **Student** or **Teacher** at registration; each role gets its own dashboard | ✅ (temporary, browser-only auth, see below) |
 | **Student dashboard**: full-screen animated pixel night (see below) with a HUD on top: `READING` · `LISTENING` · `WRITING` tabs and the student's avatar on the right | ✅ |
-| Reading / Listening / Writing **video lecture pages** | 🟡 placeholder, to be designed next |
+| **Reading, Listening and Writing sections**: each its own animated world with video lectures, practice tests and progress tracking (see below) | ✅ (lectures play as animated notes until videos are uploaded) |
+| **Progress & motivation**: XP, levels, daily streaks, achievements, score history, celebrations, 8-bit sounds | ✅ (stored in the browser for now) |
 | **Student profile** (opened from the avatar) | 🟡 placeholder |
 | **Teacher dashboard** | 🟡 placeholder |
 
@@ -35,6 +36,48 @@ The student dashboard background is drawn live on a `<canvas>` at a low “virtu
 - fireflies drifting over the meadow
 
 It pauses when it's off-screen and respects `prefers-reduced-motion`.
+
+## The three sections
+
+All three share one goal — **video lectures → practice tests → progress you can see** — but each is its own world
+with its own metaphor, layout and motion.
+
+| | Concept | Lectures | Practice |
+| --- | --- | --- | --- |
+| **Reading** | *The Moonlit Library*: a candlelit library tower with moonbeams and drifting dust | 8 lectures as books on a shelf; a bookmark ribbon shows how far you've read | 4 original passages with 48 questions in the real exam layout (passage beside questions): True/False/Not Given, matching headings, completion tasks with word limits, highlighting, a candle timer, a question navigator, review with "show in passage" and a "second look" retry mode |
+| **Listening** | *Owl FM*: a rooftop radio station under the aurora | 7 lectures as cassette tapes; the tape winds from reel to reel as you watch | 4 broadcasts (Parts 1–4, 39 questions) read aloud by the browser's speech voices with different accents (exam mode: plays once; practice mode: pause and replay), form/note completion, multiple choice and map labelling, with a transcript review that highlights answers and distractors |
+| **Writing** | *The Inkwell Study*: a lantern-lit desk by a rainy window | 8 lectures as sealed letters pinned to a board | 6 prompts — Academic Task 1 (an original chart and a process), a General Training letter and three Task 2 essays — in a writing studio: ink-clock timer, live word goal, linking-word and sentence-rhythm panels, autosave, an automatic 10-point checklist, self-assessment on the four official criteria and annotated model answers |
+
+<p>
+  <img src="docs/screenshots/reading.png" alt="Reading — The Moonlit Library" width="32%" />
+  <img src="docs/screenshots/listening.png" alt="Listening — Owl FM" width="32%" />
+  <img src="docs/screenshots/writing.png" alt="Writing — The Inkwell Study" width="32%" />
+</p>
+
+### Lectures and videos
+
+Lectures live in each section's `content.ts` (`src/pages/student/<section>/content.ts`). Until a teacher records the
+video, the player shows an **animated notes preview**: the pixel owl presents every key point of every chapter like
+slides, with a timeline, chapters, speed control and resume. To attach a real video, set `video` on the lecture:
+
+```ts
+video: { kind: 'file', src: '/videos/skimming.mp4', poster: '/videos/skimming.jpg' }
+// or
+video: { kind: 'youtube', id: 'VIDEO_ID' }
+```
+
+Progress tracking keeps working the same way for real videos.
+
+### Progress & motivation
+
+[`src/learn/`](src/learn) holds the shared learning layer every section uses:
+
+- **XP and levels**: finishing a lecture gives 50 XP, and a practice test gives up to 80 XP depending on accuracy.
+  Levels run from *Owlet* to *Legend of the Night*.
+- **Daily streaks** (the flame in the top bar) and **achievements** (*First Light*, *Night Owl*, *Bookworm*,
+  *Golden Ears*, *Inkslinger*…) that pop up with confetti and a chiptune.
+- **Score history and best scores** per practice test, and **lecture progress** with resume.
+- A **sound toggle** in the top bar for the 8-bit effects.
 
 ## Tech stack
 
@@ -72,6 +115,8 @@ src/
 ├── App.tsx                  # routes
 ├── index.css                # design tokens, buttons, pixel panels
 ├── auth/                    # AuthProvider, useAuth(), <RequireRole>, temporary mock API
+├── learn/                   # shared learning layer: progress store + useProgress(), lecture player,
+│                            #   progress widgets, achievement toasts, confetti, sound effects, ScrollLink
 ├── components/
 │   ├── NightScene.tsx       # React wrapper around the canvas engine
 │   ├── OwlMascot.tsx        # the vector owl from the landing page
@@ -85,7 +130,10 @@ src/
 └── pages/
     ├── landing/             # marketing page
     ├── auth/                # register (student/teacher) + login
-    ├── student/             # layout + HUD, owl dialog, section pages, profile
+    ├── student/             # layout + HUD, owl dialog, profile
+    │   ├── reading/         # The Moonlit Library (content.ts, practice-data.ts, hub, lecture, practice)
+    │   ├── listening/       # Owl FM (content.ts, practice-data.ts, speech.ts, hub, lecture, practice)
+    │   └── writing/         # The Inkwell Study (content.ts, prompts.ts, analysis.ts, hub, lecture, studio)
     ├── teacher/             # teacher dashboard (placeholder)
     └── NotFound.tsx
 ```
@@ -98,7 +146,9 @@ src/
 | `/register?role=student\|teacher` | everyone | Sign up |
 | `/login` | everyone | Log in |
 | `/student` | students | Dashboard (pixel night) |
-| `/student/reading`, `/listening`, `/writing` | students | Video lectures (placeholder) |
+| `/student/reading`, `/listening`, `/writing` | students | Section hub: lectures, practice tests, progress |
+| `/student/<section>/lecture/:lectureId` | students | Lecture player |
+| `/student/<section>/practice/:practiceId` | students | Practice test |
 | `/student/profile` | students | Profile (placeholder) |
 | `/teacher` | teachers | Teacher dashboard (placeholder) |
 
@@ -108,6 +158,9 @@ There is **no backend yet**. Accounts are stored in the browser's `localStorage`
 [`src/auth/mockAuthApi.ts`](src/auth/mockAuthApi.ts) so the product can be clicked through end-to-end. This is
 **not secure** and every browser has its own separate set of accounts. When the backend exists, replace the
 functions in that one file with API calls. The rest of the app only talks to `AuthProvider`.
+
+Learning progress works the same way: [`src/learn/progress.ts`](src/learn/progress.ts) keeps it in `localStorage`
+per student, behind the `useProgress()` hook, so it can move to the backend later without touching the pages.
 
 ## Deploying
 
@@ -127,8 +180,9 @@ Pages…). Configure the host to serve `index.html` for unknown paths so routes 
 
 ## Roadmap
 
-- [ ] Design the video lecture pages for Reading, Listening and Writing, and add lectures
-- [ ] Design the student profile page (progress, target band, saved lectures, settings)
-- [ ] Design the teacher dashboard (upload lectures, organise courses, see students)
-- [ ] Real backend: accounts, sessions, video storage
-- [ ] Practice tasks and writing feedback
+- [x] Reading, Listening and Writing sections with lectures, practice tests and progress tracking
+- [ ] Record and upload the real video lectures
+- [ ] Design the student profile page (progress overview, target band, achievements, settings)
+- [ ] Design the teacher dashboard (upload lectures, organise courses, see students, review essays)
+- [ ] Real backend: accounts, sessions, progress, video storage
+- [ ] Teacher feedback on writing; recorded audio for Listening (today it uses the browser's voices)

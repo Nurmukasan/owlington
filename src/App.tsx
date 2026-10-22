@@ -1,5 +1,5 @@
-import { lazy } from 'react'
-import { BrowserRouter, HashRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { lazy, useEffect } from 'react'
+import { BrowserRouter, HashRouter, Navigate, Route, Routes, useLocation, useNavigationType } from 'react-router-dom'
 import { AuthProvider } from './auth/AuthProvider'
 import { RequireRole } from './auth/RequireRole'
 import LoginPage from './pages/auth/LoginPage'
@@ -12,6 +12,16 @@ import StudentLayout from './pages/student/StudentLayout'
 import TeacherDashboard from './pages/teacher/TeacherDashboard'
 
 const Router = import.meta.env.BASE_URL === '/owlington/' ? HashRouter : BrowserRouter
+
+/** New pages start at the top; back/forward and "#section" links keep their own scroll. */
+function ScrollToTop() {
+  const { pathname, hash } = useLocation()
+  const navigationType = useNavigationType()
+  useEffect(() => {
+    if (navigationType !== 'POP' && !hash) window.scrollTo(0, 0)
+  }, [pathname, hash, navigationType])
+  return null
+}
 
 // Each section is its own world, loaded on demand.
 const ReadingHub = lazy(() => import('./pages/student/reading/ReadingHub'))
@@ -28,6 +38,7 @@ export default function App() {
   return (
     <AuthProvider>
       <Router>
+        <ScrollToTop />
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/register" element={<RegisterPage />} />
