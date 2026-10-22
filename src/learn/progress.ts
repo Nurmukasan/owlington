@@ -59,7 +59,7 @@ export interface Attempt extends AttemptInput {
 }
 
 export interface ProgressState {
-  version: 2
+  version: 3
   xp: number
   lectures: Record<string, LectureProgress>
   attempts: Attempt[]
@@ -69,7 +69,7 @@ export interface ProgressState {
 }
 
 const emptyState = (): ProgressState => ({
-  version: 2,
+  version: 3,
   xp: 0,
   lectures: {},
   attempts: [],
@@ -80,7 +80,7 @@ const emptyState = (): ProgressState => ({
 // --- rules ----------------------------------------------------------------------
 
 export const XP_RULES = {
-  lectureComplete: 50,
+  lectureComplete: 5,
   achievement: 25,
 }
 
@@ -222,40 +222,53 @@ export function onProgressEvent(listener: EventListener) {
 const MAX_ATTEMPTS = 300
 const MAX_DAYS = 400
 
+type Stored = Omit<Partial<ProgressState>, 'version'> & { version?: number }
+
+/** Moves XP on the total and on the day `iso` falls on; days never drop below zero. */
+function shiftXp(state: Omit<ProgressState, 'version'>, iso: string, delta: number) {
+  state.xp += delta
+  const day = dayKey(new Date(iso))
+  if (day in state.dailyXp) state.dailyXp[day] = Math.max(0, state.dailyXp[day] + delta)
+}
+
 /**
  * Version 1 → 2: practice XP became "1 XP per correct answer" (Writing: the band), and
  * the first, placeholder set of achievements was retired along with its XP bonus.
  * Each day's XP is corrected too, so streaks and tonight's goal stay consistent.
  */
-function migrateFromV1(old: Omit<Partial<ProgressState>, 'version'>): ProgressState {
-  const base = { ...emptyState(), ...old }
-  let xp = base.xp
-  const dailyXp = { ...base.dailyXp }
-  const shift = (iso: string, delta: number) => {
-    const day = dayKey(new Date(iso))
-    if (day in dailyXp) dailyXp[day] = Math.max(0, dailyXp[day] + delta)
-  }
-  const attempts = base.attempts.map((a) => {
+function migrateFromV1(old: Stored): Stored {
+  const state = { ...emptyState(), ...old, dailyXp: { ...old.dailyXp } }
+  state.attempts = state.attempts.map((a) => {
     const fresh = attemptXp(a)
-    xp += fresh - a.xp
-    shift(a.at, fresh - a.xp)
+    shiftXp(state, a.at, fresh - a.xp)
     return { ...a, xp: fresh }
   })
-  for (const at of Object.values(base.achievements)) {
-    xp -= XP_RULES.achievement
-    shift(at, -XP_RULES.achievement)
+  for (const at of Object.values(state.achievements)) shiftXp(state, at, -XP_RULES.achievement)
+  return { ...state, achievements: {}, version: 2 }
+}
+
+/** Version 2 → 3: a finished lecture is worth 5 XP instead of 50. */
+function migrateFromV2(old: Stored): Stored {
+  const state = { ...emptyState(), ...old, dailyXp: { ...old.dailyXp } }
+  for (const lecture of Object.values(state.lectures)) {
+    if (lecture.completedAt) shiftXp(state, lecture.completedAt, XP_RULES.lectureComplete - 50)
   }
-  return { version: 2, xp: Math.max(0, xp), lectures: base.lectures, attempts, dailyXp, achievements: {} }
+  return { ...state, version: 3 }
 }
 
 function load(key: string): { state: ProgressState; migrated: boolean } {
   try {
     const raw = localStorage.getItem(key)
     if (!raw) return { state: emptyState(), migrated: false }
-    const parsed = JSON.parse(raw) as Omit<Partial<ProgressState>, 'version'> & { version?: number }
-    if (parsed.version === 1) return { state: migrateFromV1(parsed), migrated: true }
-    if (parsed.version !== 2) return { state: emptyState(), migrated: false }
-    return { state: { ...emptyState(), ...parsed, version: 2 }, migrated: false }
+    let stored = JSON.parse(raw) as Stored
+    const from = stored.version
+    if (stored.version === 1) stored = migrateFromV1(stored)
+    if (stored.version === 2) stored = migrateFromV2(stored)
+    if (stored.version !== 3) return { state: emptyState(), migrated: false }
+    const state: ProgressState = { ...emptyState(), ...stored, version: 3 }
+    // dailyGoal was a setting until version 2; the goal is fixed now.
+    delete (state as Partial<{ dailyGoal: number }>).dailyGoal
+    return { state: { ...state, xp: Math.max(0, state.xp) }, migrated: from !== 3 }
   } catch {
     return { state: emptyState(), migrated: false }
   }
@@ -282,7 +295,7 @@ export class ProgressStore {
 
   getSnapshot = () => this.state
 
-  /** Save lecture progress. Crossing 95% completes the lecture once (+50 XP). */
+  /** Save lecture progress. Crossing 95% completes the lecture once (+XP_RULES.lectureComplete). */
   updateLecture = (section: SectionId, lectureId: string, update: { watched: number; position: number }) => {
     const key = lectureKey(section, lectureId)
     const prev = this.state.lectures[key]

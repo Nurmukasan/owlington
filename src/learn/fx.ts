@@ -51,7 +51,7 @@ export function pixelConfetti(from?: Element | Point, options: { colors?: string
   window.setTimeout(() => layer.remove(), 1700)
 }
 
-/** Text that floats up and fades, e.g. "+50 XP". */
+/** Text that floats up and fades, e.g. "+5 XP". */
 export function floatText(text: string, from?: Element | Point, color = '#ffb627') {
   if (reducedMotion()) return
   const { x, y } = centerOf(from)

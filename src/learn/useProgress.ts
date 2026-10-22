@@ -4,6 +4,7 @@ import { CATALOG } from './catalog'
 import {
   ACHIEVEMENTS,
   DAILY_GOAL,
+  XP_RULES,
   dayKey,
   getProgressStore,
   lectureKey,
@@ -74,7 +75,7 @@ function sectionStats(state: ProgressState, section: SectionId): SectionStats {
     attempts,
     best,
     accuracy,
-    xp: completed * 50 + attempts.reduce((s, a) => s + a.xp, 0),
+    xp: completed * XP_RULES.lectureComplete + attempts.reduce((s, a) => s + a.xp, 0),
     lastActivity: times[times.length - 1],
   }
 }

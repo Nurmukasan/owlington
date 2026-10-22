@@ -93,7 +93,8 @@ tags: ['Yes / No / Not Given'] // question types for the filter chips (default: 
 
 - **Practice XP**: 1 XP for every correct answer in Reading and Listening (a 10-question focused test is worth up
   to 10 XP, a 40-question full test up to 40), and the band for Writing (band 6 → 6 XP; half bands round up).
-  Finishing a lecture gives 50 XP. The rules live in `attemptXp()` in [`src/learn/progress.ts`](src/learn/progress.ts).
+  Finishing a lecture gives 5 XP. The rules live in `XP_RULES` and `attemptXp()` in
+  [`src/learn/progress.ts`](src/learn/progress.ts).
 - **Ranks** (shown as `RANK n` in the top bar). The current names and XP thresholds are placeholders until the final
   list is ready: edit `RANKS` in `progress.ts`.
 - **Tonight's goal** is 30 XP a day; anything beyond it is a bonus. **Daily streaks** show as the flame in the top bar.
@@ -238,4 +239,5 @@ Pages…). Configure the host to serve `index.html` for unknown paths so routes 
 - [ ] Record and upload the real video lectures
 - [ ] Design the teacher dashboard (upload lectures, organise courses, see students, review essays)
 - [ ] Real backend: accounts, sessions, progress, video storage
+- [ ] Writing bands checked by the DeepSeek API instead of the student's self-assessment
 - [ ] Teacher feedback on writing; recorded audio for Listening (today it uses the browser's voices)
