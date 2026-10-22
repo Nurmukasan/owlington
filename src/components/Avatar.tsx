@@ -5,7 +5,7 @@ import { PixelSprite } from './PixelSprite'
 import './Avatar.css'
 
 /** The student's avatar: an uploaded photo, or an owlet in their feather colour. */
-export function Avatar({ user, scale = 2 }: { user: User; scale?: number }) {
+export function Avatar({ user, scale = 2 }: { user: Pick<User, 'id' | 'avatar'>; scale?: number }) {
   if (user.avatar?.kind === 'photo') {
     const size = 18 * scale
     return <img className="avatar-photo" src={user.avatar.src} alt="" width={size} height={size} />

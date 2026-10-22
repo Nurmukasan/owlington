@@ -10,7 +10,7 @@ import {
   TROPHY_ICON,
   type Sprite,
 } from '../../scene/sprites'
-import type { AchievementIcon, LevelInfo, StreakInfo } from '../progress'
+import type { AchievementIcon, RankInfo, StreakInfo } from '../progress'
 
 // ------------------------------------------------------------------ ring ---
 
@@ -88,31 +88,32 @@ export function ProgressRing({
   )
 }
 
-// --------------------------------------------------------------- xp bar ---
+// ------------------------------------------------------------- rank bar ---
 
-/** Level badge + title + XP bar towards the next level. */
-export function XpBar({ level, xp, className = '' }: { level: LevelInfo; xp: number; className?: string }) {
+/** Rank badge + title + XP bar towards the next rank. */
+export function RankBar({ rank, xp, className = '' }: { rank: RankInfo; xp: number; className?: string }) {
   return (
     <div className={`xp-bar ${className}`}>
       <span className="xp-bar__level" aria-hidden="true">
-        LV {level.level}
+        <small>RANK</small>
+        {rank.rank}
       </span>
       <div className="xp-bar__body">
         <p className="xp-bar__title">
-          {level.title}
+          {rank.title}
           <span>
-            {xp - level.floor} / {level.next - level.floor} XP
+            {xp - rank.floor} / {rank.next - rank.floor} XP
           </span>
         </p>
         <div
           className="xp-bar__track"
           role="progressbar"
-          aria-label={`Level ${level.level}, ${level.title}: ${xp - level.floor} of ${level.next - level.floor} XP to ${level.nextTitle}`}
+          aria-label={`Rank ${rank.rank}, ${rank.title}: ${xp - rank.floor} of ${rank.next - rank.floor} XP to ${rank.nextTitle}`}
           aria-valuemin={0}
           aria-valuemax={100}
-          aria-valuenow={Math.round(level.progress * 100)}
+          aria-valuenow={Math.round(rank.progress * 100)}
         >
-          <div className="xp-bar__fill" style={{ width: `${level.progress * 100}%` }} />
+          <div className="xp-bar__fill" style={{ width: `${rank.progress * 100}%` }} />
         </div>
       </div>
     </div>

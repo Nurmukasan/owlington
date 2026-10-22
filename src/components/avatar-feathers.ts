@@ -13,7 +13,7 @@ export const FEATHERS = [
 ]
 
 /** The feather index for a user: their pick, or a stable default from their id. */
-export function featherIndexFor(user: User) {
+export function featherIndexFor(user: Pick<User, 'id' | 'avatar'>) {
   if (user.avatar?.kind === 'owl') return user.avatar.feathers % FEATHERS.length
   let h = 0
   for (const ch of user.id) h = (h * 31 + ch.charCodeAt(0)) >>> 0

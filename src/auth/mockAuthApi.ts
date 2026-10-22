@@ -168,6 +168,16 @@ export async function changePassword(id: string, current: string, password: stri
   writeUsers(users.map((u) => (u.id === id ? { ...u, passwordHash } : u)))
 }
 
+/** What other students may see of a student: for the weekly leaderboard. */
+export type PublicProfile = Pick<User, 'id' | 'name' | 'avatar'>
+
+/** Every student account (on this device, until the backend exists). */
+export function listStudents(): PublicProfile[] {
+  return readUsers()
+    .filter((u) => u.role === 'student')
+    .map(({ id, name, avatar }) => ({ id, name, ...(avatar ? { avatar } : {}) }))
+}
+
 export function logout() {
   localStorage.removeItem(SESSION_KEY)
 }

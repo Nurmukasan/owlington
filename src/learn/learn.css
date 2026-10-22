@@ -483,13 +483,22 @@
   background: var(--amber);
   color: var(--ink);
   font-family: var(--font-pixel);
-  font-size: 11px;
+  font-size: 13px;
+  line-height: 1;
+  text-align: center;
   box-shadow:
     0 -4px 0 0 var(--amber),
     0 4px 0 0 var(--amber),
     -4px 0 0 0 var(--amber),
     4px 0 0 0 var(--amber),
     inset 0 -4px 0 var(--amber-deep);
+}
+
+.xp-bar__level small {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 7px;
+  letter-spacing: 0.5px;
 }
 
 .xp-bar__body {

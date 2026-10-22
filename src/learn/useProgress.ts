@@ -3,10 +3,11 @@ import { useUser } from '../auth/auth-context'
 import { CATALOG } from './catalog'
 import {
   ACHIEVEMENTS,
+  DAILY_GOAL,
   dayKey,
   getProgressStore,
   lectureKey,
-  levelFor,
+  rankFor,
   streakFor,
   type Attempt,
   type ProgressState,
@@ -84,15 +85,14 @@ function createView(state: ProgressState, store: ProgressStore) {
   return {
     state,
     xp: state.xp,
-    level: levelFor(state.xp),
+    rank: rankFor(state.xp),
     streak: streakFor(state.dailyXp, today),
-    today: { xp: todayXp, goal: state.dailyGoal, met: todayXp >= state.dailyGoal },
+    today: { xp: todayXp, goal: DAILY_GOAL, met: todayXp >= DAILY_GOAL },
     achievements: ACHIEVEMENTS.map((a) => ({ ...a, unlockedAt: state.achievements[a.id] })),
     lecture: (section: SectionId, lectureId: string) => state.lectures[lectureKey(section, lectureId)],
     section: (section: SectionId) => sectionStats(state, section),
     updateLecture: store.updateLecture,
     recordAttempt: store.recordAttempt,
-    setDailyGoal: store.setDailyGoal,
   }
 }
 

@@ -1,12 +1,11 @@
 /**
- * Learning progress: XP, levels, daily streaks, lecture progress, practice
+ * Learning progress: XP, ranks, daily streaks, lecture progress, practice
  * attempts and achievements.
  *
  * Like the auth, this is stored per user in localStorage until the backend
  * exists. Components use it through `useProgress()`; the store emits
- * `ProgressEvent`s (XP gained, level-up, achievement) for toasts and effects.
+ * `ProgressEvent`s (XP gained, rank-up, achievement) for toasts and effects.
  */
-import { CATALOG } from './catalog'
 import type { SectionId } from './types'
 
 // --- state ----------------------------------------------------------------------
@@ -60,47 +59,48 @@ export interface Attempt extends AttemptInput {
 }
 
 export interface ProgressState {
-  version: 1
+  version: 2
   xp: number
   lectures: Record<string, LectureProgress>
   attempts: Attempt[]
   /** XP earned per local day (YYYY-MM-DD). A key with 0 still counts as an active day. */
   dailyXp: Record<string, number>
   achievements: Record<string, string>
-  dailyGoal: number
 }
 
 const emptyState = (): ProgressState => ({
-  version: 1,
+  version: 2,
   xp: 0,
   lectures: {},
   attempts: [],
   dailyXp: {},
   achievements: {},
-  dailyGoal: 60,
 })
 
 // --- rules ----------------------------------------------------------------------
 
 export const XP_RULES = {
   lectureComplete: 50,
-  attemptAccuracy: 60,
-  attemptPass: 20,
-  attemptTry: 10,
   achievement: 25,
 }
 
-export const DAILY_GOALS = [30, 60, 100, 150]
+/** XP a night to keep "tonight's goal". Anything beyond it is a bonus. */
+export const DAILY_GOAL = 30
 
 export const lectureKey = (section: SectionId, lectureId: string) => `${section}:${lectureId}`
 
-/** XP for one practice attempt: up to 60 for accuracy, plus 20 for passing (≥ 50%) or 10 for trying. */
-export function attemptXp(score: number, total: number) {
-  const accuracy = total > 0 ? Math.max(0, Math.min(1, score / total)) : 0
-  return Math.round(accuracy * XP_RULES.attemptAccuracy) + (accuracy >= 0.5 ? XP_RULES.attemptPass : XP_RULES.attemptTry)
+/**
+ * XP for one practice attempt. Reading and Listening: 1 XP per correct answer, so a
+ * 10-question focused test is worth up to 10 XP and a 40-question full test up to 40.
+ * Writing: the band, so a band 6 essay earns 6 XP (half bands round up: 6.5 → 7).
+ */
+export function attemptXp({ section, score, band }: { section: SectionId; score: number; band?: number }) {
+  if (section === 'writing') return Math.max(0, Math.round(band ?? 0))
+  return Math.max(0, Math.round(score))
 }
 
-const LEVELS = [
+// Placeholder ranks until the final list (names and XP for each) is decided.
+const RANKS = [
   { title: 'Owlet', xp: 0 },
   { title: 'Fledgling', xp: 150 },
   { title: 'Night Flyer', xp: 400 },
@@ -111,33 +111,33 @@ const LEVELS = [
   { title: 'Owl Sage', xp: 4800 },
   { title: 'Legend of the Night', xp: 7000 },
 ]
-const LEVEL_STEP_AFTER_LAST = 2500
+const RANK_STEP_AFTER_LAST = 2500
 
-export interface LevelInfo {
-  level: number
+export interface RankInfo {
+  rank: number
   title: string
-  /** XP at which this level started. */
+  /** XP at which this rank started. */
   floor: number
-  /** XP needed for the next level. */
+  /** XP needed for the next rank. */
   next: number
-  /** 0..1 progress towards the next level. */
+  /** 0..1 progress towards the next rank. */
   progress: number
   nextTitle: string
 }
 
-export function levelFor(xp: number): LevelInfo {
+export function rankFor(xp: number): RankInfo {
   let i = 0
-  while (i + 1 < LEVELS.length && xp >= LEVELS[i + 1].xp) i++
-  if (i < LEVELS.length - 1) {
-    const floor = LEVELS[i].xp
-    const next = LEVELS[i + 1].xp
-    return { level: i + 1, title: LEVELS[i].title, floor, next, progress: (xp - floor) / (next - floor), nextTitle: LEVELS[i + 1].title }
+  while (i + 1 < RANKS.length && xp >= RANKS[i + 1].xp) i++
+  if (i < RANKS.length - 1) {
+    const floor = RANKS[i].xp
+    const next = RANKS[i + 1].xp
+    return { rank: i + 1, title: RANKS[i].title, floor, next, progress: (xp - floor) / (next - floor), nextTitle: RANKS[i + 1].title }
   }
-  const last = LEVELS[LEVELS.length - 1]
-  const extra = Math.floor((xp - last.xp) / LEVEL_STEP_AFTER_LAST)
-  const floor = last.xp + extra * LEVEL_STEP_AFTER_LAST
-  const next = floor + LEVEL_STEP_AFTER_LAST
-  return { level: LEVELS.length + extra, title: last.title, floor, next, progress: (xp - floor) / (next - floor), nextTitle: last.title }
+  const last = RANKS[RANKS.length - 1]
+  const extra = Math.floor((xp - last.xp) / RANK_STEP_AFTER_LAST)
+  const floor = last.xp + extra * RANK_STEP_AFTER_LAST
+  const next = floor + RANK_STEP_AFTER_LAST
+  return { rank: RANKS.length + extra, title: last.title, floor, next, progress: (xp - floor) / (next - floor), nextTitle: last.title }
 }
 
 // --- dates & streaks ------------------------------------------------------------------
@@ -193,105 +193,23 @@ export interface Achievement {
   check: (state: ProgressState) => boolean
 }
 
-const completedLectures = (state: ProgressState, section?: SectionId) =>
-  Object.entries(state.lectures).filter(([key, p]) => p.completedAt && (!section || key.startsWith(`${section}:`)))
-
-const finishedAllLectures = (state: ProgressState, section: SectionId) => {
-  const ids = CATALOG[section].lectures.map((l) => l.id)
-  return ids.length > 0 && ids.every((id) => state.lectures[lectureKey(section, id)]?.completedAt)
-}
-
-export const ACHIEVEMENTS: Achievement[] = [
-  {
-    id: 'first-light',
-    title: 'First Light',
-    description: 'Finish your first lecture.',
-    icon: 'star',
-    check: (s) => completedLectures(s).length > 0,
-  },
-  {
-    id: 'test-flight',
-    title: 'Test Flight',
-    description: 'Complete your first practice test.',
-    icon: 'star',
-    check: (s) => s.attempts.length > 0,
-  },
-  {
-    id: 'sharp-eyes',
-    title: 'Sharp Eyes',
-    description: 'Score 100% on a practice test.',
-    icon: 'trophy',
-    check: (s) => s.attempts.some((a) => a.total > 0 && a.score >= a.total),
-  },
-  {
-    id: 'night-owl',
-    title: 'Night Owl',
-    description: 'Study three days in a row.',
-    icon: 'flame',
-    check: (s) => streakFor(s.dailyXp).days >= 3,
-  },
-  {
-    id: 'creature-of-habit',
-    title: 'Creature of Habit',
-    description: 'Keep a seven-day streak.',
-    icon: 'flame',
-    check: (s) => streakFor(s.dailyXp).days >= 7,
-  },
-  {
-    id: 'triple-threat',
-    title: 'Triple Threat',
-    description: 'Practise Reading, Listening and Writing.',
-    icon: 'trophy',
-    check: (s) => new Set(s.attempts.map((a) => a.section)).size === 3,
-  },
-  {
-    id: 'dedicated',
-    title: 'Dedicated',
-    description: 'Complete ten practice tests.',
-    icon: 'trophy',
-    check: (s) => s.attempts.length >= 10,
-  },
-  {
-    id: 'bookworm',
-    title: 'Bookworm',
-    description: 'Finish every Reading lecture.',
-    icon: 'book',
-    check: (s) => finishedAllLectures(s, 'reading'),
-  },
-  {
-    id: 'golden-ears',
-    title: 'Golden Ears',
-    description: 'Finish every Listening lecture.',
-    icon: 'headphones',
-    check: (s) => finishedAllLectures(s, 'listening'),
-  },
-  {
-    id: 'inkslinger',
-    title: 'Inkslinger',
-    description: 'Finish every Writing lecture.',
-    icon: 'pencil',
-    check: (s) => finishedAllLectures(s, 'writing'),
-  },
-  {
-    id: 'thousand-feathers',
-    title: 'Thousand Feathers',
-    description: 'Earn 1,000 XP.',
-    icon: 'owl',
-    check: (s) => s.xp >= 1000,
-  },
-]
+/**
+ * The achievements students can unlock. Empty until the final list is decided; the
+ * machinery (check after every XP change → unlock once → toast → +25 XP) is ready.
+ */
+export const ACHIEVEMENTS: Achievement[] = []
 
 // --- events ----------------------------------------------------------------------
 
 export type ProgressEvent =
   | { type: 'xp'; amount: number; reason: string }
-  | { type: 'level-up'; level: number; title: string }
+  | { type: 'rank-up'; rank: number; title: string }
   | { type: 'achievement'; achievement: Achievement }
 
 type EventListener = (event: ProgressEvent) => void
 const eventListeners = new Set<EventListener>()
 
-/** Subscribe to XP, level-up and achievement events. Returns an unsubscribe function. */
+/** Subscribe to XP, rank-up and achievement events. Returns an unsubscribe function. */
 export function onProgressEvent(listener: EventListener) {
   eventListeners.add(listener)
   return () => {
@@ -304,15 +222,42 @@ export function onProgressEvent(listener: EventListener) {
 const MAX_ATTEMPTS = 300
 const MAX_DAYS = 400
 
-function load(key: string): ProgressState {
+/**
+ * Version 1 → 2: practice XP became "1 XP per correct answer" (Writing: the band), and
+ * the first, placeholder set of achievements was retired along with its XP bonus.
+ * Each day's XP is corrected too, so streaks and tonight's goal stay consistent.
+ */
+function migrateFromV1(old: Omit<Partial<ProgressState>, 'version'>): ProgressState {
+  const base = { ...emptyState(), ...old }
+  let xp = base.xp
+  const dailyXp = { ...base.dailyXp }
+  const shift = (iso: string, delta: number) => {
+    const day = dayKey(new Date(iso))
+    if (day in dailyXp) dailyXp[day] = Math.max(0, dailyXp[day] + delta)
+  }
+  const attempts = base.attempts.map((a) => {
+    const fresh = attemptXp(a)
+    xp += fresh - a.xp
+    shift(a.at, fresh - a.xp)
+    return { ...a, xp: fresh }
+  })
+  for (const at of Object.values(base.achievements)) {
+    xp -= XP_RULES.achievement
+    shift(at, -XP_RULES.achievement)
+  }
+  return { version: 2, xp: Math.max(0, xp), lectures: base.lectures, attempts, dailyXp, achievements: {} }
+}
+
+function load(key: string): { state: ProgressState; migrated: boolean } {
   try {
     const raw = localStorage.getItem(key)
-    if (!raw) return emptyState()
-    const parsed = JSON.parse(raw) as Partial<ProgressState>
-    if (parsed.version !== 1) return emptyState()
-    return { ...emptyState(), ...parsed }
+    if (!raw) return { state: emptyState(), migrated: false }
+    const parsed = JSON.parse(raw) as Omit<Partial<ProgressState>, 'version'> & { version?: number }
+    if (parsed.version === 1) return { state: migrateFromV1(parsed), migrated: true }
+    if (parsed.version !== 2) return { state: emptyState(), migrated: false }
+    return { state: { ...emptyState(), ...parsed, version: 2 }, migrated: false }
   } catch {
-    return emptyState()
+    return { state: emptyState(), migrated: false }
   }
 }
 
@@ -323,7 +268,9 @@ export class ProgressStore {
 
   constructor(userId: string) {
     this.key = `owlington:progress:${userId}`
-    this.state = load(this.key)
+    const { state, migrated } = load(this.key)
+    this.state = state
+    if (migrated) this.commit(state, [])
   }
 
   subscribe = (listener: () => void) => {
@@ -357,7 +304,7 @@ export class ProgressStore {
 
   /** Record a finished practice attempt; returns it with the XP it earned. */
   recordAttempt = (section: SectionId, input: AttemptInput): Attempt => {
-    const attempt: Attempt = { ...input, section, at: new Date().toISOString(), xp: attemptXp(input.score, input.total) }
+    const attempt: Attempt = { ...input, section, at: new Date().toISOString(), xp: attemptXp({ ...input, section }) }
     const events: ProgressEvent[] = []
     let state: ProgressState = { ...this.state, attempts: [...this.state.attempts, attempt].slice(-MAX_ATTEMPTS) }
     state = this.addXp(state, attempt.xp, 'Practice complete', events)
@@ -365,13 +312,9 @@ export class ProgressStore {
     return attempt
   }
 
-  setDailyGoal = (goal: number) => {
-    this.commit({ ...this.state, dailyGoal: goal }, [])
-  }
-
   private addXp(state: ProgressState, amount: number, reason: string, events: ProgressEvent[]): ProgressState {
     const today = dayKey()
-    const before = levelFor(state.xp).level
+    const before = rankFor(state.xp).rank
     let next: ProgressState = {
       ...state,
       xp: state.xp + amount,
@@ -392,8 +335,8 @@ export class ProgressStore {
       events.push({ type: 'achievement', achievement: fresh })
     }
 
-    const after = levelFor(next.xp)
-    if (after.level > before) events.push({ type: 'level-up', level: after.level, title: after.title })
+    const after = rankFor(next.xp)
+    if (after.rank > before) events.push({ type: 'rank-up', rank: after.rank, title: after.title })
     return next
   }
 

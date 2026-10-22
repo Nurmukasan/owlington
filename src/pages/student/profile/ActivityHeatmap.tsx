@@ -4,8 +4,8 @@ import { dayKey } from '../../../learn/progress'
 const WEEKS = 12
 const DAY_NAMES = ['Mon', '', 'Wed', '', 'Fri', '', '']
 
-/** 0 = no activity … 4 = a big night. */
-const levelFor = (xp: number | undefined) => (xp === undefined ? 0 : xp < 20 ? 1 : xp < 50 ? 2 : xp < 100 ? 3 : 4)
+/** 0 = no activity … 4 = a big night; 3 and up means tonight's goal (30 XP) was met. */
+const levelFor = (xp: number | undefined) => (xp === undefined ? 0 : xp < 10 ? 1 : xp < 30 ? 2 : xp < 60 ? 3 : 4)
 
 /** The last twelve weeks of study, one square per day, brighter for more XP. */
 export function ActivityHeatmap({ dailyXp }: { dailyXp: Record<string, number> }) {

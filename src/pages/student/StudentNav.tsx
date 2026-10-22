@@ -11,7 +11,7 @@ import { OWL_HEAD } from '../../scene/sprites'
 
 export function StudentNav({ user }: { user: User }) {
   const progress = useProgress()
-  const { level, streak, xp } = progress
+  const { rank, streak, xp } = progress
 
   return (
     <header className="hud pixel-panel">
@@ -34,11 +34,11 @@ export function StudentNav({ user }: { user: User }) {
         ))}
       </nav>
 
-      <div className="hud__stats" title={`Level ${level.level} · ${level.title} · ${xp} XP`}>
+      <div className="hud__stats" title={`Rank ${rank.rank} · ${rank.title} · ${xp} XP`}>
         <StreakFlame streak={streak} scale={2} />
         <span className="hud__level">
-          <span aria-hidden="true">LV</span>
-          <span className="visually-hidden">Level</span> {level.level}
+          <span aria-hidden="true">RANK</span>
+          <span className="visually-hidden">Rank</span> {rank.rank}
         </span>
       </div>
       <SoundToggle className="hud__sound" />

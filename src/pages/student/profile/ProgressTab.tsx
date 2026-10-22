@@ -1,8 +1,8 @@
 import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { PixelSprite } from '../../../components/PixelSprite'
-import { AchievementBadge, StreakFlame, XpBar } from '../../../learn/components/ProgressWidgets'
-import { DAILY_GOALS, type Attempt } from '../../../learn/progress'
+import { AchievementBadge, RankBar, StreakFlame } from '../../../learn/components/ProgressWidgets'
+import type { Attempt } from '../../../learn/progress'
 import { SECTION_META, SECTION_ORDER, formatBand, formatWhen, pct } from '../../../learn/results/results'
 import { sfx } from '../../../learn/sfx'
 import type { SectionId } from '../../../learn/types'
@@ -86,7 +86,7 @@ function SkillCard({ section, progress, index }: { section: SectionId; progress:
 }
 
 export function ProgressTab({ progress }: { progress: ProgressView }) {
-  const { level, xp, streak, today, achievements, state } = progress
+  const { rank, xp, streak, today, achievements, state } = progress
   const lecturesDone = SECTION_ORDER.reduce((s, sec) => s + progress.section(sec).lecturesCompleted, 0)
   const unlocked = achievements.filter((a) => a.unlockedAt).length
   const studiedSec = state.attempts.reduce((s, a) => s + a.durationSec, 0)
@@ -95,10 +95,10 @@ export function ProgressTab({ progress }: { progress: ProgressView }) {
     <div className="pf-progress">
       <section className="pf-kpis" aria-label="At a glance">
         <article className="pf-tile pf-tile--level">
-          <h2 className="pf-tile__label">Level</h2>
-          <XpBar level={level} xp={xp} className="pf-xp" />
+          <h2 className="pf-tile__label">Rank</h2>
+          <RankBar rank={rank} xp={xp} className="pf-xp" />
           <p className="pf-tile__note">
-            {level.next - xp} XP to <strong>{level.nextTitle}</strong> · {xp} XP in total
+            {rank.next - xp} XP to <strong>{rank.nextTitle}</strong> · {xp} XP in total
           </p>
         </article>
 
@@ -118,9 +118,7 @@ export function ProgressTab({ progress }: { progress: ProgressView }) {
         </article>
 
         <article className="pf-tile">
-          <h2 className="pf-tile__label" id="pf-goal-label">
-            Tonight’s goal
-          </h2>
+          <h2 className="pf-tile__label">Tonight’s goal</h2>
           <p className="pf-tile__big">
             {today.xp}
             <small> / {today.goal} XP</small>
@@ -128,22 +126,13 @@ export function ProgressTab({ progress }: { progress: ProgressView }) {
           <span className={`pf-meter pf-meter--goal ${today.met ? 'is-met' : ''}`} aria-hidden="true">
             <span style={{ width: `${Math.min(1, today.xp / Math.max(1, today.goal)) * 100}%` }} />
           </span>
-          <div className="pf-goal" role="group" aria-labelledby="pf-goal-label">
-            {DAILY_GOALS.map((g) => (
-              <button
-                key={g}
-                type="button"
-                className={`pf-goal__btn ${g === today.goal ? 'is-active' : ''}`}
-                aria-pressed={g === today.goal}
-                onClick={() => {
-                  sfx.click()
-                  progress.setDailyGoal(g)
-                }}
-              >
-                {g}
-              </button>
-            ))}
-          </div>
+          <p className="pf-tile__note">
+            {today.met
+              ? today.xp > today.goal
+                ? `Goal met, plus ${today.xp - today.goal} bonus XP. Everything past ${today.goal} is extra.`
+                : `Goal met! Anything more tonight is a bonus.`
+              : `${today.goal - today.xp} XP to go. Every correct answer is 1 XP.`}
+          </p>
         </article>
 
         <article className="pf-tile">
@@ -196,21 +185,35 @@ export function ProgressTab({ progress }: { progress: ProgressView }) {
             <h2 id="pf-ach-title" className="pf-card__title">
               Achievements
             </h2>
-            <p className="pf-card__note">
-              {unlocked} of {achievements.length} unlocked
-            </p>
+            {achievements.length > 0 && (
+              <p className="pf-card__note">
+                {unlocked} of {achievements.length} unlocked
+              </p>
+            )}
           </header>
-          <ul className="pf-achievements">
-            {achievements.map((a) => (
-              <li key={a.id} className={`pf-ach ${a.unlockedAt ? 'is-unlocked' : ''}`}>
-                <AchievementBadge icon={a.icon} unlocked={Boolean(a.unlockedAt)} scale={2} />
-                <span className="pf-ach__text">
-                  <strong>{a.title}</strong>
-                  <span>{a.unlockedAt ? `Unlocked ${formatWhen(a.unlockedAt, false)}` : a.description}</span>
-                </span>
-              </li>
-            ))}
-          </ul>
+          {achievements.length ? (
+            <ul className="pf-achievements">
+              {achievements.map((a) => (
+                <li key={a.id} className={`pf-ach ${a.unlockedAt ? 'is-unlocked' : ''}`}>
+                  <AchievementBadge icon={a.icon} unlocked={Boolean(a.unlockedAt)} scale={2} />
+                  <span className="pf-ach__text">
+                    <strong>{a.title}</strong>
+                    <span>{a.unlockedAt ? `Unlocked ${formatWhen(a.unlockedAt, false)}` : a.description}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="pf-soon">
+              <span className="pf-soon__badges" aria-hidden="true">
+                {(['star', 'flame', 'trophy', 'owl'] as const).map((icon) => (
+                  <AchievementBadge key={icon} icon={icon} unlocked={false} scale={2} />
+                ))}
+              </span>
+              <p className="pf-soon__title">Coming soon</p>
+              <p>New badges to unlock are being made. Everything you do now will count towards them.</p>
+            </div>
+          )}
         </section>
       </div>
     </div>

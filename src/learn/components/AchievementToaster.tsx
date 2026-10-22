@@ -15,7 +15,7 @@ interface Toast {
 let nextId = 1
 const TOAST_MS = 5200
 
-/** Global toasts for unlocked achievements and level-ups, plus "+XP" pops from the HUD. */
+/** Global toasts for unlocked achievements and rank-ups, plus "+XP" pops from the HUD. */
 export function AchievementToaster() {
   const [toasts, setToasts] = useState<Toast[]>([])
 
@@ -40,8 +40,8 @@ export function AchievementToaster() {
               }
             : {
                 id: nextId++,
-                eyebrow: 'LEVEL UP!',
-                title: `Level ${event.level}`,
+                eyebrow: 'RANK UP!',
+                title: `Rank ${event.rank}`,
                 text: `You’re now a ${event.title}. Hoo-ray!`,
                 icon: 'owl',
               }
@@ -49,8 +49,8 @@ export function AchievementToaster() {
         setToasts((list) => [...list, toast])
         window.setTimeout(() => setToasts((list) => list.filter((t) => t.id !== toast.id)), TOAST_MS)
 
-        if (event.type === 'level-up') {
-          sfx.levelUp()
+        if (event.type === 'rank-up') {
+          sfx.rankUp()
           pixelConfetti(undefined, { count: 90 })
         } else {
           sfx.unlock()

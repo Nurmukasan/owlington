@@ -6,9 +6,7 @@ import { Avatar } from '../../../components/Avatar'
 import { FEATHERS, featherIndexFor } from '../../../components/avatar-feathers'
 import { PixelSprite } from '../../../components/PixelSprite'
 import { OWL_HEAD } from '../../../scene/sprites'
-import { DAILY_GOALS } from '../../../learn/progress'
 import { setMuted, sfx, useSfxMuted } from '../../../learn/sfx'
-import type { ProgressView } from '../../../learn/useProgress'
 
 const PHOTO_PX = 160
 
@@ -276,7 +274,7 @@ function PasswordCard() {
   )
 }
 
-function PreferencesCard({ progress }: { progress: ProgressView }) {
+function PreferencesCard() {
   const muted = useSfxMuted()
   const { logout } = useAuth()
   const navigate = useNavigate()
@@ -301,16 +299,6 @@ function PreferencesCard({ progress }: { progress: ProgressView }) {
           <span className="pf-switch__track" aria-hidden="true" />
           Sound effects
         </label>
-        <label className="pf-select">
-          <span>Daily goal</span>
-          <select value={progress.today.goal} onChange={(e) => progress.setDailyGoal(Number(e.target.value))}>
-            {DAILY_GOALS.map((g) => (
-              <option key={g} value={g}>
-                {g} XP a night
-              </option>
-            ))}
-          </select>
-        </label>
       </div>
       <div className="pf-prefs__out">
         <button
@@ -328,14 +316,14 @@ function PreferencesCard({ progress }: { progress: ProgressView }) {
   )
 }
 
-export function SettingsTab({ progress }: { progress: ProgressView }) {
+export function SettingsTab() {
   const user = useUser()
   return (
     <div className="pf-settings">
       <AvatarCard user={user} />
       <AccountCard user={user} />
       <PasswordCard />
-      <PreferencesCard progress={progress} />
+      <PreferencesCard />
     </div>
   )
 }
