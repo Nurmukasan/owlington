@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { homeFor, useAuth } from '../../auth/auth-context'
 import { NightScene } from '../../components/NightScene'
 import { OwlMascot } from '../../components/OwlMascot'
+import { ScrollLink } from '../../learn/components/ScrollLink'
 import { PixelSprite } from '../../components/PixelSprite'
 import { SECTIONS } from '../../data/sections'
 import { OWL_HEAD, STAR_ICON } from '../../scene/sprites'
@@ -39,9 +40,9 @@ export default function Landing() {
           <span>Owlington</span>
         </Link>
         <nav className="landing-nav__links" aria-label="Page sections">
-          <a href="#skills">Skills</a>
-          <a href="#how">How it works</a>
-          <a href="#doors">For teachers</a>
+          <ScrollLink to="skills">Skills</ScrollLink>
+          <ScrollLink to="how">How it works</ScrollLink>
+          <ScrollLink to="doors">For teachers</ScrollLink>
         </nav>
         <div className="landing-nav__actions">
           {user ? (

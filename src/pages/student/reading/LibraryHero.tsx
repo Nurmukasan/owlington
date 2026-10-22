@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { formatClock } from '../../../learn/useTimer'
 import { PixelSprite } from '../../../components/PixelSprite'
+import { ScrollLink } from '../../../learn/components/ScrollLink'
 import { sfx } from '../../../learn/sfx'
 import type { ProgressView, SectionStats } from '../../../learn/useProgress'
 import { BOOK_ICON, FLAME_ICON, STAR_ICON, TROPHY_ICON } from '../../../scene/sprites'
@@ -261,16 +262,16 @@ export function LibraryHero({ firstName, stats, progress, step }: LibraryHeroPro
                 <span>→</span>
               </span>
             </Link>
-            <a className="rd-continue__alt" href="#rd-catalogue">
+            <ScrollLink className="rd-continue__alt" to="rd-catalogue">
               or browse the practice tests ↓
-            </a>
+            </ScrollLink>
           </div>
         )}
       </div>
 
-      <a className="rd-hero__scroll" href="#rd-stacks" aria-label="Scroll to the lecture stacks">
+      <ScrollLink className="rd-hero__scroll" to="rd-stacks" aria-label="Scroll to the lecture stacks">
         <span aria-hidden="true">▾</span>
-      </a>
+      </ScrollLink>
     </section>
   )
 }
