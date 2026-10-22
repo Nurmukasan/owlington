@@ -1,9 +1,18 @@
 import { useState } from 'react'
 import type { Attempt } from '../../../learn/progress'
-import { detailOf, formatBand, formatDate } from './stats'
+import { detailOf, formatBand, formatDate, hasJudgedBand } from './stats'
 
 /** Past submissions for one prompt, newest first; each one can be opened and read. */
-export function History({ attempts, title = 'Past submissions', light = false }: { attempts: Attempt[]; title?: string; light?: boolean }) {
+interface HistoryProps {
+  attempts: Attempt[]
+  title?: string
+  light?: boolean
+  /** "essay", "report" or "letter". */
+  noun?: string
+}
+
+export function History({ attempts, title = 'Past submissions', light = false, noun = 'essay' }: HistoryProps) {
+  const Noun = noun.charAt(0).toUpperCase() + noun.slice(1)
   const [open, setOpen] = useState<string | null>(null)
   if (!attempts.length) return null
   return (
@@ -13,6 +22,7 @@ export function History({ attempts, title = 'Past submissions', light = false }:
         {attempts.map((a, i) => {
           const d = detailOf(a)
           const isOpen = open === a.at
+          const judged = hasJudgedBand(a)
           return (
             <li key={a.at} className={isOpen ? 'is-open' : ''}>
               <button
@@ -21,19 +31,20 @@ export function History({ attempts, title = 'Past submissions', light = false }:
                 aria-expanded={isOpen}
                 onClick={() => setOpen(isOpen ? null : a.at)}
               >
-                <span className="wr-history__band" aria-hidden="true">
-                  {a.band ? formatBand(a.band) : '–'}
+                <span className={`wr-history__band ${judged ? '' : 'is-unjudged'}`} aria-hidden="true">
+                  {judged && a.band ? formatBand(a.band) : '–'}
                 </span>
                 <span className="wr-history__main">
                   <span className="wr-history__name">
-                    Essay {attempts.length - i} · {formatDate(a.at, true)}
+                    {Noun} {attempts.length - i} · {formatDate(a.at, true)}
                   </span>
                   <span className="wr-history__meta">
                     {d.words} words · checklist {a.score}/{a.total} · {Math.round(a.durationSec / 60)} min · +{a.xp} XP
+                    {!judged && a.band ? ' · too short for a band' : ''}
                   </span>
                 </span>
                 <span className="visually-hidden">
-                  Band {a.band ? formatBand(a.band) : 'not assessed'}. {isOpen ? 'Hide' : 'Read'} this essay.
+                  Band {judged && a.band ? formatBand(a.band) : 'not counted'}. {isOpen ? 'Hide' : 'Read'} this {noun}.
                 </span>
                 <span className="wr-history__chev" aria-hidden="true">
                   {isOpen ? '–' : '+'}

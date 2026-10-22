@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom'
 import type { LectureProgress } from '../../../learn/progress'
 import type { Lecture } from '../../../learn/types'
 import { WaxSeal } from './art'
-import { useRevealed } from './hooks'
+import { useRevealed, useSwipeRow } from './hooks'
+import { SwipePager } from './SwipePager'
 
 interface LetterBoardProps {
   lectures: Lecture[]
@@ -18,6 +19,8 @@ const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI'
 export function LetterBoard({ lectures, progressFor, nextId }: LetterBoardProps) {
   const ref = useRef<HTMLDivElement>(null)
   const revealed = useRevealed(ref)
+  const listRef = useRef<HTMLOListElement>(null)
+  const row = useSwipeRow(listRef)
   const done = lectures.filter((l) => progressFor(l.id)?.completedAt).length
 
   return (
@@ -37,7 +40,7 @@ export function LetterBoard({ lectures, progressFor, nextId }: LetterBoardProps)
       </div>
 
       <div ref={ref} className={`wr-cork ${revealed ? 'is-in' : ''}`}>
-        <ol className="wr-cork__grid">
+        <ol ref={listRef} className={`wr-cork__grid ${row.scrollable && !row.atEnd ? 'has-more' : ''}`}>
           {lectures.map((lecture, i) => {
             const p = progressFor(lecture.id)
             const watched = p?.watched ?? 0
@@ -70,9 +73,10 @@ export function LetterBoard({ lectures, progressFor, nextId }: LetterBoardProps)
                     <span className="wr-letter__pocket">
                       <span className="wr-letter__flap" />
                       <span className="wr-letter__num">No. {ROMAN[i] ?? i + 1}</span>
+                      {/* A postage stamp whose denomination is the level: LV I, II or III. */}
                       <span className="wr-letter__stamp">
-                        <span>{lecture.level === 'Foundation' ? 'F' : lecture.level === 'Intermediate' ? 'I' : 'A'}</span>
-                        <small>{lecture.level.slice(0, 5).toUpperCase()}</small>
+                        <span>{lecture.level === 'Foundation' ? 'I' : lecture.level === 'Intermediate' ? 'II' : 'III'}</span>
+                        <small>LV</small>
                       </span>
                       <span className="wr-letter__postmark">{lecture.minutes} MIN</span>
                       <span className="wr-letter__title wr-hand">{lecture.title}</span>
@@ -92,6 +96,7 @@ export function LetterBoard({ lectures, progressFor, nextId }: LetterBoardProps)
           })}
         </ol>
       </div>
+      <SwipePager row={row} noun="letter" />
     </section>
   )
 }

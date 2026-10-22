@@ -8,6 +8,7 @@ import { sfx } from '../../../learn/sfx'
 import { useProgress } from '../../../learn/useProgress'
 import { WaxSeal } from './art'
 import { lectures, practiceSets } from './content'
+import { prefersReducedMotion } from './hooks'
 import './world.css'
 import './lecture.css'
 
@@ -41,15 +42,30 @@ function LectureDesk({ lectureId }: { lectureId: string }) {
   const saved = progress.lecture('writing', lecture.id)
   const watched = saved?.watched ?? 0
   const complete = Boolean(saved?.completedAt)
+  const pct = complete ? 100 : Math.round(watched * 100)
   const playerRef = useRef<LecturePlayerHandle>(null)
+  const sheetRef = useRef<HTMLDivElement>(null)
   const [chapter, setChapter] = useState(-1)
   const [justSealed, setJustSealed] = useState(false)
   const practice = practiceSets.find((p) => p.id === PRACTICE_FOR[lecture.id]) ?? practiceSets[0]
-  const nextUnread = next ?? lectures.find((l) => !progress.lecture('writing', l.id)?.completedAt && l.id !== lecture.id)
+
+  // The first unread letter after this one, wrapping round to the start of the board.
+  const isRead = (id: string) => Boolean(progress.lecture('writing', id)?.completedAt)
+  const after = [...lectures.slice(index + 1), ...lectures.slice(0, index)]
+  const nextUnread = after.find((l) => !isRead(l.id))
+  const nextIsAdjacent = nextUnread !== undefined && nextUnread.id === next?.id
 
   const seek = (i: number) => {
     sfx.page()
     playerRef.current?.seekToChapter(i)
+    // On phones the notes sit below the player: bring the letter back into view.
+    const sheet = sheetRef.current
+    if (!sheet) return
+    const r = sheet.getBoundingClientRect()
+    const top = Number.parseFloat(getComputedStyle(sheet).scrollMarginTop) || 0
+    if (r.top < top || r.bottom > window.innerHeight) {
+      sheet.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' })
+    }
   }
 
   return (
@@ -66,42 +82,20 @@ function LectureDesk({ lectureId }: { lectureId: string }) {
         </nav>
 
         <header className="wr-lec__head">
-          <div className="wr-lec__headcopy">
-            <p className="wr-eyebrow">Lecture · {lecture.level}</p>
-            <h1 className="wr-lec__title wr-display">{lecture.title}</h1>
-            <p className="wr-lec__summary">{lecture.summary}</p>
+          <div className="wr-lec__meta">
+            <p className="wr-eyebrow">Lecture</p>
             <ul className="wr-lec__chips" aria-label="Lecture details">
               <li className="wr-chip">{lecture.level}</li>
               <li className="wr-chip">{lecture.minutes} min video</li>
               <li className="wr-chip">{lecture.chapters.length} chapters</li>
-              <li className="wr-chip">+{XP_RULES.lectureComplete} XP</li>
+              <li className="wr-chip wr-chip--xp">+{XP_RULES.lectureComplete} XP</li>
             </ul>
           </div>
-          <div className="wr-lec__vial" title={`${Math.round(watched * 100)}% of this letter read`}>
-            <div
-              className="wr-vial"
-              role="progressbar"
-              aria-label="Progress through this lecture"
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={Math.round(watched * 100)}
-              style={{ '--wr-v': complete ? 1 : watched } as CSSProperties}
-            >
-              <span className="wr-vial__neck" />
-              <span className="wr-vial__glass">
-                <span className="wr-vial__ink" />
-              </span>
-            </div>
-            <div>
-              <p className="wr-lec__pct">{complete ? 'Sealed' : `${Math.round(watched * 100)}%`}</p>
-              <p className="wr-lec__pct-label">{complete ? 'letter complete' : watched > 0 ? 'read so far' : 'not started'}</p>
-            </div>
-            {complete && <WaxSeal size={58} className="wr-lec__headseal" label="Completed: sealed with the owl seal" />}
-          </div>
+          <h1 className="wr-lec__title wr-display">{lecture.title}</h1>
         </header>
 
         <div className="wr-lec__desk">
-          <div className="wr-lec__sheet">
+          <div ref={sheetRef} className="wr-lec__sheet">
             <span className="wr-lec__clip wr-lec__clip--l" aria-hidden="true" />
             <span className="wr-lec__clip wr-lec__clip--r" aria-hidden="true" />
             <LecturePlayer
@@ -114,8 +108,30 @@ function LectureDesk({ lectureId }: { lectureId: string }) {
             />
           </div>
 
-          <aside className="wr-margin" aria-label="Chapters">
-            <p className="wr-margin__head wr-hand">Margin notes</p>
+          <aside className="wr-margin" aria-label="Your progress and the chapters">
+            <div className="wr-margin__progress">
+              <div
+                className="wr-vial"
+                role="progressbar"
+                aria-label="Progress through this lecture"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={pct}
+                style={{ '--wr-v': complete ? 1 : watched } as CSSProperties}
+              >
+                <span className="wr-vial__neck" />
+                <span className="wr-vial__glass">
+                  <span className="wr-vial__ink" />
+                </span>
+              </div>
+              <div>
+                <p className="wr-lec__pct">{complete ? 'Sealed' : `${pct}%`}</p>
+                <p className="wr-lec__pct-label">{complete ? 'letter complete' : watched > 0 ? 'read so far' : 'not opened yet'}</p>
+              </div>
+              {complete && <WaxSeal size={52} className="wr-lec__headseal" label="Completed: sealed with the owl seal" />}
+            </div>
+
+            <h2 className="wr-margin__head wr-hand">Margin notes</h2>
             <ol className="wr-margin__list">
               {lecture.chapters.map((c, i) => {
                 const state = chapter === i ? 'is-now' : complete || chapter > i ? 'is-done' : ''
@@ -138,6 +154,10 @@ function LectureDesk({ lectureId }: { lectureId: string }) {
                 )
               })}
             </ol>
+            <div className="wr-margin__brief">
+              <h2 className="wr-margin__brief-title">In brief</h2>
+              <p>{lecture.summary}</p>
+            </div>
             <p className="wr-margin__tip">
               Tip: press <kbd>Space</kbd> to play or pause, <kbd>←</kbd> <kbd>→</kbd> to step through points.
             </p>
@@ -155,7 +175,7 @@ function LectureDesk({ lectureId }: { lectureId: string }) {
               <h2 id="wr-nextup-title" className="wr-display">
                 {nextUnread ? (
                   <>
-                    Next letter: <em>{nextUnread.title}</em>
+                    {nextIsAdjacent ? 'Next letter' : 'Next unread letter'}: <em>{nextUnread.title}</em>
                   </>
                 ) : (
                   <>Every letter read — bravo!</>
@@ -163,16 +183,21 @@ function LectureDesk({ lectureId }: { lectureId: string }) {
               </h2>
               <p>
                 {nextUnread
-                  ? 'The professor has already sealed the next one. Or put tonight’s lesson straight into practice while it is fresh.'
-                  : 'You have read the whole correspondence. Now let the assignments prove it.'}
+                  ? nextIsAdjacent
+                    ? 'The professor has already sealed it for you. Or put tonight’s lesson straight into practice while it is fresh.'
+                    : `Letter No. ${ROMAN[lectures.indexOf(nextUnread)]} is still unopened on the corkboard. Or put tonight’s lesson straight into practice.`
+                  : 'You have read the whole correspondence. Now let the assignments prove it — or revisit any letter on the corkboard.'}
               </p>
               <div className="wr-nextup__actions">
                 {nextUnread && (
                   <Link to={`/student/writing/lecture/${nextUnread.id}`} className="wr-btn">
-                    Open the next letter <span className="wr-btn__arrow" aria-hidden="true">→</span>
+                    Open {nextIsAdjacent ? 'the next letter' : `letter No. ${ROMAN[lectures.indexOf(nextUnread)]}`}{' '}
+                    <span className="wr-btn__arrow" aria-hidden="true">
+                      →
+                    </span>
                   </Link>
                 )}
-                <Link to={`/student/writing/practice/${practice.id}`} className="wr-btn wr-btn--ghost">
+                <Link to={`/student/writing/practice/${practice.id}`} className={`wr-btn ${nextUnread ? 'wr-btn--ghost' : ''}`}>
                   Practise: {practice.title}
                 </Link>
               </div>
@@ -204,7 +229,10 @@ function LectureDesk({ lectureId }: { lectureId: string }) {
         <nav className="wr-lec__pager" aria-label="Other letters">
           {prev ? (
             <Link to={`/student/writing/lecture/${prev.id}`} className="wr-pager wr-pager--prev">
-              <span className="wr-pager__dir">← Letter No. {ROMAN[index - 1]}</span>
+              <span className="wr-pager__dir">
+                ← Letter No. {ROMAN[index - 1]}
+                {isRead(prev.id) ? ' · read' : ''}
+              </span>
               <span className="wr-pager__title wr-hand">{prev.title}</span>
             </Link>
           ) : (
@@ -212,7 +240,10 @@ function LectureDesk({ lectureId }: { lectureId: string }) {
           )}
           {next && (
             <Link to={`/student/writing/lecture/${next.id}`} className="wr-pager wr-pager--next">
-              <span className="wr-pager__dir">Letter No. {ROMAN[index + 1]} →</span>
+              <span className="wr-pager__dir">
+                Letter No. {ROMAN[index + 1]}
+                {isRead(next.id) ? ' · read' : ''} →
+              </span>
               <span className="wr-pager__title wr-hand">{next.title}</span>
             </Link>
           )}

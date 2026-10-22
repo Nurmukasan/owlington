@@ -33,7 +33,8 @@
   --wr-text-muted: #9c97b4;
   --wr-good: #199e70;
   --wr-font-hand: var(--font-display);
-  --wr-font-typed: 'Courier Prime', 'Courier New', Courier, ui-monospace, monospace;
+  /* Loaded by the app (Pixelify Sans), so the typed sheets look the same on every device. */
+  --wr-font-typed: var(--font-pixel-body), ui-monospace, monospace;
   --wr-gutter: clamp(16px, 4vw, 56px);
 
   position: relative;
@@ -314,11 +315,6 @@
   white-space: nowrap;
 }
 
-.wr-chip--paper {
-  background: rgb(27 42 74 / 0.08);
-  color: var(--wr-ink);
-}
-
 /* Rubber-stamp label. */
 .wr-stamp {
   display: inline-flex;
@@ -337,39 +333,6 @@
   box-shadow: inset 0 0 0 1.5px var(--wr-stamp-inner, transparent);
   mask-image: radial-gradient(circle at 30% 40%, #000 60%, rgb(0 0 0 / 0.75) 61%, #000 75%);
   opacity: 0.9;
-}
-
-/* A tiny shimmering "+XP" style tag. */
-.wr-tag {
-  display: inline-block;
-  padding: 3px 7px 2px;
-  background: var(--wr-coral);
-  color: var(--wr-ink-deep);
-  font-family: var(--font-pixel);
-  font-size: 8px;
-  letter-spacing: 0.5px;
-  line-height: 1.6;
-}
-
-/* Generic reveal-on-scroll entrance (paired with useRevealed). */
-.wr-reveal {
-  opacity: 0;
-  transform: translateY(24px);
-  transition:
-    opacity 700ms ease,
-    transform 800ms cubic-bezier(0.2, 0.9, 0.25, 1);
-}
-
-.wr-reveal.is-in {
-  opacity: 1;
-  transform: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .wr-reveal {
-    opacity: 1;
-    transform: none;
-  }
 }
 
 /* Rain on a window pane — reused by every page that shows the window. */

@@ -3,7 +3,7 @@
  * ===================================================================== */
 
 .wr-lec {
-  padding: calc(var(--hud-space) + 20px) var(--wr-gutter) 72px;
+  padding: calc(var(--hud-space) + 14px) var(--wr-gutter) 72px;
 }
 
 .wr-lec__inner {
@@ -19,7 +19,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px 20px;
-  margin-bottom: 26px;
+  margin-bottom: 12px;
 }
 
 .wr-lec__count {
@@ -31,78 +31,78 @@
   text-transform: uppercase;
 }
 
-/* --- header --- */
+/* --- header: one compact title block, so the letter starts high on the page --- */
 
 .wr-lec__head {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: end;
-  gap: 24px 40px;
-  margin-bottom: 30px;
+  gap: 6px;
+  margin-bottom: 16px;
   animation: wr-lec-rise 700ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
 }
 
-.wr-lec__headcopy {
-  display: grid;
-  gap: 12px;
-  max-width: 780px;
+.wr-lec__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
 }
 
 .wr-lec__title {
+  max-width: 48ch;
   color: #fff8ea;
-  font-size: clamp(2.1rem, 1.3rem + 2.8vw, 3.5rem);
+  font-size: clamp(1.8rem, 1.15rem + 1.6vw, 2.6rem);
   font-weight: 600;
-  line-height: 1.02;
+  line-height: 1.05;
   text-wrap: balance;
-}
-
-.wr-lec__summary {
-  max-width: 64ch;
-  color: var(--wr-text-soft);
-  font-size: 1.06rem;
 }
 
 .wr-lec__chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 4px;
+  gap: 6px;
 }
 
-.wr-lec__vial {
+.wr-chip--xp {
+  background: rgb(255 154 133 / 0.14);
+  color: var(--wr-coral);
+}
+
+/* --- reading progress, at the top of the margin notes --- */
+
+.wr-margin__progress {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 14px 20px 14px 16px;
-  background: rgb(9 15 34 / 0.55);
-  box-shadow: inset 0 0 0 2px rgb(217 180 100 / 0.3);
+  gap: 14px;
+  margin: -4px 0 14px;
+  padding-bottom: 12px;
+  border-bottom: 2px dashed rgb(27 42 74 / 0.22);
 }
 
 .wr-vial {
   position: relative;
   display: grid;
   justify-items: center;
-  width: 36px;
+  width: 30px;
 }
 
 .wr-vial__neck {
-  width: 16px;
-  height: 10px;
+  width: 14px;
+  height: 8px;
   border-radius: 2px 2px 0 0;
   background: linear-gradient(90deg, #8a6424, #f2d796, #8a6424);
 }
 
 .wr-vial__glass {
   position: relative;
-  width: 30px;
-  height: 64px;
+  width: 26px;
+  height: 46px;
   overflow: hidden;
-  border-radius: 6px 6px 15px 15px;
-  background: rgb(200 215 255 / 0.12);
+  border-radius: 5px 5px 13px 13px;
+  background: rgb(27 42 74 / 0.08);
   box-shadow:
-    inset 0 0 0 2px rgb(200 215 255 / 0.4),
-    inset 6px 0 0 -3px rgb(255 255 255 / 0.25);
+    inset 0 0 0 2px rgb(27 42 74 / 0.35),
+    inset 6px 0 0 -3px rgb(255 255 255 / 0.6);
 }
 
 .wr-vial__ink {
@@ -126,15 +126,16 @@
 }
 
 .wr-lec__pct {
-  color: #fff8ea;
-  font-size: 1.6rem;
-  font-weight: 800;
+  color: var(--wr-ink);
+  font-family: var(--font-display);
+  font-size: 1.55rem;
+  font-weight: 700;
   line-height: 1;
 }
 
 .wr-lec__pct-label {
-  margin-top: 4px;
-  color: var(--wr-text-muted);
+  margin-top: 5px;
+  color: var(--wr-paper-muted);
   font-family: var(--font-pixel);
   font-size: 7px;
   letter-spacing: 0.8px;
@@ -143,22 +144,25 @@
 
 .wr-lec__headseal {
   position: absolute;
-  top: -22px;
-  right: -18px;
+  top: -10px;
+  right: -6px;
   transform: rotate(14deg);
-  filter: drop-shadow(0 4px 4px rgb(0 0 0 / 0.4));
+  filter: drop-shadow(0 4px 4px rgb(0 0 0 / 0.3));
   animation: wr-lec-seal 700ms 300ms cubic-bezier(0.3, 1.5, 0.5, 1) both;
 }
 
 /* --- the desk --- */
 
 .wr-lec__desk {
+  /* The letter is as wide as the screen's height allows, so the whole player,
+     controls included, fits on a 720px-tall laptop. The notes take the rest. */
+  --wr-sheet-w: min(880px, max(540px, calc((100dvh - var(--hud-space) - 228px) * 16 / 9 + 20px)));
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(250px, 300px);
+  grid-template-columns: minmax(0, var(--wr-sheet-w)) minmax(270px, 1fr);
   align-items: start;
-  gap: clamp(18px, 2.4vw, 34px);
-  padding: clamp(16px, 2.6vw, 36px);
+  gap: clamp(16px, 2vw, 30px);
+  padding: clamp(12px, 1.6vw, 24px);
   border-radius: 10px;
   background:
     radial-gradient(70% 60% at 30% 0%, rgb(255 196 110 / 0.18), transparent 70%),
@@ -174,7 +178,8 @@
 .wr-lec__sheet {
   position: relative;
   min-width: 0;
-  padding: 12px;
+  padding: 10px;
+  scroll-margin-top: calc(var(--hud-space) + 12px);
   background: linear-gradient(180deg, #ecdcb8, #dfcb9f);
   box-shadow:
     0 2px 0 rgb(0 0 0 / 0.15),
@@ -425,6 +430,28 @@
   text-decoration-color: var(--wr-coral);
   text-decoration-thickness: 3px;
   text-underline-offset: 4px;
+}
+
+.wr-margin__brief {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 2px dashed rgb(27 42 74 / 0.22);
+}
+
+.wr-margin__brief-title {
+  color: var(--wr-coral-ink);
+  font-family: var(--font-pixel);
+  font-size: 7.5px;
+  letter-spacing: 0.8px;
+  line-height: 1.6;
+  text-transform: uppercase;
+}
+
+.wr-margin__brief p {
+  margin-top: 4px;
+  color: var(--wr-ink-soft);
+  font-size: 0.9rem;
+  line-height: 1.5;
 }
 
 .wr-margin__tip {
@@ -730,14 +757,6 @@
 }
 
 @media (max-width: 700px) {
-  .wr-lec__head {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .wr-lec__vial {
-    justify-self: start;
-  }
-
   .wr-lec__desk {
     padding: 10px;
   }

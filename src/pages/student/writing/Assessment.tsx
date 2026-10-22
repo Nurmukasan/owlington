@@ -1,9 +1,11 @@
-import { useMemo, type ReactNode } from 'react'
+import { useMemo, useRef, type ReactNode } from 'react'
 import { formatClock } from '../../../learn/useTimer'
 import { linkerRanges, type CheckResult, type Criterion, type TextAnalysis } from './analysis'
+import { pieceNoun } from './content'
 import { prefersReducedMotion } from './hooks'
 import { estimateBand, rubricFor, type WritingPrompt } from './prompts'
 import { formatBand } from './stats'
+import { plural } from './words'
 
 /** The essay as paragraphs, with every linking word inked in. */
 export function InkedEssay({ text, overused = [] }: { text: string; overused?: string[] }) {
@@ -66,13 +68,14 @@ export function AnalysisView({ prompt, text, analysis: a, checks, durationSec, o
   const longS = usable.filter((s) => s.words >= 22).length
   const met = checks.filter((c) => c.met).length
   const timeLimit = prompt.minutes * 60
+  const noun = pieceNoun(prompt.task)
 
   return (
     <div className="wr-exam">
       <header className="wr-exam__head">
         <p className="wr-eyebrow">Step 1 of 3 · under the lamp</p>
         <h1 className="wr-exam__title wr-display">
-          Your essay, <em>examined</em>
+          Your {noun}, <em>examined</em>
         </h1>
         <p className="wr-exam__lead">
           The numbers first — then you will grade yourself against the four official criteria, and finally read a model answer.
@@ -81,7 +84,7 @@ export function AnalysisView({ prompt, text, analysis: a, checks, durationSec, o
 
       {short > 0 && (
         <p className="wr-exam__warn" role="alert">
-          <strong>{short} words short.</strong> Answers under {prompt.minWords} words lose marks for{' '}
+          <strong>{plural(short, 'word')} short.</strong> Answers under {prompt.minWords} words lose marks for{' '}
           {prompt.task === 'task2' ? 'Task Response' : 'Task Achievement'}. In the exam, keep a little time to reach the minimum.
         </p>
       )}
@@ -137,7 +140,7 @@ export function AnalysisView({ prompt, text, analysis: a, checks, durationSec, o
       <div className="wr-exam__grid">
         <section className="wr-exam__essay" aria-labelledby="wr-exam-essay">
           <h2 id="wr-exam-essay" className="wr-exam__h2">
-            Your essay <span>· linking words inked in</span>
+            Your {noun} <span>· linking words inked in</span>
           </h2>
           <div className="wr-sheetpaper">
             <InkedEssay text={text} overused={a.overused.map((o) => o.phrase)} />
@@ -218,12 +221,19 @@ export function SelfAssess({ prompt, checks, scores, onScore, onBack, onSeal }: 
   const chosen = rubric.map((c) => scores[c.id]).filter((v): v is number => typeof v === 'number')
   const complete = chosen.length === rubric.length
   const estimate = complete ? estimateBand(chosen) : null
+  const noun = pieceNoun(prompt.task)
+  /** True between a pointer press on a band card and the change it causes. Arrow keys never set it. */
+  const byPointer = useRef(false)
 
-  // After a criterion's first choice, glide to the next one still open (then to the estimate).
+  // After a criterion's first choice by click or tap, glide to the next one still open (then
+  // to the estimate). Keyboard users explore a radio group with the arrow keys, so their
+  // choices never scroll the page away from the focused radio.
   const choose = (index: number, criterion: Criterion, band: number) => {
     const first = scores[criterion] === undefined
+    const pointer = byPointer.current
+    byPointer.current = false
     onScore(criterion, band)
-    if (!first) return
+    if (!first || !pointer) return
     const next = rubric.slice(index + 1).find((c) => scores[c.id] === undefined)
     window.setTimeout(() => {
       const target = next ? document.getElementById(`wr-crit-${next.id}`) : document.querySelector('.wr-estimate')
@@ -243,7 +253,7 @@ export function SelfAssess({ prompt, checks, scores, onScore, onBack, onSeal }: 
           Grade yourself, <em>honestly</em>
         </h1>
         <p className="wr-exam__lead">
-          For each criterion, read the evidence from your essay, then pick the card that sounds most like it. Each criterion is
+          For each criterion, read the evidence from your {noun}, then pick the card that sounds most like it. Each criterion is
           worth a quarter of your Writing band.
         </p>
       </header>
@@ -276,12 +286,21 @@ export function SelfAssess({ prompt, checks, scores, onScore, onBack, onSeal }: 
                 )}
                 <div className="wr-crit-card__bands">
                   {BANDS.map((b) => (
-                    <label key={b} className={`wr-band ${scores[c.id] === b ? 'is-on' : ''}`}>
+                    <label
+                      key={b}
+                      className={`wr-band ${scores[c.id] === b ? 'is-on' : ''}`}
+                      onPointerDown={() => {
+                        byPointer.current = true
+                      }}
+                    >
                       <input
                         type="radio"
                         name={`wr-${c.id}`}
                         value={b}
                         checked={scores[c.id] === b}
+                        onKeyDown={() => {
+                          byPointer.current = false
+                        }}
                         onChange={() => choose(ci, c.id, b)}
                       />
                       <span className="wr-band__n">Band {b}</span>
@@ -311,7 +330,7 @@ export function SelfAssess({ prompt, checks, scores, onScore, onBack, onSeal }: 
           <p className="wr-estimate__disclaimer">Self-assessed estimate, not an official score.</p>
           <p className="wr-estimate__how">The mean of your four choices, rounded to the nearest half band (a quarter rounds up).</p>
           <button type="button" className="wr-btn wr-btn--wax wr-estimate__seal" disabled={!complete} onClick={onSeal}>
-            Seal my essay
+            Seal my {noun}
           </button>
           {!complete && <p className="wr-estimate__todo">Choose a band for all four criteria to seal it.</p>}
           <button type="button" className="wr-estimate__back" onClick={onBack}>

@@ -7,15 +7,15 @@ import type { Attempt } from '../../../learn/progress'
 import { sfx } from '../../../learn/sfx'
 import type { PracticeInfo } from '../../../learn/types'
 import { useProgress } from '../../../learn/useProgress'
-import { useStopwatch } from '../../../learn/useTimer'
-import { analyse, countWords, runChecks, type CheckResult, type Criterion, type TextAnalysis } from './analysis'
+import { analyse, countWords, type CheckResult, type Criterion, type TextAnalysis } from './analysis'
 import { AnalysisView, SelfAssess } from './Assessment'
-import { practiceSets } from './content'
+import { pieceNoun, practiceSets } from './content'
 import { clearDraft, hasContent, loadDraft, saveDraft } from './drafts'
 import { PracticeIntro } from './PracticeIntro'
-import { estimateBand, findPrompt, type WritingPrompt } from './prompts'
+import { checkEssay, estimateBand, findPrompt, type WritingPrompt } from './prompts'
 import { Results } from './Results'
 import { Studio } from './Studio'
+import { handInFloor, plural } from './words'
 import './world.css'
 import './practice.css'
 
@@ -36,10 +36,14 @@ interface Submission {
   durationSec: number
 }
 
+const focusEditor = () =>
+  window.requestAnimationFrame(() => document.getElementById('wr-editor')?.focus({ preventScroll: true }))
+
 function Practice({ info, prompt }: { info: PracticeInfo; prompt: WritingPrompt }) {
   const user = useUser()
   const progress = useProgress()
   const history = progress.section('writing').attempts.filter((a) => a.practiceId === prompt.id)
+  const noun = pieceNoun(prompt.task)
   const [initial] = useState(() => {
     const d = loadDraft(user.id, prompt.id)
     return hasContent(d) ? d : null
@@ -48,6 +52,7 @@ function Practice({ info, prompt }: { info: PracticeInfo; prompt: WritingPrompt 
   const [phase, setPhase] = useState<Phase>('intro')
   const [text, setText] = useState(initial?.text ?? '')
   const [plan, setPlan] = useState<string[]>(() => prompt.plan.map((_, i) => initial?.plan[i] ?? ''))
+  /** Seconds already on the clock before the studio opened (resumed drafts, "keep writing"). */
   const [banked, setBanked] = useState(initial?.elapsed ?? 0)
   const [paused, setPaused] = useState(false)
   const [savedAt, setSavedAt] = useState<string | null>(initial?.updatedAt ?? null)
@@ -56,17 +61,13 @@ function Practice({ info, prompt }: { info: PracticeInfo; prompt: WritingPrompt 
   const [attempt, setAttempt] = useState<Attempt | null>(null)
   const [confirming, setConfirming] = useState(false)
   const [wordBump, setWordBump] = useState(0)
+  const [timeUp, setTimeUp] = useState(false)
   const recorded = useRef(false)
   const celebratedGoal = useRef(countWords(initial?.text ?? '') >= prompt.minWords)
   const timeUpNoted = useRef(false)
-
-  const { elapsed, reset } = useStopwatch(phase === 'write' && !paused)
-  const total = banked + elapsed
-  const remaining = prompt.minutes * 60 - total
-  const totalRef = useRef(total)
-  useEffect(() => {
-    totalRef.current = total
-  }, [total])
+  /** The live clock total, written by the studio's own clock (so its ticks never re-render this page). */
+  const totalRef = useRef(banked)
+  const floor = handInFloor(prompt.minWords)
 
   // --- autosave ----------------------------------------------------------------------
   const persist = useCallback(
@@ -104,13 +105,11 @@ function Practice({ info, prompt }: { info: PracticeInfo; prompt: WritingPrompt 
   }, [phase, persist])
 
   // A gentle note when the clock runs out (the student may keep writing).
-  const [timeUp, setTimeUp] = useState(false)
-  useEffect(() => {
-    if (phase !== 'write' || remaining > 0 || timeUpNoted.current) return
+  const onTimeUp = useCallback(() => {
+    if (timeUpNoted.current) return
     timeUpNoted.current = true
-    const id = window.setTimeout(() => setTimeUp(true), 0)
-    return () => window.clearTimeout(id)
-  }, [phase, remaining])
+    setTimeUp(true)
+  }, [])
 
   const goTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
 
@@ -122,12 +121,12 @@ function Practice({ info, prompt }: { info: PracticeInfo; prompt: WritingPrompt 
       setText('')
       setPlan(prompt.plan.map(() => ''))
       setBanked(0)
+      totalRef.current = 0
       setSavedAt(null)
       celebratedGoal.current = false
       timeUpNoted.current = false
       setTimeUp(false)
     }
-    reset()
     setPaused(false)
     setPhase('write')
     goTop()
@@ -145,8 +144,11 @@ function Practice({ info, prompt }: { info: PracticeInfo; prompt: WritingPrompt 
     }
   }
 
-  const submit = () => {
-    if (countWords(text) < prompt.minWords && !confirming) {
+  const submit = (confirmed = false) => {
+    const words = countWords(text)
+    // Too little to judge: the button is disabled, and this guards any other way in.
+    if (words < floor) return
+    if (words < prompt.minWords && !confirmed) {
       sfx.click()
       setConfirming(true)
       return
@@ -155,13 +157,7 @@ function Practice({ info, prompt }: { info: PracticeInfo; prompt: WritingPrompt 
     sfx.page()
     persist(text, plan)
     const analysis = analyse(text, prompt.question)
-    const checks = runChecks(prompt.checks, {
-      text,
-      analysis,
-      minWords: prompt.minWords,
-      question: prompt.question,
-      bullets: prompt.bulletChecks,
-    })
+    const checks = checkEssay(prompt, text, analysis)
     setSubmission({ text, analysis, checks, durationSec: Math.round(totalRef.current) })
     setPhase('review')
     goTop()
@@ -170,7 +166,6 @@ function Practice({ info, prompt }: { info: PracticeInfo; prompt: WritingPrompt 
   const keepWriting = () => {
     sfx.page()
     setBanked(totalRef.current)
-    reset()
     setSubmission(null)
     setPhase('write')
     goTop()
@@ -212,11 +207,11 @@ function Practice({ info, prompt }: { info: PracticeInfo; prompt: WritingPrompt 
     setText('')
     setPlan(prompt.plan.map(() => ''))
     setBanked(0)
+    totalRef.current = 0
     setSavedAt(null)
     setSubmission(null)
     setScores({})
     setAttempt(null)
-    reset()
     setPaused(false)
     setPhase('write')
     goTop()
@@ -237,8 +232,11 @@ function Practice({ info, prompt }: { info: PracticeInfo; prompt: WritingPrompt 
           prompt={prompt}
           number={number}
           history={history}
-          draftWords={countWords(text)}
-          draftElapsed={banked}
+          draft={
+            text.trim() || plan.some((p) => p.trim())
+              ? { words: countWords(text), notes: plan.filter((p) => p.trim()).length, elapsed: banked }
+              : null
+          }
           onStart={start}
         />
       )}
@@ -252,14 +250,17 @@ function Practice({ info, prompt }: { info: PracticeInfo; prompt: WritingPrompt 
           onText={onText}
           plan={plan}
           onPlan={(i, v) => setPlan((p) => p.map((x, k) => (k === i ? v : x)))}
-          remaining={remaining}
+          banked={banked}
+          totalRef={totalRef}
+          onTimeUp={onTimeUp}
           paused={paused}
           onTogglePause={() => {
             sfx.click()
             setPaused((p) => !p)
           }}
           savedAt={savedAt}
-          onSubmit={submit}
+          floor={floor}
+          onSubmit={() => submit()}
           wordBump={wordBump}
         />
       )}
@@ -315,8 +316,12 @@ function Practice({ info, prompt }: { info: PracticeInfo; prompt: WritingPrompt 
         <ConfirmDialog
           words={countWords(text)}
           min={prompt.minWords}
-          onCancel={() => setConfirming(false)}
-          onConfirm={submit}
+          noun={noun}
+          onCancel={() => {
+            setConfirming(false)
+            focusEditor()
+          }}
+          onConfirm={() => submit(true)}
         />
       )}
 
@@ -335,7 +340,15 @@ function Practice({ info, prompt }: { info: PracticeInfo; prompt: WritingPrompt 
   )
 }
 
-function ConfirmDialog({ words, min, onCancel, onConfirm }: { words: number; min: number; onCancel: () => void; onConfirm: () => void }) {
+interface ConfirmDialogProps {
+  words: number
+  min: number
+  noun: string
+  onCancel: () => void
+  onConfirm: () => void
+}
+
+function ConfirmDialog({ words, min, noun, onCancel, onConfirm }: ConfirmDialogProps) {
   const ref = useRef<HTMLDialogElement>(null)
   useEffect(() => {
     const d = ref.current
@@ -346,6 +359,7 @@ function ConfirmDialog({ words, min, onCancel, onConfirm }: { words: number; min
       ref={ref}
       className="wr-dialog wr-dialog--confirm"
       aria-labelledby="wr-confirm-title"
+      aria-describedby="wr-confirm-desc"
       onCancel={(e) => {
         e.preventDefault()
         onCancel()
@@ -356,9 +370,9 @@ function ConfirmDialog({ words, min, onCancel, onConfirm }: { words: number; min
         <h2 id="wr-confirm-title" className="wr-display">
           {words} of {min} words
         </h2>
-        <p>
-          You are {min - words} words under the minimum. Under-length answers lose marks — but you can still hand it in to see
-          your analysis.
+        <p id="wr-confirm-desc">
+          You are {plural(min - words, 'word')} under the minimum. Under-length answers lose marks — but you can still hand
+          your {noun} in to see its analysis.
         </p>
         <div className="wr-dialog__actions">
           <button type="button" className="wr-btn wr-btn--ink" onClick={onCancel} autoFocus>

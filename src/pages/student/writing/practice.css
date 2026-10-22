@@ -742,62 +742,43 @@
   line-height: 1.35;
 }
 
+/* The stages snake: left to right, down, right to left, down… The grid
+   position and the arrow direction come from Figures.tsx (snake()). */
+.wr-proc__list > .wr-proc__stage {
+  grid-column: var(--wr-c2);
+  grid-row: var(--wr-r2);
+}
+
+.wr-fig--large .wr-proc__list > .wr-proc__stage {
+  grid-column: var(--wr-c4);
+  grid-row: var(--wr-r4);
+}
+
 .wr-proc__arrow {
   position: absolute;
-  right: -15px;
-  top: 50%;
   width: 12px;
   height: 12px;
   border-top: 2.5px solid var(--wr-ink);
   border-right: 2.5px solid var(--wr-ink);
+}
+
+.wr-proc__arrow[data-d2='right'],
+.wr-fig--large .wr-proc__arrow[data-d4='right'] {
+  inset: 50% -15px auto auto;
   transform: translateY(-50%) rotate(45deg);
 }
 
-.wr-proc__list > li:nth-child(2n) .wr-proc__arrow {
-  right: auto;
-  left: 50%;
-  top: auto;
-  bottom: -18px;
-  transform: translateX(-50%) rotate(135deg);
-}
-
-.wr-fig--large .wr-proc__list > li .wr-proc__arrow {
-  right: -15px;
-  left: auto;
-  top: 50%;
-  bottom: auto;
-  transform: translateY(-50%) rotate(45deg);
-}
-
-.wr-fig--large .wr-proc__list > li:nth-child(4) .wr-proc__arrow {
-  right: auto;
-  left: 50%;
-  top: auto;
-  bottom: -18px;
-  transform: translateX(-50%) rotate(135deg);
-}
-
-.wr-fig--large .wr-proc__list > li:nth-child(n + 5) {
-  grid-row: 2;
-}
-
-.wr-fig--large .wr-proc__list > li:nth-child(5) {
-  grid-column: 4;
-}
-.wr-fig--large .wr-proc__list > li:nth-child(6) {
-  grid-column: 3;
-}
-.wr-fig--large .wr-proc__list > li:nth-child(7) {
-  grid-column: 2;
-}
-.wr-fig--large .wr-proc__list > li:nth-child(8) {
-  grid-column: 1;
-}
-
-.wr-fig--large .wr-proc__list > li:nth-child(n + 5) .wr-proc__arrow {
-  right: auto;
-  left: -15px;
+.wr-proc__arrow[data-d2='left'],
+.wr-fig--large .wr-proc__arrow[data-d4='left'] {
+  inset: 50% auto auto -15px;
   transform: translateY(-50%) rotate(-135deg);
+}
+
+/* Down arrows sit right of centre, clear of the zone tags on the next card's top-left. */
+.wr-proc__arrow[data-d2='down'],
+.wr-fig--large .wr-proc__arrow[data-d4='down'] {
+  inset: auto auto -18px 76%;
+  transform: translateX(-50%) rotate(135deg);
 }
 
 /* ============================================================ dialogs === */
@@ -936,8 +917,116 @@
   box-shadow: 0 0 6px #6fe3a8;
 }
 
+.wr-bar__counts {
+  display: contents;
+}
+
+.wr-bar__links {
+  color: var(--wr-text-soft);
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.wr-bar__links strong {
+  color: #fff8ea;
+  font-size: 1.25rem;
+}
+
+.wr-bar__links.is-met strong {
+  color: #8ff0c4;
+}
+
 .wr-bar__submit {
   min-height: 44px;
+}
+
+.wr-bar__submit:disabled {
+  opacity: 0.72;
+  filter: saturate(0.45);
+}
+
+.wr-bar__floor {
+  font-size: 0.82em;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+/* Phones: the task and the plan fold away above the paper. */
+.wr-fold {
+  background: #fbf7ec;
+  color: var(--wr-ink);
+  box-shadow: 0 14px 24px -14px rgb(0 0 0 / 0.75);
+}
+
+.wr-fold--plan {
+  background: #fdf6df;
+}
+
+.wr-fold__summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 8px 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.wr-fold__summary::-webkit-details-marker {
+  display: none;
+}
+
+.wr-fold__summary:focus-visible {
+  outline-offset: -3px;
+}
+
+.wr-fold__tag {
+  padding: 4px 6px 3px;
+  border: 2px solid currentColor;
+  color: var(--wr-coral-ink);
+  font-family: var(--font-pixel);
+  font-size: 7px;
+  letter-spacing: 0.8px;
+  line-height: 1.5;
+}
+
+.wr-fold__text {
+  overflow: hidden;
+  font-size: 0.86rem;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.wr-fold__open {
+  color: var(--wr-coral-ink);
+  font-size: 0.8rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.wr-fold__open::after {
+  content: ' ▾';
+}
+
+.wr-fold[open] .wr-fold__open {
+  font-size: 0;
+}
+
+.wr-fold[open] .wr-fold__open::after {
+  content: 'Hide ▴';
+  font-size: 0.8rem;
+}
+
+.wr-fold__body > .wr-prompt,
+.wr-fold__body > .wr-plan {
+  box-shadow: none;
+}
+
+.wr-fold__body > .wr-prompt {
+  padding-top: 4px;
 }
 
 .wr-studio__grid {
@@ -1105,6 +1194,10 @@
   line-height: var(--wr-lh);
   overflow: hidden;
   resize: none;
+}
+
+.wr-paper__editor--auto {
+  field-sizing: content;
 }
 
 .wr-paper__editor:focus {
@@ -2641,6 +2734,11 @@
   font-weight: 700;
 }
 
+.wr-history__band.is-unjudged {
+  border-style: dashed;
+  opacity: 0.6;
+}
+
 .wr-history__main {
   display: grid;
   min-width: 0;
@@ -2970,8 +3068,31 @@
     gap: 8px;
   }
 
-  .wr-bar__words span {
-    display: none;
+  .wr-bar__counts {
+    display: grid;
+    gap: 1px;
+    line-height: 1.15;
+  }
+
+  .wr-bar__words,
+  .wr-bar__links {
+    font-size: 0.74rem;
+  }
+
+  .wr-bar__words strong,
+  .wr-bar__links strong {
+    font-size: 0.98rem;
+  }
+
+  .wr-bar__floorwrap {
+    display: grid;
+    line-height: 1.1;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .wr-bar__floor {
+    font-size: 0.72rem;
   }
 
   .wr-bar__submit {

@@ -1,11 +1,13 @@
-import { useRef, type CSSProperties } from 'react'
+import { useRef, type CSSProperties, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import type { Attempt } from '../../../learn/progress'
 import type { PracticeInfo } from '../../../learn/types'
 import { metaFor, type WritingTask } from './content'
 import type { Draft } from './drafts'
-import { useRevealed } from './hooks'
-import { detailOf, formatBand, relativeTime } from './stats'
+import { useRevealed, useSwipeRow } from './hooks'
+import { bestBandOf, detailOf, formatBand, relativeTime } from './stats'
+import { SwipePager } from './SwipePager'
+import { countWords } from './words'
 
 interface AssignmentTrayProps {
   sets: PracticeInfo[]
@@ -35,7 +37,6 @@ const TILTS = [-1.2, 0.9, -0.6, 1.3]
 export function AssignmentTray({ sets, best, attemptsFor, drafts }: AssignmentTrayProps) {
   const ref = useRef<HTMLDivElement>(null)
   const revealed = useRevealed(ref, 0.08)
-  let n = 0
 
   return (
     <section className="wr-section wr-tray" aria-labelledby="wr-tray-title">
@@ -55,19 +56,16 @@ export function AssignmentTray({ sets, best, attemptsFor, drafts }: AssignmentTr
           const items = sets.filter((s) => group.tasks.includes(metaFor(s.id).task))
           if (!items.length) return null
           return (
-            <div key={group.id} className="wr-tray__group">
-              <div className="wr-tray__group-head">
-                <h3 className="wr-display">{group.title}</h3>
-                <p>{group.note}</p>
-              </div>
-              <ul className="wr-tray__list">
+            <TrayGroup key={group.id} title={group.title} note={group.note}>
                 {items.map((set, i) => {
                   const meta = metaFor(set.id)
                   const b = best[set.id]
                   const tries = attemptsFor(set.id)
                   const draft = drafts[set.id]
-                  const draftWords = draft ? draft.text.trim().split(/\s+/).filter(Boolean).length : 0
-                  const index = ++n
+                  const draftWords = draft ? countWords(draft.text) : 0
+                  // The circled grade is the highest judged band; the best checklist is shown beside it.
+                  const topBand = bestBandOf(tries)
+                  const index = sets.indexOf(set) + 1
                   const taskLabel = meta.task === 'task2' ? 'TASK 2' : meta.task === 'task1-gt' ? 'TASK 1 · GT' : 'TASK 1'
                   return (
                     <li key={set.id} className="wr-sheet" style={{ '--wr-tilt': `${TILTS[i % TILTS.length]}deg`, '--wr-i': index } as CSSProperties}>
@@ -75,7 +73,9 @@ export function AssignmentTray({ sets, best, attemptsFor, drafts }: AssignmentTr
                         to={`practice/${set.id}`}
                         className="wr-sheet__link"
                         aria-label={`Assignment ${index}: ${set.title}. ${set.kinds.join(', ')}. ${set.minutes} minutes, at least ${meta.minWords} words.${
-                          b ? ` Best: band ${b.band ? formatBand(b.band) : '—'}, checklist ${b.score} of ${b.total}.` : ' Not attempted yet.'
+                          b
+                            ? ` Best band ${topBand === null ? 'not yet counted' : formatBand(topBand)}; best checklist ${b.score} of ${b.total}.`
+                            : ' Not attempted yet.'
                         }${draftWords ? ` Draft saved with ${draftWords} words.` : ''}`}
                       >
                         <span className="wr-sheet__clip" aria-hidden="true" />
@@ -101,9 +101,10 @@ export function AssignmentTray({ sets, best, attemptsFor, drafts }: AssignmentTr
                               <svg viewBox="0 0 120 56" className="wr-sheet__circle">
                                 <path d="M14 30 C10 12 50 4 82 8 C112 12 118 34 96 46 C72 56 26 54 14 38 C10 30 18 20 30 16" />
                               </svg>
-                              <span className="wr-sheet__band">{b.band ? formatBand(b.band) : `${b.score}/10`}</span>
+                              <span className="wr-sheet__band">{topBand !== null ? formatBand(topBand) : `${b.score}/${b.total}`}</span>
                               <span className="wr-sheet__grade-note">
-                                best · {b.score}/{b.total} checklist · {tries.length} {tries.length === 1 ? 'essay' : 'essays'}
+                                {topBand !== null ? `best band · checklist ${b.score}/${b.total}` : 'best checklist'} ·{' '}
+                                {tries.length} {tries.length === 1 ? 'attempt' : 'attempts'}
                               </span>
                             </span>
                           ) : (
@@ -122,11 +123,28 @@ export function AssignmentTray({ sets, best, attemptsFor, drafts }: AssignmentTr
                     </li>
                   )
                 })}
-              </ul>
-            </div>
+            </TrayGroup>
           )
         })}
       </div>
     </section>
+  )
+}
+
+/** One group of sheets: a grid on wide screens, a swipeable row with a pager on phones. */
+function TrayGroup({ title, note, children }: { title: string; note: string; children: ReactNode }) {
+  const listRef = useRef<HTMLUListElement>(null)
+  const row = useSwipeRow(listRef)
+  return (
+    <div className="wr-tray__group">
+      <div className="wr-tray__group-head">
+        <h3 className="wr-display">{title}</h3>
+        <p>{note}</p>
+      </div>
+      <ul ref={listRef} className={`wr-tray__list ${row.scrollable && !row.atEnd ? 'has-more' : ''}`}>
+        {children}
+      </ul>
+      <SwipePager row={row} noun="assignment" />
+    </div>
   )
 }

@@ -8,7 +8,8 @@ import { hasContent, loadDraft, type Draft } from './drafts'
 import { HubHero, type ContinueAction } from './HubHero'
 import { LetterBoard } from './LetterBoard'
 import { Manuscript, type ProfessorNote } from './Manuscript'
-import { CRITERIA, summarise } from './stats'
+import { CRITERIA, detailOf, hasJudgedBand, summarise } from './stats'
+import { countWords } from './words'
 import './world.css'
 import './hub.css'
 
@@ -78,7 +79,7 @@ export default function WritingHub() {
   let secondary: ContinueAction | undefined
   if (latestDraft) {
     const [id, d] = latestDraft
-    const words = d.text.trim().split(/\s+/).filter(Boolean).length
+    const words = countWords(d.text)
     next = {
       kind: 'draft',
       eyebrow: 'YOUR DRAFT IS STILL WARM',
@@ -108,10 +109,21 @@ export default function WritingHub() {
       const low = ranked[0]
       const high = ranked[ranked.length - 1]
       if (low && high && (latest[low.id] ?? 0) < (latest[high.id] ?? 0)) {
-        const lecture = lectures.find((l) => l.id === low.lecture)
+        // Task Achievement means different things for a report, a letter and an essay.
+        const assessed = stats.attempts.find((a) => hasJudgedBand(a) && detailOf(a).criteria)
+        const task = metaFor(assessed?.practiceId ?? '').task
+        const lectureId =
+          low.id === 'TA' ? (task === 'task1-academic' ? 'task1-overview' : task === 'task1-gt' ? 'gt-letters' : 'essay-types') : low.lecture
+        const lecture = lectures.find((l) => l.id === lectureId)
+        const top = latest[high.id] ?? 0
+        const tied = ranked.filter((c) => latest[c.id] === top).length
+        const strong =
+          tied === 1
+            ? `Your ${high.name} is your strongest suit, ${first}.`
+            : `Lovely, ${first}: ${tied} of your criteria are level at band ${top}.`
         return {
-          text: `Your ${high.name} is your strongest suit, ${first}. ${low.name} is lagging a little — one letter could lift it by half a band.`,
-          to: `lecture/${low.lecture}`,
+          text: `${strong} ${low.name} (band ${latest[low.id]}) is lagging a little — one letter could lift it by half a band.`,
+          to: `lecture/${lectureId}`,
           cta: `Read “${lecture?.title ?? 'the letter'}”`,
         }
       }
@@ -142,7 +154,11 @@ export default function WritingHub() {
     }
   }, [summary.latestCriteria, stats.lecturesCompleted, stats.attempts, first, unattempted, weakest])
 
-  const points: BandPoint[] = summary.bands.map((b) => ({ ...b, title: titleOf(b.practiceId) }))
+  const points: BandPoint[] = summary.bands.map((b) => ({
+    ...b,
+    title: titleOf(b.practiceId),
+    task: metaFor(b.practiceId).task === 'task2' ? 2 : 1,
+  }))
   const tips = [
     latestDraft
       ? `Hoo! Your draft of “${titleOf(latestDraft[0])}” is still on the desk, ${first}. Shall we finish it tonight?`
@@ -174,6 +190,7 @@ export default function WritingHub() {
         recent={stats.attempts.slice(0, 3)}
         titleOf={titleOf}
         note={note}
+        firstTo={`practice/${practiceSets[0].id}`}
       />
       <footer className="wr-hub__foot">
         <p className="wr-hand">The lamps stay lit till dawn. Come back tomorrow — the ink never dries here.</p>

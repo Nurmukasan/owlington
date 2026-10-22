@@ -5,8 +5,8 @@
  * Everything here is original Owlington material. The band descriptors are
  * short paraphrases for self-assessment, not the official IELTS wording.
  */
-import type { CheckId, Criterion } from './analysis'
-import type { WritingTask } from './content'
+import { analyse, runChecks, type CheckContext, type CheckId, type Criterion } from './analysis'
+import { metaFor, type WritingTask } from './content'
 
 export interface LineSeries {
   id: string
@@ -432,20 +432,20 @@ In conclusion, I largely agree that healthy cooking should be taught to all seco
     ],
     checks: ['min-words', 'paragraphs-4', 'paraphrase', 'both-views', 'position', 'conclusion', 'examples', 'linkers-5', 'no-overuse', 'sentence-variety'],
     model: {
-      text: `It is often said that the only way to truly master a foreign language is to move abroad and use it every day. Others argue that apps, video calls and online courses now make it possible to reach the same level without leaving home. While technology has transformed language learning, I believe that living abroad still offers advantages that are difficult to replicate on a screen.
+      text: `It is often said that the most effective way to master a foreign language is to move abroad and use it every day. Others argue that apps, video calls and online courses now make it possible to reach the same level without leaving home. While technology has transformed language learning, I believe that living abroad still offers advantages that are difficult to replicate on a screen.
 
 Those who favour learning at home make a convincing case. Online platforms provide structured grammar practice, instant feedback and access to native speakers through video lessons, often at a fraction of the cost of living overseas. Moreover, learners can study at their own pace and fit lessons around work or family commitments. For instance, many professionals now prepare for international exams entirely online and achieve impressive results.
 
 On the other hand, supporters of immersion point out that a language is not only a set of rules but a social skill. Living abroad forces learners to use the language constantly and unpredictably, whether they are opening a bank account, understanding a regional accent or joining a conversation at work. This daily exposure develops fluency and listening skills far faster than scheduled lessons, because learners cannot simply switch to their mother tongue when a situation becomes difficult. Immersion also teaches cultural knowledge, such as humour and politeness conventions, that textbooks rarely cover.
 
-In my view, technology is an excellent foundation, but it cannot fully replace immersion. The most effective approach is probably a combination: building vocabulary and grammar at home, and then spending time abroad to turn that knowledge into confident, natural communication.
+In my view, technology is an excellent foundation, but it cannot fully replace immersion. Apps and online lessons build vocabulary and grammar efficiently, yet it is time spent abroad that turns this knowledge into confident, natural communication.
 
-In conclusion, although modern tools allow people to make remarkable progress without travelling, living in a country where the language is spoken remains the most effective way to achieve real fluency.`,
+In conclusion, although modern tools allow people to make remarkable progress without travelling, they lay the foundation rather than finish the job: living in a country where the language is spoken is still what turns that knowledge into real fluency.`,
       notes: [
         {
-          quote: 'It is often said that the only way to truly master a foreign language',
+          quote: 'It is often said that the most effective way to master a foreign language',
           criterion: 'LR',
-          note: 'An impersonal opening paraphrases “some people believe” and introduces view one.',
+          note: 'An impersonal opening paraphrases “some people believe”, and “the most effective way” keeps the exact meaning of “the best way” without copying it — or overstating it.',
         },
         {
           quote: 'I believe that living abroad still offers advantages that are difficult to replicate on a screen',
@@ -480,7 +480,7 @@ In conclusion, although modern tools allow people to make remarkable progress wi
         {
           quote: 'In my view, technology is an excellent foundation, but it cannot fully replace immersion.',
           criterion: 'TA',
-          note: 'A separate paragraph for the writer’s own view: a nuanced answer that still has a clear side.',
+          note: 'A separate paragraph for the writer’s own view: technology lays the foundation, immersion brings fluency. The conclusion repeats exactly this, so the position is clear from the first line to the last.',
         },
       ],
     },
@@ -559,6 +559,35 @@ In conclusion, children spend less time outdoors mainly because of the appeal of
 
 export const findPrompt = (id: string | undefined) => PROMPTS.find((p) => p.id === id)
 
+// content.ts keeps a light copy of each prompt's task and minimum for the hub; make sure the two never drift.
+if (import.meta.env?.DEV) {
+  for (const p of PROMPTS) {
+    const meta = metaFor(p.id)
+    if (meta.task !== p.task || meta.minWords !== p.minWords) {
+      console.warn(`[writing] PROMPT_META for “${p.id}” does not match prompts.ts (task/minWords).`)
+    }
+  }
+}
+
+/** Everything the checklist needs to know about a prompt, so every caller judges an essay the same way. */
+export function checkContextFor(prompt: WritingPrompt, text: string, analysis = analyse(text, prompt.question)): CheckContext {
+  const fig = prompt.figure
+  const labels = fig?.kind === 'line' ? [...fig.series.map((s) => s.label), ...fig.xs, fig.title] : []
+  return {
+    text,
+    analysis,
+    minWords: prompt.minWords,
+    question: prompt.question,
+    bullets: prompt.bulletChecks,
+    figureValues: fig?.kind === 'line' ? fig.series.flatMap((s) => s.values) : [],
+    ignoreNumbers: [...[prompt.question, ...labels].join(' ').matchAll(/\d+(?:\.\d+)?/g)].map((m) => Number(m[0])),
+  }
+}
+
+/** Runs the prompt's 10-point checklist on a text. */
+export const checkEssay = (prompt: WritingPrompt, text: string, analysis = analyse(text, prompt.question)) =>
+  runChecks(prompt.checks, checkContextFor(prompt, text, analysis))
+
 export const taskLabel = (p: WritingPrompt) =>
   p.task === 'task2' ? 'Writing Task 2' : p.task === 'task1-gt' ? 'Writing Task 1 · General Training' : 'Writing Task 1 · Academic'
 
@@ -598,7 +627,7 @@ export function rubricFor(task: WritingTask): CriterionInfo[] {
               8: 'All three bullets are fully covered and developed. The purpose is clear and the tone is consistently right for the reader.',
               7: 'All bullets are covered and the purpose is clear. The tone is appropriate and consistent; some bullets could go further.',
               6: 'All bullets are addressed, though some unevenly. The purpose is generally clear, but the tone slips in places.',
-              5: 'One bullet is missing or barely touched. The purpose is unclear in places and the tone is inconsistent.',
+              5: 'All bullets are mentioned, but some are barely developed. The purpose is unclear in places and the tone is inconsistent. (A missing bullet is below band 5.)',
             },
           }
         : {

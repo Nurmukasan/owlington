@@ -85,7 +85,7 @@ export function WordMeter({ words, min, paragraphs, paragraphTarget, bump = 0 }:
         <span className="wr-words__fill" style={{ transform: `scaleX(${fill})` }} />
         <span className="wr-words__goal" style={{ left: `${(min / scaleMax) * 100}%` }} aria-hidden="true" />
       </div>
-      <p className="wr-words__note" aria-live="polite">
+      <p className="wr-words__note">
         {met ? `✓ Minimum reached${words > min * 1.3 ? ' — keep it focused' : ''}` : `${min - words} more to the minimum`}
       </p>
     </section>

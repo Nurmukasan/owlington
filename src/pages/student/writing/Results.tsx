@@ -6,13 +6,15 @@ import { floatText, pixelConfetti } from '../../../learn/fx'
 import type { Attempt } from '../../../learn/progress'
 import { sfx } from '../../../learn/sfx'
 import type { PracticeInfo } from '../../../learn/types'
-import type { CheckResult, TextAnalysis } from './analysis'
+import type { CheckResult, Criterion, TextAnalysis } from './analysis'
 import { WaxSeal } from './art'
 import { InkedEssay } from './Assessment'
+import { pieceNoun } from './content'
 import { History } from './History'
 import { useCountUp } from './hooks'
-import type { Annotation, WritingPrompt } from './prompts'
+import { rubricFor, type Annotation, type WritingPrompt } from './prompts'
 import { formatBand } from './stats'
+import { countWords } from './words'
 
 interface ResultsProps {
   info: PracticeInfo
@@ -35,11 +37,37 @@ const CRITERION_NAMES = {
   GRA: 'Grammar',
 }
 
-function verdict(score: number) {
-  if (score >= 9) return { title: 'A beautifully sealed essay.', owl: 'Hoo-hoo! That is examiner-ready work. Read the model answer for the final polish.' }
-  if (score >= 7) return { title: 'Strong work — sealed and stamped.', owl: 'Lovely! A couple of checklist points stand between you and the top. See which below.' }
-  if (score >= 5) return { title: 'Solid foundations.', owl: 'Good effort. Fix the missed points below and write it again — second drafts are where bands move.' }
-  return { title: 'Every manuscript starts somewhere.', owl: 'Don’t be discouraged! Read the model answer, then try again with the checklist beside you.' }
+/**
+ * The headline weighs both inputs: the objective checklist and the student's own
+ * band estimate. Only both together earn "examiner-ready"; otherwise the owl
+ * praises what the checklist shows and points at the weakest criterion.
+ */
+function verdict(score: number, band: number | undefined, weakest: { name: string; band: number } | null, noun: string) {
+  const lift = weakest ? ` Your lowest criterion is ${weakest.name} (band ${weakest.band}) — that is where the next half band hides.` : ''
+  if (score >= 9 && (band ?? 0) >= 7)
+    return {
+      title: `A beautifully sealed ${noun}.`,
+      owl: 'Hoo-hoo! The checklist and your own grading agree: this is examiner-ready work. Read the model answer for the final polish.',
+    }
+  if (score >= 9)
+    return {
+      title: score >= 10 ? 'A spotless checklist.' : 'Nearly every box ticked.',
+      owl: `${score >= 10 ? 'Every' : 'Nearly every'} structural box is ticked — lovely discipline.${lift || ' Now lift the language itself: the model answer’s margin notes show how.'}`,
+    }
+  if (score >= 7)
+    return {
+      title: 'Strong work — sealed and stamped.',
+      owl: `Lovely! A couple of checklist points stand between you and the top — see which below.${lift}`,
+    }
+  if (score >= 5)
+    return {
+      title: 'Solid foundations.',
+      owl: `Good effort. Fix the missed points below and write it again — second drafts are where bands move.${lift}`,
+    }
+  return {
+    title: 'Every manuscript starts somewhere.',
+    owl: 'Don’t be discouraged! Read the model answer, then try again with the checklist beside you.',
+  }
 }
 
 /** Step 3: the sealed result, the checklist review, the model answer and the essay history. */
@@ -50,7 +78,17 @@ export function Results({ info, prompt, attempt, checks, text, analysis, history
   const shownScore = useCountUp(attempt.score, true, 900)
   const shownXp = useCountUp(attempt.xp, true, 1200)
   const accuracy = attempt.total ? attempt.score / attempt.total : 0
-  const v = verdict(attempt.score)
+  const noun = pieceNoun(prompt.task)
+  const criteria = useMemo(() => (attempt.detail?.criteria ?? {}) as Partial<Record<Criterion, number>>, [attempt.detail])
+  const weakest = useMemo(() => {
+    const ranked = rubricFor(prompt.task)
+      .filter((c) => typeof criteria[c.id] === 'number')
+      .sort((a, b) => (criteria[a.id] ?? 0) - (criteria[b.id] ?? 0))
+    const low = ranked[0]
+    const high = ranked[ranked.length - 1]
+    return low && high && (criteria[low.id] ?? 0) < (criteria[high.id] ?? 0) ? { name: low.name, band: criteria[low.id] ?? 0 } : null
+  }, [criteria, prompt.task])
+  const v = verdict(attempt.score, attempt.band, weakest, noun)
 
   // The celebration answers the student's "Seal my essay" click.
   useEffect(() => {
@@ -68,7 +106,7 @@ export function Results({ info, prompt, attempt, checks, text, analysis, history
   const tabs: { id: Tab; label: string }[] = [
     { id: 'checklist', label: `Checklist · ${attempt.score}/10` },
     { id: 'model', label: 'Model answer' },
-    { id: 'essay', label: 'Your essay' },
+    { id: 'essay', label: `Your ${noun}` },
     { id: 'history', label: `History · ${history.length}` },
   ]
   const onTabKey = (e: KeyboardEvent<HTMLButtonElement>, i: number) => {
@@ -88,7 +126,6 @@ export function Results({ info, prompt, attempt, checks, text, analysis, history
         .slice(0, 5),
     [text],
   )
-  const criteria = (attempt.detail?.criteria ?? {}) as Partial<Record<keyof typeof CRITERION_NAMES, number>>
 
   return (
     <div className="wr-results">
@@ -192,19 +229,31 @@ export function Results({ info, prompt, attempt, checks, text, analysis, history
         ))}
       </div>
 
-      <div id={`wr-panel-${tab}`} role="tabpanel" aria-labelledby={`wr-tab-${tab}`} className="wr-tabpanel" tabIndex={0}>
-        {tab === 'checklist' && <ChecklistReview checks={checks} />}
-        {tab === 'model' && <ModelAnswer prompt={prompt} />}
-        {tab === 'essay' && (
-          <div className="wr-sheetpaper wr-sheetpaper--essay">
-            <p className="wr-sheetpaper__meta">
-              {info.title} · {analysis.words} words · {analysis.paragraphs.length} paragraphs · {analysis.linkerVariety} linking words
-            </p>
-            <InkedEssay text={text} overused={analysis.overused.map((o) => o.phrase)} />
-          </div>
-        )}
-        {tab === 'history' && <History attempts={history} title={`Every essay on “${info.title}”`} light />}
-      </div>
+      {/* Every panel stays in the DOM (inactive ones hidden), so each tab's aria-controls points at a real element. */}
+      {tabs.map((t) => (
+        <div
+          key={t.id}
+          id={`wr-panel-${t.id}`}
+          role="tabpanel"
+          aria-labelledby={`wr-tab-${t.id}`}
+          className="wr-tabpanel"
+          tabIndex={0}
+          hidden={tab !== t.id}
+        >
+          {t.id === 'checklist' && <ChecklistReview checks={checks} />}
+          {t.id === 'model' && <ModelAnswer prompt={prompt} />}
+          {t.id === 'essay' && (
+            <div className="wr-sheetpaper wr-sheetpaper--essay">
+              <p className="wr-sheetpaper__meta">
+                {info.title} · {analysis.words} words · {analysis.paragraphs.length} paragraphs · {analysis.linkerVariety} linking
+                words
+              </p>
+              <InkedEssay text={text} overused={analysis.overused.map((o) => o.phrase)} />
+            </div>
+          )}
+          {t.id === 'history' && <History attempts={history} title={`Every ${noun} on “${info.title}”`} light noun={noun} />}
+        </div>
+      ))}
     </div>
   )
 }
@@ -272,7 +321,7 @@ function ModelAnswer({ prompt }: { prompt: WritingPrompt }) {
     return out
   }, [text, notes])
 
-  const words = text.trim().split(/\s+/).length
+  const words = countWords(text)
 
   return (
     <div className={`wr-model ${active !== null ? `is-focus-${active + 1}` : ''}`}>

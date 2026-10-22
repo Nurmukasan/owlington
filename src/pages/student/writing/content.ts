@@ -435,5 +435,8 @@ export const PROMPT_META: Record<string, PromptMeta> = {
 
 export const metaFor = (id: string): PromptMeta => PROMPT_META[id] ?? { task: 'task2', minWords: 250, stamp: 'ESSAY' }
 
+/** What the student is writing: a report, a letter or an essay. */
+export const pieceNoun = (task: WritingTask) => (task === 'task1-gt' ? 'letter' : task === 'task1-academic' ? 'report' : 'essay')
+
 /** localStorage key for a prompt's autosaved draft. */
 export const draftKey = (userId: string, practiceId: string) => `wr-draft:${userId}:${practiceId}`

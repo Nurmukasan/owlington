@@ -1,5 +1,7 @@
 import type { Attempt } from '../../../learn/progress'
 import type { Criterion } from './analysis'
+import { metaFor } from './content'
+import { judgeFloor } from './words'
 
 /** What a writing attempt keeps in `detail`. */
 export interface WritingDetail {
@@ -39,11 +41,22 @@ export interface WritingSummary {
   assessed: number
 }
 
+/**
+ * A band estimate only counts towards records and the chart when the text was
+ * long enough to judge (half the minimum): a near-empty sheet graded 8 proves nothing.
+ */
+export const hasJudgedBand = (a: Attempt) =>
+  typeof a.band === 'number' && a.band > 0 && detailOf(a).words >= judgeFloor(metaFor(a.practiceId).minWords)
+
+/** Highest judged band among `attempts`, or null. */
+export const bestBandOf = (attempts: Attempt[]) =>
+  attempts.reduce<number | null>((b, a) => (hasJudgedBand(a) && (b === null || (a.band as number) > b) ? (a.band as number) : b), null)
+
 /** `attempts` newest first (as SectionStats gives them). */
 export function summarise(attempts: Attempt[]): WritingSummary {
   const oldestFirst = [...attempts].reverse()
-  const withBand = oldestFirst.filter((a) => typeof a.band === 'number' && a.band > 0)
-  const withCriteria = oldestFirst.filter((a) => detailOf(a).criteria)
+  const withBand = oldestFirst.filter(hasJudgedBand)
+  const withCriteria = withBand.filter((a) => detailOf(a).criteria)
   return {
     words: attempts.reduce((sum, a) => sum + detailOf(a).words, 0),
     essays: attempts.length,

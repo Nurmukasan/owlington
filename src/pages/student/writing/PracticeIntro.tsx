@@ -5,18 +5,20 @@ import type { Attempt } from '../../../learn/progress'
 import type { PracticeInfo } from '../../../learn/types'
 import { formatClock } from '../../../learn/useTimer'
 import { CHECKS, type TextAnalysis } from './analysis'
+import { pieceNoun } from './content'
 import { History } from './History'
 import { taskLabel, type WritingPrompt } from './prompts'
-import { formatBand } from './stats'
+import { bestBandOf, formatBand } from './stats'
 import { PromptCard } from './Studio'
+import { plural } from './words'
 
 interface PracticeIntroProps {
   info: PracticeInfo
   prompt: WritingPrompt
   number: number
   history: Attempt[]
-  draftWords: number
-  draftElapsed: number
+  /** An unsubmitted draft (text and/or plan notes) and the time already on its clock. */
+  draft: { words: number; notes: number; elapsed: number } | null
   onStart: (fresh: boolean) => void
 }
 
@@ -34,15 +36,23 @@ const emptyAnalysis: TextAnalysis = {
 }
 
 /** The briefing before the clock starts: the task, what to expect and your record. */
-export function PracticeIntro({ info, prompt, number, history, draftWords, draftElapsed, onStart }: PracticeIntroProps) {
+export function PracticeIntro({ info, prompt, number, history, draft, onStart }: PracticeIntroProps) {
   const best = history.reduce<Attempt | null>((b, a) => (!b || a.score / a.total > b.score / b.total ? a : b), null)
-  const bestBand = history.reduce<number | null>((b, a) => (a.band && (b === null || a.band > b) ? a.band : b), null)
+  const bestBand = bestBandOf(history)
+  const noun = pieceNoun(prompt.task)
   const checklist = prompt.checks.map(
     (id) => CHECKS[id]({ text: '', analysis: emptyAnalysis, minWords: prompt.minWords, question: '', bullets: prompt.bulletChecks }).label,
   )
   const limit = prompt.minutes * 60
+  const draftElapsed = draft?.elapsed ?? 0
   const inkLeft = Math.max(0.08, Math.min(1, 1 - draftElapsed / limit))
-  const hasDraft = draftWords > 0
+  const hasDraft = draft !== null
+  const timeLeft = formatClock(Math.max(0, limit - draftElapsed))
+  const resumeLabel = !draft
+    ? ''
+    : draft.words
+      ? `Resume your draft · ${plural(draft.words, 'word')}`
+      : `Resume your plan · ${timeLeft} left`
   const kind = info.kinds[1] ?? info.kinds[0]
 
   return (
@@ -77,7 +87,7 @@ export function PracticeIntro({ info, prompt, number, history, draftWords, draft
             <dl className="wr-start__facts">
               <div>
                 <dt>{hasDraft ? 'Ink left' : 'Ink clock'}</dt>
-                <dd>{hasDraft ? formatClock(Math.max(0, limit - draftElapsed)) : `${prompt.minutes}:00`}</dd>
+                <dd>{hasDraft ? timeLeft : `${prompt.minutes}:00`}</dd>
               </div>
               <div>
                 <dt>Minimum</dt>
@@ -97,7 +107,7 @@ export function PracticeIntro({ info, prompt, number, history, draftWords, draft
             {hasDraft ? (
               <>
                 <button type="button" className="wr-btn wr-start__go" onClick={() => onStart(false)}>
-                  Resume your draft · {draftWords} words <span className="wr-btn__arrow" aria-hidden="true">→</span>
+                  {resumeLabel} <span className="wr-btn__arrow" aria-hidden="true">→</span>
                 </button>
                 <button type="button" className="wr-btn wr-btn--ghost" onClick={() => onStart(true)}>
                   Start on fresh paper
@@ -110,11 +120,13 @@ export function PracticeIntro({ info, prompt, number, history, draftWords, draft
             )}
           </div>
           <p className="wr-start__note">
-            {hasDraft
-              ? `Your draft was saved with ${formatClock(draftElapsed)} on the clock.`
+            {draft
+              ? `Saved with ${formatClock(draftElapsed)} on the clock${
+                  draft.notes ? ` and ${plural(draft.notes, 'plan note')}` : ''
+                }. The clock carries on where you left it.`
               : history.length
-                ? `${history.length} ${history.length === 1 ? 'essay' : 'essays'} on this prompt · best checklist ${best?.score}/${best?.total}`
-                : 'A clean sheet — your first essay on this prompt starts the record.'}
+                ? `${plural(history.length, noun)} on this prompt · best checklist ${best?.score}/${best?.total}`
+                : `A clean sheet — your first ${noun} on this prompt starts the record.`}
           </p>
         </section>
       </div>
@@ -208,11 +220,11 @@ export function PracticeIntro({ info, prompt, number, history, draftWords, draft
                   </dd>
                 </div>
                 <div>
-                  <dt>Essays</dt>
+                  <dt>{noun === 'essay' ? 'Essays' : noun === 'letter' ? 'Letters' : 'Reports'}</dt>
                   <dd>{history.length}</dd>
                 </div>
               </dl>
-              <History attempts={history} title="Read your past essays" />
+              <History attempts={history} title={`Read your past ${noun}s`} noun={noun} />
             </section>
           )}
         </div>

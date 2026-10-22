@@ -6,6 +6,10 @@
  * the post-submit analysis always agree.
  */
 
+import { countWords, judgeFloor, plural, wordTokens } from './words'
+
+export { countWords, wordTokens }
+
 // ------------------------------------------------------------------ linkers ---
 
 export type LinkerGroup = 'addition' | 'contrast' | 'cause' | 'example' | 'sequence' | 'summary'
@@ -19,19 +23,36 @@ export const LINKER_GROUPS: { id: LinkerGroup; label: string; try: string[] }[] 
   { id: 'summary', label: 'Summing up', try: ['overall', 'in conclusion', 'to sum up', 'on balance'] },
 ]
 
+/**
+ * Where a linker has to stand to count:
+ * - start: at the start of a sentence (for words like "first" or "next");
+ * - clause: at the start of a sentence or clause — after a comma, a semicolon or "and";
+ * - comma: straight after a comma (", so").
+ */
+type Position = 'start' | 'clause' | 'comma'
+
 interface LinkerDef {
   phrase: string
   group: LinkerGroup
   /** More than this many uses reads as mechanical. */
   limit: number
-  /** Only counts at the start of a sentence (for words like "first" or "next"). */
-  start?: boolean
+  position?: Position
+  /**
+   * Reads the words after the match and returns the sense the linker has there:
+   * a different group (temporal "while" is about time, not contrast) or null to skip it.
+   */
+  sense?: (after: string, before: string) => LinkerGroup | null
 }
 
-const L = (group: LinkerGroup, limit: number, phrases: string[], start = false): LinkerDef[] =>
-  phrases.map((phrase) => ({ phrase, group, limit, start }))
+const L = (group: LinkerGroup, limit: number, phrases: string[], position?: Position): LinkerDef[] =>
+  phrases.map((phrase) => ({ phrase, group, limit, position }))
 
-const LINKERS: LinkerDef[] = [
+/** "while people were still arriving", "while waiting" — while as a time word. */
+const TEMPORAL_WHILE = /^\s+(?:(?:[\p{L}'-]+\s+){0,3}?(?:was|were|is|are|am|be|being)\s+(?:still\s+|also\s+|busy\s+)?[\p{L}]+ing\b|[\p{L}]+ing\b)/iu
+/** "since 2004", "since then", "ever since" — since as a time word. */
+const TEMPORAL_SINCE = /^\s+(?:\d|then\b|the\s+(?:start|beginning|end|early|late|mid|turn|first|last)\b|last\b|early\b|childhood\b|records\b)/i
+
+const LINKER_DEFS: LinkerDef[] = [
   ...L('addition', 2, ['moreover', 'furthermore', 'in addition', 'additionally', 'what is more', 'besides']),
   ...L('addition', 4, ['also', 'as well as']),
   ...L('contrast', 2, [
@@ -48,7 +69,8 @@ const LINKERS: LinkerDef[] = [
     'on the contrary',
     'admittedly',
   ]),
-  ...L('contrast', 3, ['whereas', 'although', 'despite', 'while']),
+  ...L('contrast', 3, ['whereas', 'although', 'despite']),
+  { phrase: 'while', group: 'contrast', limit: 3, sense: (after) => (TEMPORAL_WHILE.test(after) ? 'sequence' : 'contrast') },
   ...L('contrast', 4, ['but']),
   ...L('cause', 2, [
     'as a result',
@@ -64,10 +86,24 @@ const LINKERS: LinkerDef[] = [
   ]),
   ...L('cause', 3, ['due to', 'because of']),
   ...L('cause', 4, ['because']),
+  {
+    phrase: 'since',
+    group: 'cause',
+    limit: 2,
+    sense: (after, before) => (TEMPORAL_SINCE.test(after) || /\bever\s*$/.test(before) ? null : 'cause'),
+  },
+  {
+    phrase: 'so',
+    group: 'cause',
+    limit: 3,
+    position: 'comma',
+    sense: (after) => (/^\s+(?:much|many|far|long|few|little|on|forth|called)\b/i.test(after) ? null : 'cause'),
+  },
   ...L('example', 2, ['for example', 'for instance', 'in particular', 'to illustrate', 'a case in point', 'namely']),
   ...L('example', 3, ['such as']),
   ...L('sequence', 1, ['firstly', 'secondly', 'thirdly', 'lastly']),
-  ...L('sequence', 2, ['first', 'second', 'next', 'once'], true),
+  ...L('sequence', 2, ['first', 'second', 'next'], 'start'),
+  ...L('sequence', 2, ['once'], 'clause'),
   ...L('sequence', 2, [
     'after that',
     'after this',
@@ -83,7 +119,10 @@ const LINKERS: LinkerDef[] = [
   ...L('sequence', 3, ['then']),
   ...L('summary', 1, ['in conclusion', 'to conclude', 'to sum up', 'in summary', 'in short', 'all in all', 'on balance']),
   ...L('summary', 2, ['overall']),
-].sort((a, b) => b.phrase.length - a.phrase.length)
+]
+
+/** Longest phrases first, so "on the other hand" wins over "other". */
+const LINKERS = [...LINKER_DEFS].sort((a, b) => b.phrase.length - a.phrase.length)
 
 export interface LinkerHit {
   phrase: string
@@ -94,6 +133,8 @@ export interface LinkerHit {
 }
 
 // ------------------------------------------------------------------ helpers ---
+
+const LIMIT_OF = new Map<string, number>()
 
 const STOPWORDS = new Set(
   `a about above after again against all almost also am an and any are aren't as at be because been before being below
@@ -112,22 +153,12 @@ const STOPWORDS = new Set(
 /** Normalises curly quotes so apostrophes match. */
 export const normalise = (text: string) => text.replace(/[‘’ʼ]/g, "'").replace(/[“”]/g, '"')
 
-/** Word tokens as IELTS would count them: anything between spaces with a letter or digit. */
-export function wordTokens(text: string) {
-  return text
-    .trim()
-    .split(/\s+/)
-    .filter((t) => /[\p{L}\p{N}]/u.test(t))
-}
-
-export const countWords = (text: string) => wordTokens(text).length
-
 const bareWord = (token: string) =>
   normalise(token)
     .toLowerCase()
     .replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '')
 
-const ABBREVIATIONS = /\b(e\.g|i\.e|etc|mr|mrs|ms|dr|vs|approx|no)\./gi
+const ABBREVIATIONS = /\b(?:e\.g|i\.e|etc|mr|mrs|ms|dr|vs|approx)\.|\bno\.(?=\s*\d)/gi
 
 /** Splits into sentences: at . ! ? followed by space, and at line breaks. */
 export function splitSentences(text: string) {
@@ -166,28 +197,43 @@ export function linkerRanges(text: string): LinkerRange[] {
       const start = m.index ?? 0
       const end = start + m[0].length
       if (taken.subarray(start, end).some((x) => x)) continue
-      if (def.start) {
-        const before = lower.slice(0, start).replace(/[ \t"'(]+$/, '')
-        if (before && !/[.!?;:\n]$/.test(before)) continue
+      const before = lower.slice(Math.max(0, start - 80), start)
+      if (def.position) {
+        const trimmed = before.replace(/[ \t"'(]+$/, '')
+        const atStart = !trimmed || /[.!?;:\n]$/.test(trimmed)
+        const ok =
+          def.position === 'start'
+            ? atStart
+            : def.position === 'comma'
+              ? /,$/.test(trimmed)
+              : atStart || /,$/.test(trimmed) || /(?:^|[^\p{L}])and$/u.test(trimmed)
+        if (!ok) continue
       }
+      const group = def.sense ? def.sense(lower.slice(end, end + 80), before) : def.group
+      if (!group) continue
       taken.fill(1, start, end)
-      out.push({ start, end, phrase: def.phrase, group: def.group })
+      out.push({ start, end, phrase: def.phrase, group })
     }
   }
   return out.sort((a, b) => a.start - b.start)
 }
 
-const LINKER_BY_PHRASE = new Map(LINKERS.map((d) => [d.phrase, d]))
+for (const d of LINKERS) LIMIT_OF.set(d.phrase, d.limit)
 
-/** Counts each linking word and flags the over-used ones. */
+/** Counts each linking word (per sense) and flags the over-used ones. */
 export function findLinkers(text: string): LinkerHit[] {
-  const counts = new Map<LinkerDef, number>()
+  const counts = new Map<string, { phrase: string; group: LinkerGroup; count: number }>()
   for (const r of linkerRanges(text)) {
-    const def = LINKER_BY_PHRASE.get(r.phrase)
-    if (def) counts.set(def, (counts.get(def) ?? 0) + 1)
+    const key = `${r.phrase}|${r.group}`
+    const hit = counts.get(key) ?? { phrase: r.phrase, group: r.group, count: 0 }
+    hit.count += 1
+    counts.set(key, hit)
   }
-  return [...counts.entries()]
-    .map(([def, count]) => ({ phrase: def.phrase, group: def.group, count, limit: def.limit, overused: count > def.limit }))
+  return [...counts.values()]
+    .map((h) => {
+      const limit = LIMIT_OF.get(h.phrase) ?? 2
+      return { ...h, limit, overused: h.count > limit }
+    })
     .sort((a, b) => b.count - a.count || a.phrase.localeCompare(b.phrase))
 }
 
@@ -320,6 +366,10 @@ export interface CheckContext {
   question: string
   /** Letter bullet points: a label and the words that show it was covered. */
   bullets?: { label: string; pattern: RegExp }[]
+  /** Every value plotted in the Task 1 visual (for the data check). */
+  figureValues?: number[]
+  /** Numbers printed in the question and labels — citing them is not citing data. */
+  ignoreNumbers?: number[]
 }
 
 export interface CheckResult {
@@ -334,9 +384,11 @@ export interface CheckResult {
 }
 
 const OPINION = /\b(i (?:strongly |firmly |fully |largely |partly |partially |completely |would )?(?:think|believe|agree|disagree|feel|argue|contend|support|oppose)|in my (?:view|opinion)|from my (?:perspective|point of view)|personally|it seems to me|i am convinced|this essay (?:will )?(?:argue|argues|disagree|agree|contend)s?)\b/i
-const OVERVIEW = /\b(overall|in general|generally speaking|it is (?:clear|evident|noticeable|apparent) that|clearly|the most (?:striking|noticeable|significant|obvious)|in summary|at a glance|broadly speaking|the main (?:trend|change|difference)s?)\b/i
+/** An overview has to announce itself at the start of a sentence (“Clearly” mid-sentence is not one). */
+const OVERVIEW =
+  /^(?:overall|in general|generally speaking|broadly speaking|at a glance|in summary|on the whole|it is (?:clear|evident|noticeable|apparent|obvious) (?:from the (?:graph|chart|diagram|table|data)s? )?that|it can be (?:clearly )?seen (?:from the \w+ )?that|what stands out(?: most)? (?:is|was)|the most (?:striking|noticeable|significant|obvious|important) (?:feature|change|trend|point|difference|development)s?|the (?:main|key) (?:trends?|changes?|differences?|features?|stages?|points?))\b/i
 const CONCLUSION = /\b(in conclusion|to conclude|to sum up|in summary|overall|all in all|on balance|in short|ultimately|to summari[sz]e)\b/i
-const EXAMPLES = /\b(for example|for instance|such as|to illustrate|a case in point|a good example|e\.g\.|this can be seen in|an example of)\b/gi
+const EXAMPLES = /\b(?:for example|for instance|such as|to illustrate|a case in point|a good example|this can be seen in|an example of)\b|(?<![\p{L}])e\.g\.(?=\s)/giu
 const VIEWS = /\b(some (?:people|argue|believe|claim|think)|others (?:argue|believe|claim|think|say|feel)|other people|on the one hand|on the other hand|proponents|opponents|supporters|critics|those who|advocates|it is (?:often )?(?:said|argued|claimed)|many (?:people )?(?:believe|argue|feel))\b/gi
 const CAUSES = /\b(causes?|reasons?|because|due to|result of|stems? from|leads? to|led to|is caused by|factors?|explains? why)\b/gi
 const SOLUTIONS = /\b(solutions?|solve|address|tackle|should|could|measures?|steps?|encourage|introduce|ways? to|help to|reverse)\b/gi
@@ -376,16 +428,23 @@ const SEQUENCE_GROUPS: RegExp[] = [
 const PARTICIPLES =
   'made|sold|put|kept|left|sent|built|held|taken|given|cut|spread|fed|set|brought|bought|ground|done|grown|shown|known|chosen|frozen|thrown|drawn|driven|eaten|written|spun|torn|worn|sewn|sown|split|shut|hung|laid|paid|found|seen|run|begun|shaken|woven|stuck|struck|dug|lit|spent|won|bound|beaten|broken|fallen'
 const PASSIVE = new RegExp(`\\b(?:am|is|are|was|were|be|been|being)\\s+(?:[a-z]+\\s+)?(?:[a-z]{2,}ed|${PARTICIPLES})\\b`, 'gi')
+/** Any n't form, pronoun + 'm/'re/'ve/'ll/'d/'s (possessive 's on nouns is left alone), and could've & co. */
 const CONTRACTIONS =
-  /\b(i'm|i've|i'll|i'd|don't|doesn't|didn't|can't|couldn't|won't|wouldn't|shouldn't|isn't|aren't|wasn't|weren't|haven't|hasn't|hadn't|it's|that's|there's|we're|we've|we'll|we'd|they're|they've|they'll|you're|you've|you'll|let's|what's|here's|who's|she's|he's|it'll|that'll|mustn't|needn't)\b/gi
-const SIGNOFF = /\b(yours sincerely|yours faithfully|sincerely|faithfully|best wishes|kind regards|best regards|warm regards|warmest regards|regards|all the best|take care|love|cheers|many thanks)\b/i
+  /\b(?:[a-z]+n't|(?:i|you|we|they|he|she|it|there|that|this|who|what|where|when|here|how)'(?:m|re|ve|ll|d|s)|(?:could|would|should|must|might)'ve|let's)(?![\p{L}'])/giu
+/** A closing line: short, and it starts with a closing formula. */
+const CLOSING =
+  /^(?:yours (?:sincerely|faithfully|truly)|sincerely|faithfully|kind regards|best regards|warm(?:est)? regards|regards|best wishes|all the best|take care|love|cheers|many thanks|with thanks|thanks again)\b/i
 const PURPOSE = /\b(i am writing|i'm writing|i write to|i would like to|i wanted to|i want to|the purpose of this letter|i am contacting|in response to)\b/i
 
 const firstSentenceMatching = (text: string, re: RegExp) => splitSentences(text).find((s) => re.test(s))
 const quote = (s: string, max = 90) => `“${s.length > max ? `${s.slice(0, max).trimEnd()}…` : s}”`
-const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`
 const distinctMatches = (text: string, re: RegExp) =>
   new Set([...normalise(text).matchAll(re)].map((m) => m[0].toLowerCase().replace(/\s+/g, ' ')))
+
+/** Checks that look for the absence of a fault only count once there is enough text to judge. */
+const tooShort = (analysis: TextAnalysis, minWords: number) => analysis.words < judgeFloor(minWords)
+const tooShortNote = (minWords: number) =>
+  `Too short to judge yet — this point only counts from ${judgeFloor(minWords)} words.`
 
 type CheckFn = (ctx: CheckContext) => Omit<CheckResult, 'id'>
 
@@ -411,39 +470,53 @@ export const CHECKS: Record<CheckId, CheckFn> = {
     found: `${plural(analysis.paragraphs.length, 'paragraph')} found.`,
     why: 'Clear paragraphing is part of Coherence & Cohesion. Each paragraph should have one central idea.',
   }),
-  paraphrase: ({ analysis, question }) => {
+  paraphrase: ({ analysis, question, minWords }) => {
     const run = longestSharedRun(analysis.paragraphs[0] ?? '', question)
+    const short = tooShort(analysis, minWords)
     return {
       label: 'Introduction paraphrases the question',
       criterion: 'LR',
-      met: run.length < 8,
-      found: run.length
-        ? `Longest stretch copied from the question: ${plural(run.length, 'word')} (“${run.words}”).`
-        : 'Nothing copied from the question.',
+      met: !short && run.length < 8,
+      found: short
+        ? tooShortNote(minWords)
+        : run.length
+          ? `Longest stretch copied from the question: ${plural(run.length, 'word')} (“${run.words}”).`
+          : 'Nothing copied from the question.',
       why: 'Copied words show none of your own vocabulary and may not be counted. Rephrase with synonyms and new structures.',
     }
   },
-  overview: ({ text }) => {
-    const hit = firstSentenceMatching(text, OVERVIEW)
+  overview: ({ analysis }) => {
+    const ps = analysis.paragraphs
+    const where = [...ps.slice(0, 2), ...(ps.length > 2 ? ps.slice(-1) : [])]
+    const hit = where.map((p) => firstSentenceMatching(p, OVERVIEW)).find(Boolean)
     return {
       label: 'A clear overview of the main features',
       criterion: 'TA',
       met: Boolean(hit),
-      found: hit ? `Overview: ${quote(hit)}` : 'No overview sentence found (try starting one with “Overall, …”).',
+      found: hit
+        ? `Overview: ${quote(hit)}`
+        : 'No overview sentence found near the start or end (try starting one with “Overall, …”).',
       why: 'Without a clear overview of the main trends or stages, Task Achievement is held back however accurate the details are.',
     }
   },
-  data: ({ text }) => {
-    const figures = [...normalise(text).matchAll(/\b\d+(?:[.,]\d+)?\s*(?:%|°c|percent)?/gi)]
-      .map((m) => m[0].trim())
-      .filter((n) => !/^(19|20)\d\d$/.test(n))
-    const distinct = [...new Set(figures)]
+  data: ({ text, figureValues = [], ignoreNumbers = [] }) => {
+    const cited = [...normalise(text).matchAll(/(?<![\p{L}\p{N}.])\d+(?:\.\d+)?(?![\p{N}])/gu)]
+      .map((m) => m[0])
+      .filter((n) => !/^(19|20)\d\d$/.test(n) && !ignoreNumbers.includes(Number(n)))
+    const fromFigure = figureValues.length
+      ? cited.filter((n) => figureValues.some((v) => Math.abs(v - Number(n)) <= 0.1 + 1e-9))
+      : cited
+    const distinct = [...new Set(fromFigure.map((n) => String(Number(n))))]
     return {
       label: 'Key data supported with figures',
       criterion: 'TA',
       met: distinct.length >= 4,
-      found: distinct.length ? `${plural(distinct.length, 'figure')} cited: ${distinct.slice(0, 6).join(', ')}${distinct.length > 6 ? '…' : ''}.` : 'No figures cited.',
-      why: 'Every key feature needs evidence from the visual: values, units and dates.',
+      found: distinct.length
+        ? `${plural(distinct.length, 'value')} from the ${figureValues.length ? 'graph' : 'visual'} cited: ${distinct.slice(0, 6).join(', ')}${
+            distinct.length > 6 ? ' …' : '.'
+          }`
+        : 'No values from the visual cited (labels such as age ranges and years do not count).',
+      why: 'Every key feature needs evidence from the visual: the values themselves, with units and dates. Aim for four or more.',
     }
   },
   'trend-words': ({ text }) => {
@@ -466,13 +539,14 @@ export const CHECKS: Record<CheckId, CheckFn> = {
       why: 'Task 1 asks you to make comparisons. Compare groups at the key moments, not just describe each one.',
     }
   },
-  'no-opinion': ({ text }) => {
+  'no-opinion': ({ text, analysis, minWords }) => {
     const hit = firstSentenceMatching(text, OPINION)
+    const short = tooShort(analysis, minWords)
     return {
       label: 'Objective: no personal opinion',
       criterion: 'TA',
-      met: !hit,
-      found: hit ? `Opinion found: ${quote(hit)}` : 'Stays objective throughout.',
+      met: !hit && !short,
+      found: hit ? `Opinion found: ${quote(hit)}` : short ? tooShortNote(minWords) : 'Stays objective throughout.',
       why: 'Task 1 is a factual report. Opinions and invented reasons are irrelevant and can lower Task Achievement.',
     }
   },
@@ -563,13 +637,15 @@ export const CHECKS: Record<CheckId, CheckFn> = {
     found: analysis.linkerVariety ? `${analysis.linkerVariety} different: ${analysis.linkers.map((l) => l.phrase).slice(0, 6).join(', ')}.` : 'No linking words found.',
     why: 'A range of cohesive devices, used for their exact meaning, is a core part of Coherence & Cohesion.',
   }),
-  'no-overuse': ({ analysis }) => ({
+  'no-overuse': ({ analysis, minWords }) => ({
     label: 'No linking word over-used',
     criterion: 'CC',
-    met: analysis.overused.length === 0,
+    met: analysis.overused.length === 0 && !tooShort(analysis, minWords),
     found: analysis.overused.length
       ? `Over-used: ${analysis.overused.map((l) => `“${l.phrase}” ×${l.count}`).join(', ')}.`
-      : 'Every linker is used a sensible number of times.',
+      : tooShort(analysis, minWords)
+        ? tooShortNote(minWords)
+        : 'Every linker is used a sensible number of times.',
     why: 'Repeating the same linker sounds mechanical — examiners specifically note over-use.',
   }),
   'sentence-variety': ({ analysis }) => {
@@ -584,13 +660,16 @@ export const CHECKS: Record<CheckId, CheckFn> = {
       why: 'Grammatical range shows in variety: crisp simple sentences alongside controlled complex ones.',
     }
   },
-  'lexical-variety': ({ analysis }) => {
+  'lexical-variety': ({ analysis, minWords }) => {
     const pct = Math.round(analysis.contentVariety * 100)
+    const short = tooShort(analysis, minWords)
     return {
       label: 'Varied vocabulary (65%+ different content words)',
       criterion: 'LR',
-      met: analysis.contentVariety >= 0.65,
-      found: `${pct}% of your content words are different${analysis.repeated[0] ? `; most repeated: “${analysis.repeated[0].word}” ×${analysis.repeated[0].count}` : ''}.`,
+      met: analysis.contentVariety >= 0.65 && !short,
+      found: short
+        ? `${pct}% different, but short texts always look varied. ${tooShortNote(minWords)}`
+        : `${pct}% of your content words are different${analysis.repeated[0] ? `; most repeated: “${analysis.repeated[0].word}” ×${analysis.repeated[0].count}` : ''}.`,
       why: 'Rotating synonyms and word families shows lexical range; repeating the same words signals a limited vocabulary.',
     }
   },
@@ -608,17 +687,24 @@ export const CHECKS: Record<CheckId, CheckFn> = {
   signoff: ({ text }) => {
     const lines = normalise(text).split('\n').map((l) => l.trim()).filter(Boolean)
     const first = lines[0] ?? ''
-    const closing = lines.slice(-3).find((l) => SIGNOFF.test(l)) ?? ''
-    const toNamed = /^dear\s+(mr|mrs|ms|miss|dr|professor)\b/i.test(first)
+    // Scan up from the end: the sign-off is a short line (the name may follow it) that starts with a closing formula.
+    const closing =
+      lines
+        .slice(-4)
+        .reverse()
+        .find((l) => wordTokens(l).length <= 4 && CLOSING.test(l)) ?? ''
+    const toNamed = /^dear\s+(mr|mrs|ms|miss|mx|dr|professor)\b/i.test(first)
     const toUnknown = /^dear\s+(sir|madam)/i.test(first)
     let met = Boolean(closing)
-    if (toNamed) met = /sincerely|kind regards|best regards/i.test(closing)
-    if (toUnknown) met = /faithfully/i.test(closing)
+    if (closing && toNamed) met = /^(yours sincerely|sincerely|kind regards|best regards)\b/i.test(closing)
+    if (closing && toUnknown) met = /^(yours faithfully|faithfully)\b/i.test(closing)
     return {
       label: 'Sign-off matches the greeting',
       criterion: 'TA',
       met,
-      found: closing ? `Sign-off: “${closing}”` : 'No sign-off found at the end.',
+      found: closing
+        ? `Sign-off: “${closing}”${met ? '' : toNamed ? ' — a named reader takes “Yours sincerely”.' : toUnknown ? ' — “Dear Sir or Madam” takes “Yours faithfully”.' : ''}`
+        : 'No sign-off line found at the end (for example “Yours sincerely,” followed by your name).',
       why: '“Dear Ms Okafor” → “Yours sincerely”; “Dear Sir or Madam” → “Yours faithfully”. A mismatched close jars.',
     }
   },
@@ -636,27 +722,70 @@ export const CHECKS: Record<CheckId, CheckFn> = {
   'bullet-1': (ctx) => bulletCheck(ctx, 0),
   'bullet-2': (ctx) => bulletCheck(ctx, 1),
   'bullet-3': (ctx) => bulletCheck(ctx, 2),
-  'no-contractions': ({ text }) => {
-    const hits = [...new Set([...normalise(text).matchAll(CONTRACTIONS)].map((m) => m[0]))]
+  'no-contractions': ({ text, analysis, minWords }) => {
+    const hits = [...new Set([...normalise(text).matchAll(CONTRACTIONS)].map((m) => m[0].toLowerCase()))]
+    const short = tooShort(analysis, minWords)
     return {
-      label: 'Consistent formal tone (no contractions)',
-      criterion: 'LR',
-      met: hits.length === 0,
-      found: hits.length ? `Contractions: ${hits.slice(0, 5).map((h) => `“${h}”`).join(', ')}.` : 'No contractions — the tone stays formal.',
+      label: 'Consistent, appropriate tone (no contractions)',
+      criterion: 'TA',
+      met: hits.length === 0 && !short,
+      found: hits.length
+        ? `Contractions: ${hits.slice(0, 5).map((h) => `“${h}”`).join(', ')}.`
+        : short
+          ? tooShortNote(minWords)
+          : 'No contractions — the tone stays formal.',
       why: 'Writing to an organiser you barely know calls for a polite, fairly formal tone: “I am”, “do not”, “it is”.',
     }
   },
 }
 
-function bulletCheck({ text, analysis, bullets }: CheckContext, i: number): Omit<CheckResult, 'id'> {
-  const bullet = bullets?.[i]
+/**
+ * Finds a different sentence (8+ words) for each bullet point. Bullets are matched
+ * in every order and the order that covers the most bullets wins, so one sentence
+ * can never tick all three, but a letter may still cover them out of order.
+ */
+function bulletSentences({ text, analysis, bullets = [] }: CheckContext): (string | undefined)[] {
   const body = analysis.paragraphs.slice(1).join('\n') || text
-  const hit = bullet ? firstSentenceMatching(body, bullet.pattern) : undefined
+  const sentences = splitSentences(body).filter((s) => wordTokens(s).length >= 8)
+  const orders = permutations(bullets.map((_, i) => i))
+  let best: (string | undefined)[] = bullets.map(() => undefined)
+  let bestCount = -1
+  for (const order of orders) {
+    const used = new Set<number>()
+    const found: (string | undefined)[] = bullets.map(() => undefined)
+    let from = 0
+    for (const b of order) {
+      let k = sentences.findIndex((s, j) => j >= from && !used.has(j) && bullets[b].pattern.test(s))
+      if (k < 0) k = sentences.findIndex((s, j) => !used.has(j) && bullets[b].pattern.test(s))
+      if (k < 0) continue
+      used.add(k)
+      from = k + 1
+      found[b] = sentences[k]
+    }
+    const count = found.filter(Boolean).length
+    if (count > bestCount) {
+      best = found
+      bestCount = count
+    }
+  }
+  return best
+}
+
+function permutations(xs: number[]): number[][] {
+  if (xs.length <= 1) return [xs]
+  return xs.flatMap((x, i) => permutations([...xs.slice(0, i), ...xs.slice(i + 1)]).map((rest) => [x, ...rest]))
+}
+
+function bulletCheck(ctx: CheckContext, i: number): Omit<CheckResult, 'id'> {
+  const bullet = ctx.bullets?.[i]
+  const hit = bullet ? bulletSentences(ctx)[i] : undefined
   return {
     label: `Bullet ${i + 1} covered: ${bullet?.label ?? ''}`,
     criterion: 'TA',
     met: Boolean(hit),
-    found: hit ? `Covered in: ${quote(hit, 80)}` : 'We could not find this bullet point in your letter.',
+    found: hit
+      ? `Covered in: ${quote(hit, 80)}`
+      : 'We could not find a sentence of its own (8+ words) for this bullet point in your letter.',
     why: 'Each bullet point should be clearly covered — ideally one paragraph each. A missing bullet limits Task Achievement.',
   }
 }

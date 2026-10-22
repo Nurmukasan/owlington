@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react'
+import { useEffect, useId, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from 'react'
 import { formatBand, formatDate } from './stats'
 
 export interface BandPoint {
@@ -7,15 +7,25 @@ export interface BandPoint {
   title: string
   score: number
   total: number
+  /** Task 1 (report or letter) and Task 2 (essay) are marked differently: they are not directly comparable. */
+  task: 1 | 2
+}
+
+/** Task 2 essays are circles, Task 1 reports and letters are diamonds. */
+function Mark({ task, cx, cy, r, className, style }: { task: 1 | 2; cx: number; cy: number; r: number; className: string; style?: CSSProperties }) {
+  if (task === 2) return <circle cx={cx} cy={cy} r={r} className={className} style={style} />
+  const d = r * 1.3
+  return <path d={`M${cx} ${cy - d} L${cx + d} ${cy} L${cx} ${cy + d} L${cx - d} ${cy} Z`} className={className} style={style} />
 }
 
 const HEIGHT = 200
 const M = { top: 26, right: 40, bottom: 30, left: 34 }
 
 /**
- * Self-assessed band estimates over time: one ink line on parchment, the latest
- * essay emphasised in coral, a crosshair tooltip (pointer and keyboard) and a
- * table view twin.
+ * Self-assessed band estimates over time: one ink line on parchment (no area wash:
+ * the axis starts at band 4, so a fill would exaggerate the change), Task 1 and
+ * Task 2 told apart by marker shape, the latest essay emphasised in coral, a
+ * crosshair tooltip (pointer and keyboard) and a table view twin.
  */
 export function BandChart({ points }: { points: BandPoint[] }) {
   const wrapRef = useRef<HTMLDivElement>(null)
@@ -42,7 +52,7 @@ export function BandChart({ points }: { points: BandPoint[] }) {
   const ticks = Array.from({ length: max - min + 1 }, (_, i) => min + i)
 
   const line = points.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(p.band).toFixed(1)}`).join(' ')
-  const area = n > 1 ? `${line} L${x(n - 1).toFixed(1)} ${y(min)} L${x(0).toFixed(1)} ${y(min)} Z` : ''
+  const tasks = new Set(points.map((p) => p.task))
   const last = n - 1
   const bestIndex = points.reduce((bi, p, i) => (p.band > points[bi].band ? i : bi), 0)
 
@@ -91,6 +101,22 @@ export function BandChart({ points }: { points: BandPoint[] }) {
     <figure className="wr-chart">
       <figcaption className="wr-chart__head">
         <span className="wr-chart__title">Band estimate per essay</span>
+        {tasks.size > 1 && !table && (
+          <span className="wr-chart__legend" aria-hidden="true">
+            <span>
+              <svg width="12" height="12" viewBox="0 0 12 12">
+                <path d="M6 1 L11 6 L6 11 L1 6 Z" />
+              </svg>
+              Task 1
+            </span>
+            <span>
+              <svg width="12" height="12" viewBox="0 0 12 12">
+                <circle cx="6" cy="6" r="4.5" />
+              </svg>
+              Task 2
+            </span>
+          </span>
+        )}
         <button type="button" className="wr-chart__toggle" aria-pressed={table} onClick={() => setTable((t) => !t)}>
           {table ? 'View as chart' : 'View as table'}
         </button>
@@ -105,6 +131,7 @@ export function BandChart({ points }: { points: BandPoint[] }) {
                 <th scope="col">#</th>
                 <th scope="col">Date</th>
                 <th scope="col">Assignment</th>
+                <th scope="col">Task</th>
                 <th scope="col">Band</th>
                 <th scope="col">Checklist</th>
               </tr>
@@ -115,6 +142,7 @@ export function BandChart({ points }: { points: BandPoint[] }) {
                   <td>{i + 1}</td>
                   <td>{formatDate(p.at)}</td>
                   <td>{p.title}</td>
+                  <td>{p.task}</td>
                   <td>{formatBand(p.band)}</td>
                   <td>
                     {p.score}/{p.total}
@@ -152,7 +180,6 @@ export function BandChart({ points }: { points: BandPoint[] }) {
             ))}
             <line x1={M.left} x2={width - M.right} y1={y(min)} y2={y(min)} className="wr-chart__base" />
 
-            {area && <path d={area} className="wr-chart__area" />}
             {n > 1 && <path d={line} className="wr-chart__line" pathLength={1} />}
 
             {a && active !== null && (
@@ -160,8 +187,9 @@ export function BandChart({ points }: { points: BandPoint[] }) {
             )}
 
             {points.map((p, i) => (
-              <circle
+              <Mark
                 key={p.at}
+                task={p.task}
                 cx={x(i)}
                 cy={y(p.band)}
                 r={i === last ? 6.5 : active === i ? 6 : 4.5}
@@ -216,14 +244,18 @@ export function BandChart({ points }: { points: BandPoint[] }) {
               aria-hidden="true"
             >
               <strong>Band {formatBand(a.band)}</strong>
-              <span>{a.title}</span>
+              <span>
+                Task {a.task} · {a.title}
+              </span>
               <span>
                 {formatDate(a.at)} · checklist {a.score}/{a.total}
               </span>
             </div>
           )}
           <p className="visually-hidden" aria-live="polite">
-            {a ? `Essay ${(active ?? 0) + 1}: band ${formatBand(a.band)}, ${a.title}, ${formatDate(a.at)}, checklist ${a.score} of ${a.total}.` : ''}
+            {a
+              ? `Essay ${(active ?? 0) + 1}, Task ${a.task}: band ${formatBand(a.band)}, ${a.title}, ${formatDate(a.at)}, checklist ${a.score} of ${a.total}.`
+              : ''}
           </p>
         </div>
       )}

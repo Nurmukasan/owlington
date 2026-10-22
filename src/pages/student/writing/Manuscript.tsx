@@ -24,6 +24,8 @@ interface ManuscriptProps {
   recent: Attempt[]
   titleOf: (practiceId: string) => string
   note: ProfessorNote
+  /** Where the empty "recently sealed" card sends a brand-new student. */
+  firstTo: string
 }
 
 const WORDS_PER_PAGE = 250
@@ -37,7 +39,7 @@ const MILESTONES = [
 ]
 
 /** Progress as "your manuscript": a growing stack of pages, bands over time and the four criteria. */
-export function Manuscript({ summary, points, streak, today, sectionXp, recent, titleOf, note }: ManuscriptProps) {
+export function Manuscript({ summary, points, streak, today, sectionXp, recent, titleOf, note, firstTo }: ManuscriptProps) {
   const ref = useRef<HTMLDivElement>(null)
   const revealed = useRevealed(ref, 0.1)
   const words = useCountUp(summary.words, revealed, 1400)
@@ -210,7 +212,7 @@ export function Manuscript({ summary, points, streak, today, sectionXp, recent, 
         </div>
       </div>
 
-      <div className={`wr-ms__below ${recent.length ? '' : 'is-solo'}`}>
+      <div className="wr-ms__below">
         <aside className="wr-note" aria-label="Professor Hoot’s note">
           <span className="wr-note__tape" aria-hidden="true" />
           <div className="wr-note__owl" aria-hidden="true">
@@ -224,6 +226,29 @@ export function Manuscript({ summary, points, streak, today, sectionXp, recent, 
             </Link>
           </div>
         </aside>
+
+        {recent.length === 0 && (
+          <div className="wr-recent wr-recent--empty">
+            <h3 className="wr-recent__title">Recently sealed</h3>
+            <ol className="wr-recent__ghosts" aria-hidden="true">
+              {[0, 1].map((i) => (
+                <li key={i} className="wr-recent__ghost" style={{ '--wr-i': i } as CSSProperties}>
+                  <span className="wr-recent__band">?</span>
+                  <span className="wr-recent__ghost-lines">
+                    <span />
+                    <span />
+                  </span>
+                </li>
+              ))}
+            </ol>
+            <p className="wr-recent__empty-copy">
+              Your sealed essays will be filed here, each with its band, its checklist score and the full text to reread.
+            </p>
+            <Link to={firstTo} className="wr-recent__empty-cta">
+              Seal your first: a 20-minute report <span aria-hidden="true">→</span>
+            </Link>
+          </div>
+        )}
 
         {recent.length > 0 && (
           <div className="wr-recent">

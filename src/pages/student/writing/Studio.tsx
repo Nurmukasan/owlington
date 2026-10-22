@@ -1,7 +1,21 @@
-import { useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
+import {
+  memo,
+  useDeferredValue,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type ReactNode,
+  type RefObject,
+} from 'react'
 import type { PracticeInfo } from '../../../learn/types'
+import { useStopwatch } from '../../../learn/useTimer'
 import { analyse } from './analysis'
+import { pieceNoun } from './content'
 import { FigureView } from './Figures'
+import { useMediaQuery } from './hooks'
 import { CohesionPanel, InkTimer, SentenceBars, WordMeter } from './LivePanels'
 import { taskLabel, type WritingPrompt } from './prompts'
 import { formatDate, relativeTime } from './stats'
@@ -14,30 +28,52 @@ interface StudioProps {
   onText: (text: string) => void
   plan: string[]
   onPlan: (index: number, value: string) => void
-  remaining: number
+  /** Seconds on the clock before this sitting. */
+  banked: number
+  /** Written with the live clock total on every tick. */
+  totalRef: RefObject<number>
+  onTimeUp: () => void
   paused: boolean
   onTogglePause: () => void
   savedAt: string | null
+  /** Fewest words that can be handed in. */
+  floor: number
   onSubmit: () => void
   wordBump: number
 }
 
+/** Can the textarea grow with its content in CSS alone? (Then no layout work per keystroke.) */
+const FIELD_SIZING = typeof CSS !== 'undefined' && typeof CSS.supports === 'function' && CSS.supports('field-sizing', 'content')
+
+const WordMeterMemo = memo(WordMeter)
+const CohesionPanelMemo = memo(CohesionPanel)
+const SentenceBarsMemo = memo(SentenceBars)
+
 /** The distraction-free writing studio: prompt, plan, lined paper and live feedback. */
 export function Studio(props: StudioProps) {
-  const { info, prompt, text, plan, remaining, paused, savedAt } = props
+  const { info, prompt, text, plan, paused, savedAt, floor } = props
   const deferred = useDeferredValue(text)
   const analysis = useMemo(() => analyse(deferred, prompt.question), [deferred, prompt.question])
   const editorRef = useRef<HTMLTextAreaElement>(null)
   const [today] = useState(() => formatDate(new Date().toISOString()))
-  const paragraphTarget = prompt.task === 'task2' ? '4–5' : prompt.task === 'task1-gt' ? '4–5' : '3–4'
+  const narrow = useMediaQuery('(max-width: 860px)')
+  const paragraphTarget = prompt.task === 'task1-academic' ? '3–4' : '4–5'
   const linkerTarget = prompt.task === 'task2' ? 5 : 4
+  const noun = pieceNoun(prompt.task)
+  const canHandIn = analysis.words >= floor
+  const notes = plan.filter((p) => p.trim()).length
 
-  // Grow the paper with the essay so the lines never scroll inside a box.
+  // Grow the paper with the essay so the lines never scroll inside a box. Browsers with
+  // `field-sizing: content` do it in CSS; the rest measure once per frame, not per keystroke.
   useLayoutEffect(() => {
+    if (FIELD_SIZING) return
     const el = editorRef.current
     if (!el) return
-    el.style.height = 'auto'
-    el.style.height = `${el.scrollHeight + 2}px`
+    const raf = window.requestAnimationFrame(() => {
+      el.style.height = 'auto'
+      el.style.height = `${el.scrollHeight + 2}px`
+    })
+    return () => window.cancelAnimationFrame(raf)
   }, [text])
 
   useEffect(() => {
@@ -46,6 +82,15 @@ export function Studio(props: StudioProps) {
 
   const onChange = (e: ChangeEvent<HTMLTextAreaElement>) => props.onText(e.target.value)
 
+  // One polite announcement for milestones only, never for every word.
+  const overused = analysis.overused.map((l) => `“${l.phrase}”`).join(', ')
+  const announcement = [
+    analysis.words >= prompt.minWords ? `Minimum of ${prompt.minWords} words reached.` : '',
+    overused ? `Over-used linking words: ${overused}.` : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   return (
     <div className="wr-studio">
       <div className="wr-bar" role="region" aria-label="Writing controls">
@@ -53,12 +98,25 @@ export function Studio(props: StudioProps) {
           <span className="wr-stamp wr-bar__stamp">{prompt.task === 'task2' ? 'TASK 2' : 'TASK 1'}</span>
           <span className="wr-bar__title">{info.title}</span>
         </div>
-        <InkTimer remaining={remaining} total={prompt.minutes * 60} paused={paused} onTogglePause={props.onTogglePause} compact />
-        <p className={`wr-bar__words ${analysis.words >= prompt.minWords ? 'is-met' : ''}`} aria-hidden="true">
-          <strong>{analysis.words}</strong>/{prompt.minWords}
-          <span> words</span>
-        </p>
-        <p className="wr-bar__saved" aria-live="polite">
+        <StudioClock
+          banked={props.banked}
+          limit={prompt.minutes * 60}
+          paused={paused}
+          onTogglePause={props.onTogglePause}
+          totalRef={props.totalRef}
+          onTimeUp={props.onTimeUp}
+        />
+        <div className="wr-bar__counts" aria-hidden="true">
+          <p className={`wr-bar__words ${analysis.words >= prompt.minWords ? 'is-met' : ''}`}>
+            <strong>{analysis.words}</strong>/{prompt.minWords}
+            <span> words</span>
+          </p>
+          <p className={`wr-bar__links ${analysis.linkerVariety >= linkerTarget ? 'is-met' : ''}`}>
+            <strong>{analysis.linkerVariety}</strong>
+            <span> {analysis.linkerVariety === 1 ? 'linker' : 'linkers'}</span>
+          </p>
+        </div>
+        <p className="wr-bar__saved">
           {savedAt ? (
             <>
               <span className="wr-bar__dot" aria-hidden="true" /> Saved {relativeTime(savedAt)}
@@ -67,31 +125,77 @@ export function Studio(props: StudioProps) {
             'Autosave on'
           )}
         </p>
-        <button type="button" className="wr-btn wr-btn--wax wr-bar__submit" onClick={props.onSubmit}>
-          Hand it in <span className="wr-btn__arrow" aria-hidden="true">→</span>
+        <button
+          type="button"
+          className="wr-btn wr-btn--wax wr-bar__submit"
+          onClick={props.onSubmit}
+          disabled={!canHandIn}
+          aria-describedby={canHandIn ? undefined : 'wr-floor-note'}
+        >
+          {canHandIn ? (
+            <>
+              Hand it in <span className="wr-btn__arrow" aria-hidden="true">→</span>
+            </>
+          ) : (
+            <span className="wr-bar__floorwrap">
+              Hand in <span className="wr-bar__floor">at {floor} words</span>
+            </span>
+          )}
         </button>
+        <span id="wr-floor-note" className="visually-hidden">
+          You can hand in your {noun} once it has at least {floor} words.
+        </span>
       </div>
+      <p className="visually-hidden" aria-live="polite">
+        {announcement}
+      </p>
 
       <div className="wr-studio__grid">
         <aside className="wr-studio__left" aria-label="Task and plan">
-          <PromptCard prompt={prompt} />
-          <section className="wr-plan" aria-labelledby="wr-plan-title">
-            <h2 id="wr-plan-title" className="wr-plan__title">
-              Plan <span>(5 minutes well spent)</span>
-            </h2>
-            {prompt.plan.map((field, i) => (
-              <label key={field.label} className="wr-plan__field">
-                <span className="wr-plan__label">{field.label}</span>
-                <textarea
-                  value={plan[i] ?? ''}
-                  rows={2}
-                  placeholder={field.hint}
-                  onChange={(e) => props.onPlan(i, e.target.value)}
-                  className="wr-plan__input"
-                />
-              </label>
-            ))}
-          </section>
+          <Fold
+            narrow={narrow}
+            className="wr-fold--task"
+            summary={
+              <>
+                <span className="wr-fold__tag">{prompt.task === 'task2' ? 'TASK 2' : 'TASK 1'}</span>
+                <span className="wr-fold__text">{prompt.instructions[0]}</span>
+                <span className="wr-fold__open">Show task</span>
+              </>
+            }
+          >
+            <PromptCardMemo prompt={prompt} />
+          </Fold>
+          <Fold
+            narrow={narrow}
+            className="wr-fold--plan"
+            summary={
+              <>
+                <span className="wr-fold__tag">PLAN</span>
+                <span className="wr-fold__text">
+                  {notes ? `${notes} of ${prompt.plan.length} notes made` : 'Five minutes of planning, well spent'}
+                </span>
+                <span className="wr-fold__open">Open</span>
+              </>
+            }
+          >
+            <section className="wr-plan" aria-labelledby="wr-plan-title">
+              <h2 id="wr-plan-title" className="wr-plan__title">
+                Plan <span>(5 minutes well spent)</span>
+              </h2>
+              {prompt.plan.map((field, i) => (
+                <label key={field.label} className="wr-plan__field">
+                  <span className="wr-plan__label">{field.label}</span>
+                  <textarea
+                    value={plan[i] ?? ''}
+                    rows={2}
+                    placeholder={field.hint}
+                    onChange={(e) => props.onPlan(i, e.target.value)}
+                    className="wr-plan__input"
+                  />
+                </label>
+              ))}
+            </section>
+          </Fold>
         </aside>
 
         <div className="wr-studio__paper">
@@ -103,12 +207,12 @@ export function Studio(props: StudioProps) {
               <span>{today}</span>
             </div>
             <label htmlFor="wr-editor" className="visually-hidden">
-              Your answer to {info.title}
+              Your {noun}: {info.title}
             </label>
             <textarea
               id="wr-editor"
               ref={editorRef}
-              className="wr-paper__editor"
+              className={`wr-paper__editor ${FIELD_SIZING ? 'wr-paper__editor--auto' : ''}`}
               value={text}
               onChange={onChange}
               readOnly={paused}
@@ -136,18 +240,67 @@ export function Studio(props: StudioProps) {
         </div>
 
         <aside className="wr-studio__right" aria-label="Live feedback">
-          <WordMeter
+          <WordMeterMemo
             words={analysis.words}
             min={prompt.minWords}
             paragraphs={analysis.paragraphs.length}
             paragraphTarget={paragraphTarget}
             bump={props.wordBump}
           />
-          <CohesionPanel linkers={analysis.linkers} target={linkerTarget} />
-          <SentenceBars sentences={analysis.sentences} />
+          <CohesionPanelMemo linkers={analysis.linkers} target={linkerTarget} />
+          <SentenceBarsMemo sentences={analysis.sentences} />
         </aside>
       </div>
     </div>
+  )
+}
+
+/** On phones the task and the plan fold away so the paper starts near the top. */
+function Fold({ narrow, className, summary, children }: { narrow: boolean; className: string; summary: ReactNode; children: ReactNode }) {
+  if (!narrow) return <>{children}</>
+  return (
+    <details className={`wr-fold ${className}`}>
+      <summary className="wr-fold__summary">{summary}</summary>
+      <div className="wr-fold__body">{children}</div>
+    </details>
+  )
+}
+
+interface StudioClockProps {
+  banked: number
+  limit: number
+  paused: boolean
+  onTogglePause: () => void
+  totalRef: RefObject<number>
+  onTimeUp: () => void
+}
+
+/**
+ * The ink clock owns its stopwatch, so its four ticks a second re-render only
+ * this little bottle, never the paper or the live panels.
+ */
+function StudioClock({ banked, limit, paused, onTogglePause, totalRef, onTimeUp }: StudioClockProps) {
+  const { elapsed } = useStopwatch(!paused)
+  const total = banked + elapsed
+  const remaining = limit - total
+  const over = remaining <= 0
+
+  useEffect(() => {
+    totalRef.current = total
+  }, [total, totalRef])
+
+  useEffect(() => {
+    if (over) onTimeUp()
+  }, [over, onTimeUp])
+
+  const stage = over ? 'over' : remaining <= 300 ? 'low' : 'ok'
+  return (
+    <>
+      <InkTimer remaining={remaining} total={limit} paused={paused} onTogglePause={onTogglePause} compact />
+      <span className="visually-hidden" aria-live="polite">
+        {stage === 'over' ? 'Time is up. Finish your sentence and hand it in.' : stage === 'low' ? 'Five minutes left on the ink clock.' : ''}
+      </span>
+    </>
   )
 }
 
@@ -215,3 +368,5 @@ export function PromptCard({ prompt, compact = false }: { prompt: WritingPrompt;
     </section>
   )
 }
+
+const PromptCardMemo = memo(PromptCard)

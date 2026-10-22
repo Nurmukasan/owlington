@@ -224,14 +224,33 @@ function LineChart({ figure, large }: { figure: LineFigure; large: boolean }) {
 
 // -------------------------------------------------------------- process ---
 
+/** Where stage `i` sits in a snaking grid of `cols` columns, and which way its arrow points. */
+function snake(i: number, count: number, cols: number) {
+  const row = Math.floor(i / cols)
+  const pos = i % cols
+  const forward = row % 2 === 0
+  const col = forward ? pos + 1 : cols - pos
+  const last = i === count - 1
+  const dir = last ? 'none' : pos === cols - 1 ? 'down' : forward ? 'right' : 'left'
+  return { col, row: row + 1, dir }
+}
+
 function ProcessDiagram({ figure, large }: { figure: ProcessFigure; large: boolean }) {
   const zoneOf = (i: number) => figure.zones.find(([, a, b]) => i >= a && i <= b)?.[0]
+  const count = figure.stages.length
   const items: ReactNode[] = []
   figure.stages.forEach((stage, i) => {
     const zone = zoneOf(i)
     const zoneStart = figure.zones.find(([, a]) => a === i)
+    // Two layouts snake the same way: 2 columns in the sidebar, 4 in the enlarged view.
+    const two = snake(i, count, 2)
+    const four = snake(i, count, 4)
     items.push(
-      <li key={stage.title} className={`wr-proc__stage ${zone === figure.zones[1]?.[0] ? 'is-home' : ''}`} style={{ '--wr-i': i } as CSSProperties}>
+      <li
+        key={stage.title}
+        className={`wr-proc__stage ${zone === figure.zones[1]?.[0] ? 'is-home' : ''}`}
+        style={{ '--wr-i': i, '--wr-c2': two.col, '--wr-r2': two.row, '--wr-c4': four.col, '--wr-r4': four.row } as CSSProperties}
+      >
         {zoneStart && <span className="wr-proc__zone">{zoneStart[0]}</span>}
         <span className="wr-proc__num" aria-hidden="true">
           {i + 1}
@@ -239,7 +258,7 @@ function ProcessDiagram({ figure, large }: { figure: ProcessFigure; large: boole
         <ProcessIcon name={stage.icon} size={large ? 64 : 46} />
         <span className="wr-proc__title">{stage.title}</span>
         <span className="wr-proc__detail">{stage.detail}</span>
-        {i < figure.stages.length - 1 && <span className="wr-proc__arrow" aria-hidden="true" />}
+        {i < count - 1 && <span className="wr-proc__arrow" data-d2={two.dir} data-d4={four.dir} aria-hidden="true" />}
       </li>,
     )
   })
@@ -247,7 +266,7 @@ function ProcessDiagram({ figure, large }: { figure: ProcessFigure; large: boole
     <figure className={`wr-fig wr-proc ${large ? 'wr-fig--large' : ''}`}>
       <figcaption className="wr-fig__caption">
         <span className="wr-fig__title">{figure.title}</span>
-        <span className="wr-fig__unit">{figure.stages.length} stages</span>
+        <span className="wr-fig__unit">{count} stages · follow the numbers</span>
       </figcaption>
       <ol className="wr-proc__list">{items}</ol>
     </figure>
