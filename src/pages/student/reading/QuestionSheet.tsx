@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { memo, type ReactNode } from 'react'
 import { sfx } from '../../../learn/sfx'
 import type { PracticeSet, QuestionGroup } from './practice-data'
 import {
@@ -144,22 +144,37 @@ function WordMeter({ x, value }: { x: NumberedQuestion; value: string }) {
   if (!max) return null
   const count = wordCount(value)
   const over = count > max
+  // The count is for the eyes only; screen readers hear just the moment an answer goes over (or back under) the limit.
   return (
-    <p className={`rd-meter ${over ? 'is-over' : ''} ${count ? 'is-on' : ''}`} aria-live="polite">
-      {over ? (
-        <>
-          <b>{count} words</b> — the limit is {x.group.limit ?? `${max} words`}. Extra words cost the whole mark.
-        </>
-      ) : (
-        <>
-          {count} / {max} {max === 1 ? 'word' : 'words'}
-        </>
-      )}
-    </p>
+    <>
+      <p className={`rd-meter ${over ? 'is-over' : ''} ${count ? 'is-on' : ''}`}>
+        {over ? (
+          <>
+            <b>{count} words</b> — the limit is {x.group.limit ?? `${max} words`}. Extra words cost the whole mark.
+          </>
+        ) : (
+          <>
+            {count} / {max} {max === 1 ? 'word' : 'words'}
+          </>
+        )}
+      </p>
+      <span className="visually-hidden" role="status">
+        {over ? `Question ${x.n} is over the word limit: ${count} words, the limit is ${max}.` : ''}
+      </span>
+    </>
   )
 }
 
-export function QuestionSheet({ set, questions, answers, onAnswer, flagged, onToggleFlag, current, onCurrent }: SheetProps) {
+export const QuestionSheet = memo(function QuestionSheet({
+  set,
+  questions,
+  answers,
+  onAnswer,
+  flagged,
+  onToggleFlag,
+  current,
+  onCurrent,
+}: SheetProps) {
   const choose = (id: string, value: string) => {
     if (answers[id] !== value) sfx.click()
     onAnswer(id, value)
@@ -370,7 +385,7 @@ export function QuestionSheet({ set, questions, answers, onAnswer, flagged, onTo
           })}
         </p>
         {group.maxWords && (
-          <p className={`rd-meter ${over.length ? 'is-over is-on' : ''}`} aria-live="polite">
+          <p className={`rd-meter ${over.length ? 'is-over is-on' : ''}`} role="status">
             {over.length
               ? `${over.map((x) => `Question ${x.n}`).join(', ')}: over the limit (${group.limit}). Extra words cost the whole mark.`
               : `${LIMIT_WORDS[group.maxWords] ?? group.maxWords} ${group.maxWords === 1 ? 'word' : 'words'} at most per gap.`}
@@ -409,4 +424,4 @@ export function QuestionSheet({ set, questions, answers, onAnswer, flagged, onTo
       })}
     </div>
   )
-}
+})

@@ -3,18 +3,24 @@
 /* ================================================================ hero === */
 
 .rd-hero {
+  /* The window's centre, as a percentage of the hero's width. */
+  --rd-win-x: 69;
   --rd-win-w: 280px;
   --rd-win-h: 430px;
-  --rd-win-left: calc(69% - var(--rd-win-w) / 2);
+  --rd-win-left: calc(var(--rd-win-x) * 1% - var(--rd-win-w) / 2);
   --rd-win-top: calc(var(--hud-space) + 34px);
   --rd-floor-h: 118px;
+  --rd-pad-x: clamp(20px, 6.5vw, 104px);
+  /* How far the librarian's speech bubble reaches left of the window. */
+  --rd-bubble-dx: 86px;
   position: relative;
   isolation: isolate;
+  container-type: inline-size;
   display: flex;
   align-items: center;
   min-height: max(780px, 100dvh);
   overflow: hidden;
-  padding: calc(var(--hud-space) + 40px) clamp(20px, 6.5vw, 104px) calc(var(--rd-floor-h) + 44px);
+  padding: calc(var(--hud-space) + 40px) var(--rd-pad-x) calc(var(--rd-floor-h) + 44px);
 }
 
 .rd-hero__scene {
@@ -358,7 +364,7 @@
 .rd-bubble {
   position: absolute;
   z-index: 3;
-  left: -86px;
+  left: calc(-1 * var(--rd-bubble-dx));
   bottom: 118px;
   width: min(300px, calc(var(--rd-win-w) + 40px));
   padding: 14px 16px 10px;
@@ -557,10 +563,20 @@
 
 /* ------------------------------------------------------- content --- */
 
+/* The text column always ends before the speech bubble, whatever the width.
+   (cqw is a share of the hero's content box; the window is placed in its padding
+   box, hence the padding term.) */
 .rd-hero__content {
   position: relative;
   z-index: 3;
-  width: min(620px, 100%);
+  container-type: inline-size;
+  width: min(
+    620px,
+    calc(
+      var(--rd-win-x) * 1cqw + var(--rd-win-x) * var(--rd-pad-x) / 50 - var(--rd-win-w) / 2 - var(--rd-bubble-dx) -
+        var(--rd-pad-x) - 24px
+    )
+  );
 }
 
 .rd-hero__eyebrow {
@@ -597,6 +613,9 @@
 }
 
 .rd-hero__title-line:nth-child(3) {
+  /* "Library" always takes its own line, so the title never runs under the window. */
+  display: block;
+  width: fit-content;
   animation-delay: 460ms;
 }
 
@@ -661,11 +680,12 @@
   display: flex;
   align-items: center;
   gap: 7px;
-  color: var(--rd-text-3);
-  font-family: var(--font-pixel);
-  font-size: 7px;
-  letter-spacing: 1px;
-  line-height: 1.6;
+  color: var(--rd-text-2);
+  font-family: var(--font-pixel-body);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  line-height: 1.3;
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -1253,7 +1273,7 @@
   background: var(--rd-gold);
   color: var(--rd-ink);
   font-family: var(--font-pixel);
-  font-size: 7px;
+  font-size: 8px;
   white-space: nowrap;
   box-shadow: 0 3px 0 var(--rd-gold-deep);
   animation: rd-tag-bob 1.6s ease-in-out infinite;
@@ -1649,8 +1669,8 @@
   background: var(--rd-wine);
   color: #fff4dc;
   font-family: var(--font-pixel);
-  font-size: 7px;
-  letter-spacing: 1px;
+  font-size: 8px;
+  letter-spacing: 0.5px;
   box-shadow: 0 2px 0 #5e1620;
 }
 
@@ -1762,8 +1782,8 @@
 
 .rd-card__stamp-top,
 .rd-card__stamp-date {
-  font-size: 6px;
-  letter-spacing: 1px;
+  font-size: 8px;
+  letter-spacing: 0.5px;
 }
 
 .rd-card__stamp-score {
@@ -2523,6 +2543,17 @@
 
 /* ----------------------------------------------------------- medals --- */
 
+.rd-medals .rd-journal__h {
+  margin-bottom: 4px;
+}
+
+.rd-medals__note {
+  margin: 0 0 12px;
+  color: var(--rd-paper-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 .rd-medals__list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2626,6 +2657,35 @@
   }
 }
 
+/* Smaller laptops and tablets: a narrower window further right, with the bubble
+   over the glass instead of reaching into the text column. */
+@media (max-width: 1180px) {
+  .rd-hero {
+    --rd-win-x: 73;
+    --rd-win-w: 240px;
+    --rd-win-h: 380px;
+    --rd-bubble-dx: 10px;
+  }
+
+  .rd-bubble {
+    width: calc(var(--rd-win-w) + 20px);
+  }
+
+  .rd-bubble::after {
+    left: 53px;
+  }
+
+  .rd-fcandle--d {
+    display: none;
+  }
+}
+
+@container (max-width: 470px) {
+  .rd-plaques {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 1100px) {
   .rd-stacks__layout {
     grid-template-columns: minmax(0, 1fr);
@@ -2639,16 +2699,6 @@
 
   .rd-plaques {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .rd-hero {
-    --rd-win-w: 240px;
-    --rd-win-h: 380px;
-    --rd-win-left: calc(73% - var(--rd-win-w) / 2);
-  }
-
-  .rd-hero__content {
-    width: min(540px, 100%);
   }
 }
 
@@ -2668,16 +2718,18 @@
       linear-gradient(180deg, #d6bb88 0%, #efdcb2 3%, #f3e3c0 8%, #f3e3c0 100%);
   }
 
+  /* A short tab of ribbon, so it never covers the chart's "Show as table" toggle. */
   .rd-journal__ribbon {
     left: auto;
     right: 40px;
+    height: 40px;
   }
 }
 
 @media (max-width: 760px) {
   .rd-hero {
-    --rd-win-w: 112px;
-    --rd-win-h: 172px;
+    --rd-win-w: 104px;
+    --rd-win-h: 160px;
     --rd-win-left: calc(100% - var(--rd-win-w) - 20px);
     --rd-win-top: calc(var(--hud-space) + 18px);
     --rd-floor-h: 64px;
@@ -2686,9 +2738,19 @@
     padding: calc(var(--hud-space) + 22px) 16px calc(var(--rd-floor-h) + 54px);
   }
 
-  .rd-hero__eyebrow,
-  .rd-hero__title {
-    max-width: calc(100% - var(--rd-win-w) - 22px);
+  /* The window, its sill and the owl own the top-right corner: the masthead keeps
+     its text beside them and the tagline starts below the sill. */
+  .rd-hero__masthead {
+    min-height: calc(var(--rd-win-top) - var(--hud-space) - 22px + var(--rd-win-h) + 30px);
+    padding-right: calc(var(--rd-win-w) + 26px);
+  }
+
+  .rd-hero__content {
+    width: 100%;
+  }
+
+  .rd-hero__tagline {
+    max-width: none;
   }
 
   .rd-hero__eyebrow {
@@ -2734,20 +2796,25 @@
   .rd-bubble,
   .rd-bookcase-wrap,
   .rd-bookcase--left,
+  .rd-fcandle--b,
   .rd-fcandle--c,
-  .rd-fcandle--e,
   .rd-fcandle--d {
     display: none;
   }
 
+  /* Two candles, both clear of the text and the owl: one floating in front of the
+     window's upper glass, one low over the floor at the right. */
   .rd-fcandle--a {
-    --rd-x: 62% !important;
-    --rd-y: calc(var(--hud-space) + 130px) !important;
+    --rd-s: 0.55 !important;
+    --rd-x: calc(100% - 20px - 30px) !important;
+    --rd-y: calc(var(--rd-win-top) + 44px) !important;
   }
 
-  .rd-fcandle--b {
-    --rd-x: 8% !important;
-    --rd-y: calc(var(--hud-space) - 6px) !important;
+  .rd-hero .rd-fcandle--e {
+    --rd-s: 0.7 !important;
+    --rd-x: calc(100% - 34px) !important;
+    top: auto;
+    bottom: calc(var(--rd-floor-h) + 8px);
   }
 
   .rd-beam {
@@ -2876,7 +2943,9 @@
   }
 
   .rd-plaque dt {
-    font-size: 6px;
+    gap: 5px;
+    font-size: 11px;
+    letter-spacing: 0.03em;
   }
 
   .rd-tally {

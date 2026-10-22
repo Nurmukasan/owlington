@@ -266,7 +266,7 @@ const nightShift: PracticeSet = {
           answers: ['downwards', 'downward'],
           evidence: ['F2'],
           explanation:
-            'Paragraph F lists “pointing them downwards” among the ways to reduce lamps’ “pull on insects”. Copy the passage’s spelling, “downwards”.',
+            'Paragraph F lists “pointing them downwards” among the ways to reduce lamps’ “pull on insects”. “Downward” is also accepted, but the safe habit is to copy the passage’s exact form: “downwards”.',
         },
       ],
     },
@@ -454,10 +454,10 @@ const owlsAndLarks: PracticeSet = {
           type: 'gap',
           before: 'People who want to become earlier risers are advised to get',
           after: 'soon after they wake up and to keep regular hours.',
-          answers: ['daylight', 'light'],
+          answers: ['daylight'],
           evidence: ['F2'],
           explanation:
-            'Experts advise people “to seek out daylight soon after waking”. “Daylight” is the exact word; “light” is also accepted because it is in the passage and keeps the meaning.',
+            'Experts advise people “to seek out daylight soon after waking”. Copy “daylight”: plain “light” is not enough, because the same sentence tells you to dim the (electric) lights in the evening.',
         },
       ],
     },
@@ -476,7 +476,7 @@ const slowReading: PracticeSet = {
       'Every few years, a new technology promises to double our reading speed.',
       'The latest apps flash words one at a time in the centre of a screen, sparing the eyes the supposed waste of travelling along a line.',
       'Their marketing is persuasive, and their users often report feeling remarkably productive.',
-      'I am not convinced, however, that feeling productive and understanding more are the same thing.',
+      'Feeling productive, however, is simply not the same thing as understanding more.',
     ),
     para(
       'B',
@@ -534,7 +534,7 @@ const slowReading: PracticeSet = {
           answer: 'NO',
           evidence: ['A4'],
           explanation:
-            '“I am not convinced… that feeling productive and understanding more are the same thing.” The writer rejects this link.',
+            '“Feeling productive, however, is simply not the same thing as understanding more.” The writer directly rejects the link, so the answer is NO, not NOT GIVEN.',
         },
         {
           id: 'sr-3',

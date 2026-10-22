@@ -22,14 +22,24 @@ export default function ReadingLecture() {
   return <LectureRoom key={lecture.id} lecture={lecture} />
 }
 
-/** Where each chapter starts, as a "page" (slide number) and as a fraction of the slides. */
+/*
+ * The notes player gives title/end cards 4s and each point 5–14s by its length, and
+ * reports `watched` as the furthest point reached on that timeline. Mirror it so the
+ * chapter ticks agree with the player's own progress bar.
+ */
+const pointSeconds = (text: string) => Math.min(14, Math.max(5, 3 + text.trim().split(/\s+/).length * 0.33))
+const CARD_SECONDS = 4
+
+/** Where each chapter starts (as a "page", i.e. slide number) and where it ends on the player's timeline. */
 function chapterMarks(lecture: Lecture) {
-  const totalSlides = 2 + lecture.chapters.reduce((n, c) => n + c.points.length, 0)
+  const total = 2 * CARD_SECONDS + lecture.chapters.reduce((n, c) => n + c.points.reduce((m, p) => m + pointSeconds(p), 0), 0)
   let slide = 1
+  let time = CARD_SECONDS
   return lecture.chapters.map((c) => {
-    const start = slide
+    const page = slide + 1
     slide += c.points.length
-    return { page: start + 1, end: slide / (totalSlides - 1) }
+    time += c.points.reduce((m, p) => m + pointSeconds(p), 0)
+    return { page, end: time / total }
   })
 }
 
@@ -39,6 +49,8 @@ function LectureRoom({ lecture }: { lecture: Lecture }) {
   const playerRef = useRef<LecturePlayerHandle>(null)
   const stageRef = useRef<HTMLDivElement>(null)
   const [chapter, setChapter] = useState(-1)
+  /** The furthest chapter opened during this visit (a chapter you have moved past counts as read). */
+  const [furthest, setFurthest] = useState(-1)
   const [justCompleted, setJustCompleted] = useState(false)
 
   const index = lectureIndex(lecture.id)
@@ -87,7 +99,7 @@ function LectureRoom({ lecture }: { lecture: Lecture }) {
               VOLUME {roman(index + 1)} OF {roman(lectures.length)} · {lecture.level.toUpperCase()} · {lecture.minutes} MIN
             </p>
             <h1 className="rd-lecture__title">{lecture.title}</h1>
-            <p className="rd-lecture__summary">{lecture.summary}</p>
+            <p className="rd-lecture__summary rd-lecture__summary--head">{lecture.summary}</p>
           </div>
         </header>
 
@@ -105,7 +117,10 @@ function LectureRoom({ lecture }: { lecture: Lecture }) {
                   section={SECTION}
                   lecture={lecture}
                   className="rd-player"
-                  onChapterChange={setChapter}
+                  onChapterChange={(i) => {
+                    setChapter(i)
+                    setFurthest((f) => Math.max(f, i))
+                  }}
                   onComplete={() => setJustCompleted(true)}
                 />
               </div>
@@ -115,6 +130,8 @@ function LectureRoom({ lecture }: { lecture: Lecture }) {
                 Vol. {roman(index + 1)} — {lecture.title}
               </span>
             </p>
+            {/* On short laptop screens the summary moves here, so the player sits higher. */}
+            <p className="rd-lecture__summary rd-lecture__summary--below">{lecture.summary}</p>
 
             {showNextUp && (
               <section className={`rd-nextup ${justCompleted ? 'is-fresh' : ''}`} aria-live="polite" aria-labelledby="rd-nextup-title">
@@ -164,7 +181,7 @@ function LectureRoom({ lecture }: { lecture: Lecture }) {
               <ol className="rd-toc__list">
                 {lecture.chapters.map((c, i) => {
                   const isCurrent = chapter === i
-                  const isRead = watched >= marks[i].end - 0.001 || done
+                  const isRead = done || furthest > i || watched >= marks[i].end - 0.001
                   return (
                     <li key={c.title} className={`rd-toc__row ${isCurrent ? 'is-current' : ''} ${isRead ? 'is-read' : ''}`}>
                       <button

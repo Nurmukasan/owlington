@@ -87,6 +87,14 @@ const BAND_TABLE: [number, number][] = [
   [4, 2.5],
 ]
 
+/**
+ * About 30/40 on the Academic paper is Band 7. One threshold for the whole section:
+ * the results ring, the Reading Log chart and every line of owl copy use it.
+ */
+export const BAND7_ACCURACY = 0.75
+/** Scores from here on get the confetti (the brief's 70%), even if they are still Band 6.5. */
+export const CELEBRATE_ACCURACY = 0.7
+
 /** A rough band if this accuracy held across a full 40-question Academic paper. */
 export function bandEstimate(score: number, total: number) {
   if (total <= 0) return 0
@@ -133,6 +141,11 @@ export function nextStep(
     const watched = watchedOf(lecture.id)
     return { kind: 'lecture', lecture, started: watched > 0, watched }
   }
+  return practiceStep(stats)
+}
+
+/** The practice test to borrow next: the first one never tried, else the weakest best score. */
+export function practiceStep(stats: SectionStats): Extract<NextStep, { kind: 'practice' }> | undefined {
   const fresh = practiceSets.find((p) => !stats.best[p.id])
   if (fresh) return { kind: 'practice', practice: fresh, reason: 'new' }
   const weakest = [...practiceSets].sort((a, b) => accuracyOf(stats.best[a.id]) - accuracyOf(stats.best[b.id]))[0]

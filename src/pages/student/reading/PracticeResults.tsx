@@ -1,4 +1,4 @@
-import { useEffect, useRef, type CSSProperties } from 'react'
+import { Fragment, useEffect, useRef, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { floatText, pixelConfetti } from '../../../learn/fx'
 import type { Attempt } from '../../../learn/progress'
@@ -8,8 +8,8 @@ import { formatClock } from '../../../learn/useTimer'
 import { lectures } from './content'
 import { useCountUp, useReducedMotion } from './hooks'
 import { LibrarianOwl } from './LibrarianOwl'
-import { HUB_PATH, accuracyOf, bandEstimate, stampDate } from './library'
-import { scoreByKind, verdictLine, type Graded } from './practice-logic'
+import { BAND7_ACCURACY, CELEBRATE_ACCURACY, HUB_PATH, accuracyOf, bandEstimate, stampDate } from './library'
+import { scoreByKind, verdictLine, type Graded, type KindScore } from './practice-logic'
 
 interface ResultsProps {
   info: PracticeInfo
@@ -23,23 +23,22 @@ interface ResultsProps {
 }
 
 const GOLDS = ['#ffcf5c', '#ffe7a3', '#f2b84b', '#fff1c9', '#c23b4a', '#cfe0ff']
-const TARGET = 0.7
-
-/** An accuracy ring with a tick at the 70% "Band 7" line. */
+/** An accuracy ring with a tick at the Band 7 line (75%, about 30 of 40). */
 function AccuracyRing({ value, shown }: { value: number; shown: number }) {
   const size = 188
   const stroke = 14
   const r = (size - stroke) / 2
   const c = 2 * Math.PI * r
-  const angle = TARGET * 2 * Math.PI - Math.PI / 2
+  const angle = BAND7_ACCURACY * 2 * Math.PI - Math.PI / 2
   const tick = (d: number) => ({ x: size / 2 + Math.cos(angle) * d, y: size / 2 + Math.sin(angle) * d })
   const a = tick(r - stroke / 2 - 5)
   const b = tick(r + stroke / 2 + 5)
+  const label = tick(r + stroke / 2 + 18)
   return (
     <div
       className="rd-ring"
       role="img"
-      aria-label={`Accuracy ${Math.round(value * 100)} percent. The Band 7 line is at about 70 percent.`}
+      aria-label={`Accuracy ${Math.round(value * 100)} percent. The Band 7 line is at ${Math.round(BAND7_ACCURACY * 100)} percent, about 30 of 40.`}
     >
       <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size} aria-hidden="true">
         <circle className="rd-ring__track" cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth={stroke} />
@@ -56,16 +55,32 @@ function AccuracyRing({ value, shown }: { value: number; shown: number }) {
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />
         <line className="rd-ring__tick" x1={a.x} y1={a.y} x2={b.x} y2={b.y} />
+        <text className="rd-ring__tick-label" x={label.x} y={label.y} dy="0.35em" textAnchor="middle">
+          B7
+        </text>
       </svg>
       <span className="rd-ring__label">
         <b>{Math.round(shown * 100)}%</b>
         <small>accuracy</small>
       </span>
       <span className="rd-ring__target" aria-hidden="true">
-        Band 7 line
+        Band 7 line ≈ 30/40
       </span>
     </div>
   )
+}
+
+/**
+ * The question types to revise: lowest share correct, ties broken by the most
+ * marks lost; a dead heat names both.
+ */
+function trickiestKinds(kinds: KindScore[]) {
+  const missed = kinds.filter((k) => k.correct < k.total)
+  const rank = (k: KindScore) => [k.correct / k.total, -(k.total - k.correct)] as const
+  missed.sort((a, b) => rank(a)[0] - rank(b)[0] || rank(a)[1] - rank(b)[1])
+  const [first] = missed
+  if (!first) return []
+  return missed.filter((k) => rank(k)[0] === rank(first)[0] && rank(k)[1] === rank(first)[1]).slice(0, 2)
 }
 
 /** The verdict: animated score, accuracy, XP and a breakdown by question type. */
@@ -73,12 +88,26 @@ export function PracticeResults({ info, attempt, graded, previousBest, firstName
   const reduced = useReducedMotion()
   const accuracy = accuracyOf(attempt)
   const band = bandEstimate(attempt.score, attempt.total)
-  const great = accuracy >= TARGET
+  const great = accuracy >= CELEBRATE_ACCURACY
   const isBest = !previousBest || accuracy > accuracyOf(previousBest)
   const improved = previousBest && accuracy > accuracyOf(previousBest)
   const kinds = scoreByKind(graded)
-  const weakest = [...kinds].filter((k) => k.correct < k.total).sort((a, b) => a.correct / a.total - b.correct / b.total)[0]
-  const weakLecture = weakest && lectures.find((l) => l.id === weakest.lectureId)
+  const trickiest = trickiestKinds(kinds)
+  const titleRef = useRef<HTMLHeadingElement>(null)
+  // The owl reads its verdict out for a moment, then listens.
+  const [talking, setTalking] = useState(!reduced && !great)
+
+  useEffect(() => {
+    if (!talking) return
+    const id = window.setTimeout(() => setTalking(false), 2500)
+    return () => window.clearTimeout(id)
+  }, [talking])
+
+  // The submit button has gone: move focus to the verdict so it is read out.
+  useEffect(() => {
+    const id = window.requestAnimationFrame(() => titleRef.current?.focus({ preventScroll: true }))
+    return () => window.cancelAnimationFrame(id)
+  }, [])
 
   const score = useCountUp(attempt.score, true, 1300)
   const ring = useCountUp(accuracy, true, 1500)
@@ -120,7 +149,7 @@ export function PracticeResults({ info, attempt, graded, previousBest, firstName
         <div className="rd-verdict__top">
           <div className="rd-verdict__intro">
             <p className="rd-verdict__eyebrow">RETURNED TO THE DESK · {stampDate(attempt.at)}</p>
-            <h1 className="rd-verdict__title" id="rd-verdict-title">
+            <h1 className="rd-verdict__title" id="rd-verdict-title" ref={titleRef} tabIndex={-1}>
               {great ? `Splendid reading, ${firstName}!` : `Card returned, ${firstName}.`}
             </h1>
             <p className="rd-verdict__sub">
@@ -194,14 +223,31 @@ export function PracticeResults({ info, attempt, graded, previousBest, firstName
         </div>
         <div className="rd-verdict__lower">
           <div className="rd-verdict__owl">
-            <LibrarianOwl happy={great} talking={!great} scale={4} />
+            <LibrarianOwl happy={great} talking={talking} scale={4} />
             <p className="rd-verdict__bubble">
-              {verdictLine(accuracy, band)}
-              {weakest && weakLecture && (
+              {verdictLine(accuracy, band, BAND7_ACCURACY)}
+              {trickiest.length > 0 && (
                 <>
                   {' '}
-                  Trickiest tonight: <b>{weakest.label}</b> ({weakest.correct}/{weakest.total}).{' '}
-                  <Link to={`${HUB_PATH}/lecture/${weakLecture.id}`}>Revise “{weakLecture.title}”</Link>
+                  Trickiest tonight:{' '}
+                  {trickiest.map((k, i) => (
+                    <Fragment key={k.label}>
+                      {i > 0 && ' and '}
+                      <b>{k.label}</b> ({k.correct}/{k.total})
+                    </Fragment>
+                  ))}
+                  .{' '}
+                  {[...new Set(trickiest.map((k) => k.lectureId))].map((id, i) => {
+                    const lecture = lectures.find((l) => l.id === id)
+                    return (
+                      lecture && (
+                        <Fragment key={id}>
+                          {i > 0 && ' · '}
+                          <Link to={`${HUB_PATH}/lecture/${lecture.id}`}>Revise “{lecture.title}”</Link>
+                        </Fragment>
+                      )
+                    )
+                  })}
                 </>
               )}
             </p>

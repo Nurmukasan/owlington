@@ -50,12 +50,6 @@
   color: inherit;
 }
 
-/* Parchment surfaces need a dark focus ring. */
-.rd-paper :focus-visible,
-.rd-paper:focus-visible {
-  outline-color: var(--rd-wine);
-}
-
 /* ------------------------------------------------------------ type --- */
 
 .rd-eyebrow {
@@ -145,12 +139,6 @@
   --rd-btn-bg: var(--rd-wine);
   --rd-btn-ink: #fff4dc;
   --rd-btn-edge: #5e1620;
-}
-
-.rd-btn--dark {
-  --rd-btn-bg: var(--rd-mahogany-2);
-  --rd-btn-ink: var(--rd-text);
-  --rd-btn-edge: #1a0b0e;
 }
 
 .rd-btn--ghost {
@@ -470,8 +458,13 @@
 
 /* --------------------------------------------------- burning candle --- */
 
+/* The wax shrinks and the flame sinks with transforms only, so a timer that
+   updates every second never triggers layout (it is 46px tall, so a 20-minute
+   candle loses 0.04px a second). */
 .rd-bcandle {
   --rd-wax: 1;
+  --rd-stick-h: 46px;
+  --rd-burnt: calc((1 - max(var(--rd-wax), 0.06)) * var(--rd-stick-h));
   position: relative;
   display: inline-flex;
   flex-direction: column;
@@ -487,31 +480,32 @@
   flex-direction: column;
   justify-content: flex-end;
   width: 12px;
-  height: 46px;
+  height: var(--rd-stick-h);
 }
 
 .rd-bcandle__wax {
   width: 100%;
-  height: calc(var(--rd-wax) * 100%);
-  min-height: 3px;
+  height: 100%;
   border-radius: 2px 2px 0 0;
   background: linear-gradient(90deg, #cdb488 0%, #fbf1dc 34%, #f3e3c0 60%, #bfa476 100%);
   box-shadow: inset 0 3px 0 rgb(255 255 255 / 0.45);
-  transition: height 900ms var(--rd-ease-out, ease);
+  transform: scaleY(max(var(--rd-wax), 0.06));
+  transform-origin: 50% 100%;
+  transition: transform 900ms var(--rd-ease-out, ease);
 }
 
 .rd-bcandle__flame {
   position: absolute;
   left: 50%;
-  bottom: calc(var(--rd-wax) * 100% + 1px);
+  bottom: calc(100% + 1px);
   width: 11px;
   height: 16px;
-  translate: -50% 0;
+  translate: -50% var(--rd-burnt);
   transform-origin: 50% 100%;
   border-radius: 50% 50% 50% 50% / 64% 64% 36% 36%;
   background: radial-gradient(ellipse 50% 60% at 50% 72%, #fff8e0 0 28%, #ffd27a 48%, #ff9a1f 80%, transparent 82%);
   box-shadow: 0 0 12px rgb(255 170 60 / 0.85);
-  transition: bottom 900ms var(--rd-ease-out, ease);
+  transition: translate 900ms var(--rd-ease-out, ease);
   animation: rd-flicker 1.3s ease-in-out infinite alternate;
 }
 
@@ -524,10 +518,10 @@
 .rd-bcandle__smoke {
   position: absolute;
   left: 50%;
-  bottom: calc(var(--rd-wax) * 100% + 2px);
+  bottom: calc(100% + 2px);
   width: 4px;
   height: 18px;
-  translate: -50% 0;
+  translate: -50% var(--rd-burnt);
   border-radius: 4px;
   background: linear-gradient(to top, rgb(200 190 180 / 0.6), transparent);
   opacity: 0;
@@ -682,6 +676,7 @@
     transform: scale(1.12);
   }
   100% {
+    opacity: 1;
     transform: scale(1);
   }
 }
@@ -727,5 +722,15 @@
 @keyframes rd-draw {
   to {
     stroke-dashoffset: 0;
+  }
+}
+
+/* Reduced motion: the global rule shortens animations but keeps their delays, so
+   staggered entrances would still pop in one by one. Everything appears at once. */
+@media (prefers-reduced-motion: reduce) {
+  .rd-world *,
+  .rd-world *::before,
+  .rd-world *::after {
+    animation-delay: 0s !important;
   }
 }

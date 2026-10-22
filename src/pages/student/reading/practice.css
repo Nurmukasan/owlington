@@ -16,6 +16,11 @@
   --rd-moonbeam: 140 175 255;
 }
 
+.rd-practice {
+  /* Nothing in the reading room may push the page sideways (clip keeps sticky bars working). */
+  overflow-x: clip;
+}
+
 .rd-practice--test {
   overflow: clip;
 }
@@ -183,7 +188,7 @@
   box-shadow:
     0 0 0 2px rgb(90 50 20 / 0.35),
     0 10px 24px rgb(0 0 0 / 0.4);
-  animation: rd-bubble-in 600ms var(--rd-ease-spring) both 1000ms;
+  animation: rd-ticket-bubble-in 600ms var(--rd-ease-spring) both 1000ms;
 }
 
 .rd-ticket__bubble::after {
@@ -198,7 +203,7 @@
   transform: rotate(45deg);
 }
 
-@keyframes rd-bubble-in {
+@keyframes rd-ticket-bubble-in {
   from {
     opacity: 0;
     transform: translateY(8px) scale(0.92);
@@ -364,7 +369,7 @@
 }
 
 .rd-ticket :focus-visible,
-.rd-ledger :focus-visible,
+.rd-history :focus-visible,
 .rd-verdict :focus-visible,
 .rd-leaf :focus-visible,
 .rd-modal :focus-visible {
@@ -468,7 +473,7 @@
 }
 
 .rd-howto__title,
-.rd-ledger__title {
+.rd-history__title {
   margin: 0 0 16px;
   font-family: var(--font-display);
   font-size: 22px;
@@ -510,7 +515,7 @@
   filter: drop-shadow(0 0 8px rgb(255 190 90 / 0.35));
 }
 
-.rd-ledger {
+.rd-history {
   position: relative;
   padding: 22px 22px 20px;
   border-radius: 4px;
@@ -524,14 +529,14 @@
   animation: rd-rise 800ms var(--rd-ease-out) both 320ms;
 }
 
-.rd-ledger__head {
+.rd-history__head {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
 }
 
-.rd-ledger__stamp {
+.rd-history__stamp {
   --rd-stamp: #8a6a4a;
   display: grid;
   flex: none;
@@ -542,20 +547,20 @@
   border-radius: 4px;
   color: var(--rd-stamp);
   font-family: var(--font-pixel);
-  font-size: 6px;
-  letter-spacing: 1px;
+  font-size: 8px;
+  letter-spacing: 0.5px;
   transform: rotate(-8deg);
   opacity: 0.9;
   animation: rd-slam 700ms var(--rd-ease-spring) both 700ms;
 }
 
-.rd-ledger__stamp b {
+.rd-history__stamp b {
   font-size: 14px;
   font-weight: 400;
   line-height: 1.4;
 }
 
-.rd-tone--new.rd-ledger__stamp {
+.rd-tone--new.rd-history__stamp {
   border-style: dashed;
   border-width: 2px;
 }
@@ -575,7 +580,7 @@
   }
 }
 
-.rd-ledger__empty {
+.rd-history__empty {
   margin: 4px 0 0;
   color: var(--rd-paper-ink-2);
   font-family: var(--font-display);
@@ -584,70 +589,70 @@
   line-height: 1.55;
 }
 
-.rd-ledger__best {
+.rd-history__best {
   margin: 0 0 10px;
   color: var(--rd-paper-ink-2);
   font-size: 14px;
 }
 
-.rd-ledger__best b {
+.rd-history__best b {
   color: var(--rd-paper-ink);
 }
 
-.rd-ledger__table {
+.rd-history__table {
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
   font-variant-numeric: tabular-nums;
 }
 
-.rd-ledger__table th {
+.rd-history__table th {
   padding: 4px 6px 6px;
   border-bottom: 2px solid rgb(179 38 30 / 0.4);
   color: var(--rd-paper-muted);
   font-family: var(--font-pixel);
-  font-size: 7px;
+  font-size: 8px;
   font-weight: 400;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   text-align: left;
   text-transform: uppercase;
 }
 
-.rd-ledger__table td {
+.rd-history__table td {
   padding: 7px 6px;
   border-bottom: 1px dotted rgb(122 92 68 / 0.4);
   font-weight: 700;
   white-space: nowrap;
 }
 
-.rd-ledger__table td:nth-child(3) {
+.rd-history__table td:nth-child(3) {
   width: 40%;
 }
 
-.rd-ledger__table tr.is-best td {
+.rd-history__table tr.is-best td {
   background: rgb(255 207 92 / 0.18);
 }
 
-.rd-ledger__star {
+.rd-history__star {
   margin-left: 5px;
   color: var(--rd-mark);
 }
 
-.rd-ledger__bar {
+.rd-history__bar {
   display: block;
   height: 8px;
   border-radius: 0 4px 4px 0;
   background: var(--rd-mark-track);
 }
 
-.rd-ledger__bar i {
+.rd-history__bar i {
   display: block;
   height: 100%;
   border-radius: 0 4px 4px 0;
   background: var(--rd-mark);
 }
 
-.rd-ledger__more {
+.rd-history__more {
   margin: 8px 0 0;
   color: var(--rd-paper-muted);
   font-size: 13px;
@@ -1184,6 +1189,12 @@
   filter: saturate(0.7);
 }
 
+.rd-hl:not(.rd-hl--join):focus-visible {
+  outline: 2px solid var(--rd-wine, #9b2f3a);
+  outline-offset: 1px;
+  box-shadow: inset 0 -2px 0 rgb(155 47 58 / 0.65);
+}
+
 @keyframes rd-swipe {
   from {
     background-size: 0% 100%;
@@ -1350,8 +1361,8 @@
   background: rgb(122 92 68 / 0.12);
   color: var(--rd-paper-ink-2);
   font-family: var(--font-pixel);
-  font-size: 7px;
-  letter-spacing: 1px;
+  font-size: 8px;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
 }
 
@@ -2219,8 +2230,10 @@
   z-index: 200;
   inset: 0;
   display: grid;
-  place-items: center;
-  padding: 20px;
+  place-items: safe center;
+  overflow-y: auto;
+  /* Room for the HUD and for the owl that peeks over the card. */
+  padding: calc(var(--hud-space, 124px) + 52px) 16px 20px;
   background: rgb(14 5 8 / 0.72);
   backdrop-filter: blur(3px);
   animation: rd-fade 220ms ease both;
@@ -2410,6 +2423,11 @@
   text-wrap: balance;
 }
 
+/* Focus lands here after submitting (so the verdict is announced); it is not a control. */
+.rd-verdict__title:focus {
+  outline: none;
+}
+
 .rd-verdict__sub {
   margin: 0;
   color: var(--rd-paper-ink-2);
@@ -2544,9 +2562,15 @@
 }
 
 .rd-ring__tick {
-  stroke: var(--rd-paper-ink);
+  stroke: var(--rd-wine);
   stroke-width: 3;
   stroke-linecap: round;
+}
+
+.rd-ring__tick-label {
+  fill: var(--rd-wine);
+  font-family: var(--font-pixel);
+  font-size: 8px;
 }
 
 .rd-ring__label {
@@ -2573,7 +2597,7 @@
   margin-top: 4px;
   color: var(--rd-paper-muted);
   font-family: var(--font-pixel);
-  font-size: 7px;
+  font-size: 8px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
 }
@@ -2593,7 +2617,7 @@
   width: 3px;
   height: 12px;
   border-radius: 2px;
-  background: var(--rd-paper-ink);
+  background: var(--rd-wine);
 }
 
 .rd-verdict__facts {
@@ -2914,8 +2938,8 @@
 .rd-rev__kind {
   color: var(--rd-paper-muted);
   font-family: var(--font-pixel);
-  font-size: 7px;
-  letter-spacing: 1px;
+  font-size: 8px;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
 }
 
@@ -2954,8 +2978,8 @@
 .rd-rev__ans dt {
   color: var(--rd-paper-muted);
   font-family: var(--font-pixel);
-  font-size: 7px;
-  letter-spacing: 1px;
+  font-size: 8px;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
 }
 
@@ -3258,6 +3282,11 @@
   animation: rd-pop 420ms var(--rd-ease-spring) both;
 }
 
+.rd-rev__fixed.is-hint {
+  background: rgb(168 100 26 / 0.14);
+  color: var(--rd-mark);
+}
+
 .rd-rev.is-fixed {
   border-left-color: var(--rd-right);
   animation: rd-bounce 640ms ease;
@@ -3326,10 +3355,71 @@
   }
 }
 
+/* Short laptop screens (e.g. 1280x720): slimmer bars and page headers, so the
+   open book shows real passage text above the fold, not just its title page. */
+@media (max-height: 820px) and (min-width: 901px) {
+  .rd-desk {
+    gap: 8px;
+    padding-top: calc(var(--hud-space) - 2px);
+    padding-bottom: 8px;
+  }
+
+  .rd-deskbar {
+    min-height: 50px;
+    padding: 4px 8px;
+  }
+
+  .rd-navbar {
+    min-height: 46px;
+    padding: 4px 8px;
+  }
+
+  .rd-passage {
+    padding-top: 20px;
+  }
+
+  .rd-passage__head {
+    margin-bottom: 18px;
+  }
+
+  .rd-passage__title {
+    margin: 6px 0 4px;
+    font-size: clamp(24px, 2.2vw, 30px);
+  }
+
+  .rd-passage__sub {
+    font-size: 15px;
+  }
+
+  .rd-passage__brief {
+    margin-top: 8px;
+    font-size: 12px;
+  }
+
+  .rd-passage__orn {
+    display: none;
+  }
+
+  .rd-sheet {
+    padding-top: 20px;
+  }
+
+  .rd-sheet__title {
+    margin: 6px 0 4px;
+    font-size: clamp(22px, 2vw, 26px);
+  }
+
+  .rd-qgroup {
+    margin-top: 22px;
+    padding-top: 18px;
+  }
+}
+
 /* Phones and small tablets: one page at a time, with a Passage / Questions switch. */
 @media (max-width: 900px) {
   .rd-practice--test {
     overflow: visible;
+    overflow-x: clip;
   }
 
   .rd-desk,
@@ -3353,11 +3443,12 @@
     content: '';
     position: absolute;
     z-index: -1;
-    left: -14px;
-    right: -14px;
-    bottom: 100%;
+    /* Exactly the desk's side gutter: any wider and the page scrolls sideways. */
+    left: calc(-1 * clamp(10px, 1.8vw, 28px));
+    right: calc(-1 * clamp(10px, 1.8vw, 28px));
+    bottom: calc(100% - 2px);
     height: var(--hud-space);
-    background: linear-gradient(180deg, #12080b 0 calc(100% - 14px), rgb(18 8 11 / 0));
+    background: #12080b;
     pointer-events: none;
   }
 
@@ -3648,7 +3739,7 @@
     width: 100%;
   }
 
-  .rd-ledger__table td:nth-child(3) {
+  .rd-history__table td:nth-child(3) {
     width: 30%;
   }
 }
@@ -3660,7 +3751,7 @@
   }
 
   .rd-verdict__stamp,
-  .rd-ledger__stamp {
+  .rd-history__stamp {
     opacity: 1;
     transform: rotate(-8deg);
   }

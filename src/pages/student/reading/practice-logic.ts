@@ -231,25 +231,51 @@ export interface Draft {
 
 const draftKey = (userId: string, setId: string) => `owlington:rd-draft:${userId}:${setId}`
 
+/** Drafts older than this are forgotten: a fortnight-old bookmark is no longer "where you left off". */
+const DRAFT_MAX_AGE_MS = 14 * 24 * 60 * 60 * 1000
+/** Below this many seconds, an untouched test is a peek, not a bookmark. */
+const DRAFT_MIN_SECONDS = 60
+
+/** True when a draft holds real work: an answer, a flag, a highlight or a minute of reading. */
+export function draftHasWork(d: Pick<Draft, 'answers' | 'flagged' | 'highlights' | 'elapsed'>) {
+  return (
+    Object.values(d.answers).some(isAnswered) ||
+    d.flagged.length > 0 ||
+    highlightCount(d.highlights) > 0 ||
+    d.elapsed >= DRAFT_MIN_SECONDS
+  )
+}
+
 export function loadDraft(userId: string, setId: string): Draft | null {
   try {
     const raw = localStorage.getItem(draftKey(userId, setId))
     if (!raw) return null
     const d = JSON.parse(raw) as Draft
     if (!d || typeof d.answers !== 'object' || typeof d.elapsed !== 'number') return null
-    return {
+    const draft: Draft = {
       answers: d.answers ?? {},
       flagged: d.flagged ?? [],
       highlights: d.highlights ?? {},
       elapsed: d.elapsed,
       savedAt: d.savedAt,
     }
+    const age = Date.now() - new Date(draft.savedAt).getTime()
+    if (!draftHasWork(draft) || !(age < DRAFT_MAX_AGE_MS)) {
+      clearDraft(userId, setId)
+      return null
+    }
+    return draft
   } catch {
     return null
   }
 }
 
+/** Keep a bookmark of the test in progress — or drop it, if nothing has been done yet. */
 export function saveDraft(userId: string, setId: string, draft: Omit<Draft, 'savedAt'>) {
+  if (!draftHasWork(draft)) {
+    clearDraft(userId, setId)
+    return
+  }
   try {
     localStorage.setItem(draftKey(userId, setId), JSON.stringify({ ...draft, savedAt: new Date().toISOString() }))
   } catch {
@@ -267,10 +293,13 @@ export function clearDraft(userId: string, setId: string) {
 
 // ------------------------------------------------------------- the owl ---
 
-export function verdictLine(accuracy: number, band: number) {
+export function verdictLine(accuracy: number, band: number, band7: number) {
+  const b = band.toFixed(1)
   if (accuracy >= 1) return 'Not a single mark missed. The whole library is applauding — very quietly, of course.'
-  if (accuracy >= 0.85) return `Superb reading! At this accuracy you are in Band ${band.toFixed(1)} territory.`
-  if (accuracy >= 0.7) return 'Splendid! That is Band 7 form. Let’s tidy up the few that slipped away.'
+  if (accuracy >= 0.85) return `Superb reading! At this accuracy you are in Band ${b} territory.`
+  if (accuracy >= band7) return `Splendid! That is Band ${b} form — about ${Math.round(accuracy * 40)} of 40 on the real paper.`
+  if (accuracy >= 0.7)
+    return `Splendid — Band ${b} form, within touching distance of Band 7. One or two more marks per forty and you are there.`
   if (accuracy >= 0.5) return 'A solid night’s reading. Every mistake below is a lesson in disguise.'
   return 'Every expert reader started here. Let’s look at the evidence together — it is all in the passage.'
 }

@@ -195,12 +195,12 @@ export function PracticeIntro({ info, set, callNumber, attempts, best, draft, qu
             </ul>
           </section>
 
-          <section className="rd-ledger" aria-labelledby="rd-ledger-title">
-            <div className="rd-ledger__head">
-              <h2 className="rd-ledger__title" id="rd-ledger-title">
+          <section className="rd-history" aria-labelledby="rd-history-title">
+            <div className="rd-history__head">
+              <h2 className="rd-history__title" id="rd-history-title">
                 Borrowing history
               </h2>
-              <span className={`rd-ledger__stamp rd-tone--${stampTone}`} aria-hidden="true">
+              <span className={`rd-history__stamp rd-tone--${stampTone}`} aria-hidden="true">
                 {best ? (
                   <>
                     <span>BEST</span>
@@ -219,19 +219,19 @@ export function PracticeIntro({ info, set, callNumber, attempts, best, draft, qu
               </span>
             </div>
             {attempts.length === 0 ? (
-              <p className="rd-ledger__empty">
+              <p className="rd-history__empty">
                 No stamps on this card yet. Your first score lands here — and every attempt after it, so you can watch yourself
                 improve.
               </p>
             ) : (
               <>
                 {best && (
-                  <p className="rd-ledger__best">
+                  <p className="rd-history__best">
                     Best: <b>{pct(accuracyOf(best))}</b> ({best.score}/{best.total}) · about Band{' '}
                     {bandEstimate(best.score, best.total).toFixed(1)}
                   </p>
                 )}
-                <table className="rd-ledger__table">
+                <table className="rd-history__table">
                   <caption className="visually-hidden">Your attempts at this test, newest first</caption>
                   <thead>
                     <tr>
@@ -250,13 +250,13 @@ export function PracticeIntro({ info, set, callNumber, attempts, best, draft, qu
                         <td>
                           {a.score}/{a.total}
                           {a === best && (
-                            <span className="rd-ledger__star" aria-label="best">
+                            <span className="rd-history__star" aria-label="best">
                               ★
                             </span>
                           )}
                         </td>
                         <td>
-                          <span className="rd-ledger__bar" aria-hidden="true">
+                          <span className="rd-history__bar" aria-hidden="true">
                             <i style={{ width: pct(accuracyOf(a)) }} />
                           </span>
                           <span className="visually-hidden">{pct(accuracyOf(a))}</span>
@@ -266,7 +266,7 @@ export function PracticeIntro({ info, set, callNumber, attempts, best, draft, qu
                     ))}
                   </tbody>
                 </table>
-                {attempts.length > 5 && <p className="rd-ledger__more">+ {attempts.length - 5} earlier attempts</p>}
+                {attempts.length > 5 && <p className="rd-history__more">+ {attempts.length - 5} earlier attempts</p>}
               </>
             )}
           </section>

@@ -8,14 +8,19 @@ import { KIND_LABEL, KIND_LECTURE, alsoAccepted, correctText, describe, type Gra
 import { FlagIcon } from './QuestionSheet'
 import { RetryWidget } from './RetryWidget'
 
+export type ReviewFilter = 'all' | 'missed' | 'flagged'
+
 interface ReviewProps {
   graded: Graded[]
   flagged: Set<string>
   current: string
   onShowEvidence: (g: Graded) => void
+  /** Filter and "second look" live in the page, so the navigator can always reach a question. */
+  filter: ReviewFilter
+  onFilter: (filter: ReviewFilter) => void
+  second: boolean
+  onSecond: (on: boolean) => void
 }
-
-type Filter = 'all' | 'missed' | 'flagged'
 
 function promptOf(g: Graded) {
   const { q, group } = g.x
@@ -25,28 +30,39 @@ function promptOf(g: Graded) {
   return q.prompt
 }
 
+/** Which questions a filter shows. */
+function reviewShown(graded: Graded[], flagged: Set<string>, filter: ReviewFilter, second: boolean) {
+  if (second || filter === 'missed') return graded.filter((g) => !g.correct)
+  if (filter === 'flagged') return graded.filter((g) => flagged.has(g.x.q.id))
+  return graded
+}
+
+/** How a missed question was put right on the second look. */
+type Fix = 'own' | 'hint'
+
 /** The marked answer sheet: every question with the student's answer, the key and the reasoning. */
-export function ReviewSheet({ graded, flagged, current, onShowEvidence }: ReviewProps) {
+export function ReviewSheet({ graded, flagged, current, onShowEvidence, filter, onFilter, second, onSecond }: ReviewProps) {
   const missed = graded.filter((g) => !g.correct)
   const flaggedList = graded.filter((g) => flagged.has(g.x.q.id))
-  const [filter, setFilter] = useState<Filter>('all')
   // Second look: retry the missed questions before seeing the key.
-  const [second, setSecond] = useState(false)
-  const [fixed, setFixed] = useState<Set<string>>(() => new Set())
+  const [fixed, setFixed] = useState<Map<string, Fix>>(() => new Map())
   const [revealed, setRevealed] = useState<Set<string>>(() => new Set())
+  /** Questions where the student asked to be shown the evidence before answering again. */
+  const [hinted, setHinted] = useState<Set<string>>(() => new Set())
   const doneRef = useRef<HTMLDivElement>(null)
-  const shown = second ? missed : filter === 'missed' ? missed : filter === 'flagged' ? flaggedList : graded
+  const shown = reviewShown(graded, flagged, filter, second)
   const settled = missed.filter((g) => fixed.has(g.x.q.id) || revealed.has(g.x.q.id)).length
   const allSettled = second && missed.length > 0 && settled === missed.length
+  const ownFixes = [...fixed.values()].filter((f) => f === 'own').length
+  const hintFixes = fixed.size - ownFixes
 
   const startSecondLook = () => {
     sfx.page()
-    setSecond(true)
-    setFilter('missed')
+    onSecond(true)
   }
 
-  const solve = (id: string) => {
-    const next = new Set(fixed).add(id)
+  const solve = (id: string, misses: number) => {
+    const next = new Map(fixed).set(id, misses === 0 && !hinted.has(id) ? 'own' : 'hint')
     setFixed(next)
     const done = missed.every((g) => next.has(g.x.q.id) || revealed.has(g.x.q.id))
     if (done) {
@@ -57,14 +73,21 @@ export function ReviewSheet({ graded, flagged, current, onShowEvidence }: Review
         if (getComputedStyle(pane).overflowY !== 'visible') pane.scrollTo({ top: 0, behavior: 'smooth' })
         else window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - window.innerHeight / 3, behavior: 'smooth' })
       }
-      window.setTimeout(() => {
-        sfx.complete()
-        pixelConfetti(doneRef.current ?? undefined, { colors: ['#9be0a9', '#ffcf5c', '#fff1c9', '#cfe0ff'], count: 56 })
-      }, 450)
+      // Confetti is for answers found unaided; a hint or a process of elimination earns a quieter well done.
+      const own = [...next.values()].filter((f) => f === 'own').length
+      if (own > 0) {
+        window.setTimeout(() => {
+          if (own === missed.length) sfx.complete()
+          pixelConfetti(doneRef.current ?? undefined, {
+            colors: ['#9be0a9', '#ffcf5c', '#fff1c9', '#cfe0ff'],
+            count: Math.round(16 + (48 * own) / missed.length),
+          })
+        }, 450)
+      }
     }
   }
 
-  const tabs: [Filter, string, number][] = [
+  const tabs: [ReviewFilter, string, number][] = [
     ['all', 'All', graded.length],
     ['missed', 'To learn from', missed.length],
     ['flagged', 'Flagged', flaggedList.length],
@@ -99,11 +122,15 @@ export function ReviewSheet({ graded, flagged, current, onShowEvidence }: Review
               {allSettled ? (
                 <>
                   <b>
-                    {fixed.size === missed.length
-                      ? 'Every mistake fixed!'
-                      : `${fixed.size} of ${missed.length} fixed on your own.`}
+                    {ownFixes === missed.length
+                      ? 'Every mistake fixed first time!'
+                      : `${ownFixes} of ${missed.length} fixed first time${hintFixes ? `, ${hintFixes} with a hint` : ''}${
+                          revealed.size ? `, ${revealed.size} looked up` : ''
+                        }.`}
                   </b>{' '}
-                  That is exactly how a band goes up: one understood mistake at a time.
+                  {ownFixes === missed.length
+                    ? 'That is exactly how a band goes up: one understood mistake at a time.'
+                    : 'Read the explanations below — understanding the ones that needed help is where the marks come from.'}
                 </>
               ) : (
                 <>
@@ -116,8 +143,7 @@ export function ReviewSheet({ graded, flagged, current, onShowEvidence }: Review
               className="rd-btn rd-btn--small rd-btn--ghost"
               onClick={() => {
                 sfx.click()
-                setSecond(false)
-                setFilter('all')
+                onSecond(false)
               }}
             >
               {allSettled ? 'See all answers' : 'Exit'}
@@ -134,7 +160,7 @@ export function ReviewSheet({ graded, flagged, current, onShowEvidence }: Review
               disabled={count === 0 && key !== 'all'}
               onClick={() => {
                 sfx.click()
-                setFilter(key)
+                onFilter(key)
               }}
             >
               {label} <span>{count}</span>
@@ -170,7 +196,11 @@ export function ReviewSheet({ graded, flagged, current, onShowEvidence }: Review
                     <span className="visually-hidden">Question {n}: </span>
                     {status === 'right' ? 'Correct' : status === 'wrong' ? 'Incorrect' : 'Not answered'}
                   </span>
-                  {fixed.has(q.id) && <span className="rd-rev__fixed">✓ Fixed on second look</span>}
+                  {fixed.has(q.id) && (
+                    <span className={`rd-rev__fixed ${fixed.get(q.id) === 'hint' ? 'is-hint' : ''}`}>
+                      {fixed.get(q.id) === 'own' ? '✓ Fixed first time' : '✓ Fixed with a hint'}
+                    </span>
+                  )}
                   <span className="rd-rev__kind">{KIND_LABEL[group.kind]}</span>
                   {flagged.has(q.id) && (
                     <span className="rd-rev__flag">
@@ -184,7 +214,7 @@ export function ReviewSheet({ graded, flagged, current, onShowEvidence }: Review
                 {second && !g.correct && !fixed.has(q.id) && !revealed.has(q.id) ? (
                   <RetryWidget
                     g={g}
-                    onSolved={() => solve(q.id)}
+                    onSolved={(misses) => solve(q.id, misses)}
                     onReveal={() => {
                       sfx.page()
                       setRevealed((r) => new Set(r).add(q.id))
@@ -230,6 +260,7 @@ export function ReviewSheet({ graded, flagged, current, onShowEvidence }: Review
                     className="rd-evbtn"
                     onClick={() => {
                       sfx.page()
+                      if (second && !g.correct && !fixed.has(q.id)) setHinted((h) => new Set(h).add(q.id))
                       onShowEvidence(g)
                     }}
                   >

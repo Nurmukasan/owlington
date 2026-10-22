@@ -145,21 +145,30 @@ export function LibraryHero({ firstName, stats, progress, step }: LibraryHeroPro
         )}
       </div>
 
-      <FloatingCandle x="47%" y="24%" size={1} delay={0} className="rd-fcandle--a" />
+      {/* Candles a and d hang off the window's coordinates (see hub.css), so they never drift into the text. */}
+      <FloatingCandle x="calc(var(--rd-win-left) - 92px)" y="calc(var(--rd-win-top) + 36px)" size={1} delay={0} className="rd-fcandle--a" />
       <FloatingCandle x="56%" y="14%" size={0.7} delay={1.7} className="rd-fcandle--b" />
       <FloatingCandle x="88%" y="16%" size={0.85} delay={3.1} className="rd-fcandle--c" />
-      <FloatingCandle x="40%" y="62%" size={0.6} delay={2.3} className="rd-fcandle--d" />
+      <FloatingCandle
+        x="calc(var(--rd-win-left) - 100px)"
+        y="calc(var(--rd-win-top) + var(--rd-win-h) + 34px)"
+        size={0.6}
+        delay={2.3}
+        className="rd-fcandle--d"
+      />
       <FloatingCandle x="95%" y="58%" size={1.15} delay={0.8} className="rd-fcandle--e" />
 
       <div className="rd-hero__content">
-        <p className="rd-eyebrow rd-hero__eyebrow">
-          <PixelSprite sprite={BOOK_ICON} scale={2} /> READING · OPEN ALL NIGHT
-        </p>
-        <h1 id="rd-hero-title" className="rd-hero__title">
-          <span className="rd-hero__title-line">The</span>{' '}
-          <em className="rd-hero__title-line rd-foil">Moonlit</em>{' '}
-          <span className="rd-hero__title-line">Library</span>
-        </h1>
+        <div className="rd-hero__masthead">
+          <p className="rd-eyebrow rd-hero__eyebrow">
+            <PixelSprite sprite={BOOK_ICON} scale={2} /> READING · OPEN ALL NIGHT
+          </p>
+          <h1 id="rd-hero-title" className="rd-hero__title">
+            <span className="rd-hero__title-line">The</span>{' '}
+            <em className="rd-hero__title-line rd-foil">Moonlit</em>{' '}
+            <span className="rd-hero__title-line">Library</span>
+          </h1>
+        </div>
         <p className="rd-hero__tagline">
           Lectures, practice tests and a librarian who never sleeps. Learn to skim, scan and see straight through every
           “Not Given” — one candlelit page at a time.

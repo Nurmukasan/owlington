@@ -9,7 +9,7 @@ import { AccuracyChart } from './AccuracyChart'
 import { LibrarianOwl } from './LibrarianOwl'
 import { BurningCandle } from './Candle'
 import { practiceSets } from './content'
-import { HUB_PATH, accuracyOf, isToday, pct, shortDate, type NextStep } from './library'
+import { BAND7_ACCURACY, CELEBRATE_ACCURACY, HUB_PATH, accuracyOf, isToday, pct, practiceStep, shortDate, type NextStep } from './library'
 import { SectionHeader } from './SectionHeader'
 import { useCountUp, useReveal } from './hooks'
 
@@ -33,16 +33,17 @@ export function ReadingLog({ readerName, stats, progress, step }: ReadingLogProp
 
   const readToday = Object.entries(progress.state.lectures).some(([key, p]) => key.startsWith('reading:') && isToday(p.updatedAt))
   const testedToday = stats.attempts.some((a) => isToday(a.at))
+  const practice = step?.kind === 'practice' ? step : practiceStep(stats)
   const plan = [
     {
       done: readToday,
       text: 'Read a chapter from the stacks',
-      to: step?.kind === 'lecture' ? `${HUB_PATH}/lecture/${step.lecture.id}` : '#rd-stacks',
+      to: stats.nextLecture ? `${HUB_PATH}/lecture/${stats.nextLecture.id}` : '#rd-stacks',
     },
     {
       done: testedToday,
       text: 'Borrow a practice test',
-      to: step?.kind === 'practice' ? `${HUB_PATH}/practice/${step.practice.id}` : `${HUB_PATH}/practice/${practiceSets[0]?.id}`,
+      to: practice ? `${HUB_PATH}/practice/${practice.practice.id}` : '#rd-catalogue',
     },
     { done: today.met, text: `Reach tonight’s goal of ${today.goal} XP`, to: '#rd-stacks' },
   ]
@@ -52,7 +53,7 @@ export function ReadingLog({ readerName, stats, progress, step }: ReadingLogProp
   const note =
     stats.accuracy === null
       ? 'Every lecture and test you finish is written into this journal. The first entry is the hardest — and the best.'
-      : stats.accuracy >= 0.75
+      : stats.accuracy >= BAND7_ACCURACY
         ? `Averaging ${pct(stats.accuracy)} lately. That’s Band 7 territory — keep the candle burning!`
         : `Averaging ${pct(stats.accuracy)} over your recent tests. Review the misses and watch this line climb.`
 
@@ -77,7 +78,7 @@ export function ReadingLog({ readerName, stats, progress, step }: ReadingLogProp
                   <span className="rd-ledger__score">
                     {a.score}/{a.total}
                   </span>
-                  <span className={`rd-ledger__pct ${accuracyOf(a) >= 0.7 ? 'is-good' : ''}`}>{pct(accuracyOf(a))}</span>
+                  <span className={`rd-ledger__pct ${accuracyOf(a) >= CELEBRATE_ACCURACY ? 'is-good' : ''}`}>{pct(accuracyOf(a))}</span>
                   <span className="rd-ledger__time">{formatClock(a.durationSec)}</span>
                 </li>
               ))}
@@ -201,7 +202,8 @@ export function ReadingLog({ readerName, stats, progress, step }: ReadingLogProp
           </div>
 
           <div className="rd-medals">
-            <h3 className="rd-journal__h">Reading honours</h3>
+            <h3 className="rd-journal__h">Honours</h3>
+            <p className="rd-medals__note">Bookworm belongs to this library; the others count across all three sections.</p>
             <ul className="rd-medals__list">
               {achievements.map((a) => (
                 <li key={a.id} className={`rd-medal ${a.unlockedAt ? 'is-on' : ''}`}>

@@ -5,7 +5,8 @@ import { isCorrect, letter, type Graded } from './practice-logic'
 
 interface RetryProps {
   g: Graded
-  onSolved: () => void
+  /** Called once the answer is right, with how many wrong tries it took. */
+  onSolved: (misses: number) => void
   onReveal: () => void
 }
 
@@ -42,8 +43,8 @@ export function RetryWidget({ g, onSolved, onReveal }: RetryProps) {
     if (!value.trim()) return
     if (isCorrect(g.x, value)) {
       sfx.correct()
-      if (ref.current) floatText('Got it!', ref.current, '#9be0a9')
-      onSolved()
+      if (ref.current) floatText(misses === 0 ? 'Got it!' : 'There it is!', ref.current, '#9be0a9')
+      onSolved(misses)
       return
     }
     sfx.wrong()

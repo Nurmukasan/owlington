@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react'
 
 const REDUCED_QUERY = '(prefers-reduced-motion: reduce)'
 
@@ -90,23 +90,20 @@ export function useElementWidth<T extends Element>(ref: RefObject<T | null>, fal
 
 /**
  * A stopwatch that only runs while `running` is true and can be reset to any
- * value (used to resume a saved draft). `read()` gives the exact current value.
+ * value (used to resume a saved draft). It holds no state, so the page that owns
+ * it never re-renders on a tick: `read()` gives the exact current value, and a
+ * small display component polls it (see DeskTimer).
  */
 export function useClock(running: boolean) {
-  const [elapsed, setElapsed] = useState(0)
   const banked = useRef(0)
   const startedAt = useRef<number | null>(null)
 
   useEffect(() => {
     if (!running) return
     startedAt.current = performance.now()
-    const id = window.setInterval(() => {
-      if (startedAt.current !== null) setElapsed(banked.current + (performance.now() - startedAt.current) / 1000)
-    }, 250)
     return () => {
       if (startedAt.current !== null) banked.current += (performance.now() - startedAt.current) / 1000
       startedAt.current = null
-      window.clearInterval(id)
     }
   }, [running])
 
@@ -118,8 +115,16 @@ export function useClock(running: boolean) {
   const reset = useCallback((to = 0) => {
     banked.current = to
     if (startedAt.current !== null) startedAt.current = performance.now()
-    setElapsed(to)
   }, [])
 
-  return { elapsed, read, reset }
+  return { read, reset }
+}
+
+/** A callback with a stable identity that always runs the latest render's version. */
+export function useStableCallback<A extends unknown[], R>(fn: (...args: A) => R) {
+  const ref = useRef(fn)
+  useLayoutEffect(() => {
+    ref.current = fn
+  })
+  return useCallback((...args: A) => ref.current(...args), [])
 }

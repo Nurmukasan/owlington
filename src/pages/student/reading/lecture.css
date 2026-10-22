@@ -65,6 +65,61 @@
   line-height: 1.5;
 }
 
+.rd-lecture__summary--below {
+  display: none;
+}
+
+/* Below this width the left gutter is too narrow for the backdrop's candle: it
+   would peek out from under the volume's spine. */
+@media (max-width: 1400px) {
+  .rd-lecture .rd-fcandle--side {
+    display: none;
+  }
+}
+
+/* Short laptop screens (e.g. 1280x720): a compact header so the player starts
+   high on the page; the summary moves under the painting. */
+@media (max-height: 820px) and (min-width: 1061px) {
+  .rd-lecture__wrap {
+    padding-top: calc(var(--hud-space) + 6px);
+  }
+
+  .rd-lecture .rd-crumbs {
+    margin-bottom: 12px;
+  }
+
+  .rd-lecture__head {
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 30px;
+  }
+
+  .rd-lecture__spine {
+    width: 40px;
+    height: 64px;
+    margin-top: 0;
+    font-size: 17px;
+  }
+
+  .rd-lecture__title {
+    margin: 6px 0 0;
+    font-size: clamp(30px, 3.2vw, 42px);
+  }
+
+  .rd-lecture__summary--head {
+    display: none;
+  }
+
+  .rd-lecture__summary--below {
+    display: block;
+    max-width: none;
+    margin: 14px 4px 0;
+    font-size: 17px;
+    text-align: center;
+    text-wrap: balance;
+  }
+}
+
 /* ------------------------------------------------------------- grid --- */
 
 .rd-lecture__grid {
@@ -265,6 +320,27 @@
 
 .rd-player .lp-owl::after {
   background: rgb(90 50 20 / 0.25);
+}
+
+/* On the title and end cards the big play/replay button floats above the owl, in
+   the slide's empty right-hand margin, instead of sitting on the lecture title. */
+.rd-player .lp-screen--title .lp-bigplay,
+.rd-player .lp-screen--end .lp-bigplay {
+  top: auto;
+  left: auto;
+  right: 4cqi;
+  bottom: 23cqi;
+  width: clamp(40px, 10cqi, 76px);
+  transform: none;
+  transform-origin: 50% 100%;
+  animation: rd-bigplay-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes rd-bigplay-pulse {
+  50% {
+    filter: brightness(1.15);
+    transform: translateY(-3px) scale(1.06);
+  }
 }
 
 .rd-player .lp-controls {
@@ -616,8 +692,8 @@
 .rd-toc__practice-eyebrow {
   color: var(--rd-wine);
   font-family: var(--font-pixel);
-  font-size: 7px;
-  letter-spacing: 1px;
+  font-size: 8px;
+  letter-spacing: 0.5px;
 }
 
 .rd-toc__practice-title {

@@ -11,7 +11,7 @@ export function LibraryBackdrop({ candles = true }: { candles?: boolean }) {
       <Bookcase side="right" rows={8} />
       {candles && (
         <>
-          <FloatingCandle x="5%" y="30%" size={0.8} delay={0.4} />
+          <FloatingCandle x="5%" y="30%" size={0.8} delay={0.4} className="rd-fcandle--side" />
           <FloatingCandle x="93%" y="22%" size={0.95} delay={2.1} />
           <FloatingCandle x="90%" y="68%" size={0.65} delay={3.4} />
         </>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent } from 'react'
+import { memo, useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { PixelSprite } from '../../../components/PixelSprite'
 import { useUser } from '../../../auth/auth-context'
@@ -10,7 +10,7 @@ import { useProgress } from '../../../learn/useProgress'
 import { formatClock } from '../../../learn/useTimer'
 import { BurningCandle } from './Candle'
 import { practiceSets } from './content'
-import { useClock, useReducedMotion } from './hooks'
+import { useClock, useReducedMotion, useStableCallback } from './hooks'
 import { LibrarianOwl } from './LibrarianOwl'
 import { LibraryBackdrop } from './LibraryBackdrop'
 import { HUB_PATH, SECTION, bandEstimate, callNumber, practiceIndex } from './library'
@@ -32,7 +32,7 @@ import {
 import { PracticeIntro } from './PracticeIntro'
 import { PracticeResults } from './PracticeResults'
 import { FlagIcon, QuestionSheet } from './QuestionSheet'
-import { ReviewSheet } from './ReviewSheet'
+import { ReviewSheet, type ReviewFilter } from './ReviewSheet'
 import { HIGHLIGHTER_SPRITE } from './sprites'
 import './reading.css'
 import './practice.css'
@@ -82,10 +82,14 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
   const [pulse, setPulse] = useState<{ ids: string[]; nonce: number } | null>(null)
   const [confirming, setConfirming] = useState(false)
   const [timeUpSeen, setTimeUpSeen] = useState(false)
+  const [timeUp, setTimeUp] = useState(false)
+  /** Bumped whenever the clock is reset, so the time-up alarm is re-armed. */
+  const [clockEpoch, setClockEpoch] = useState(0)
   const [result, setResult] = useState<Result | null>(null)
+  const [reviewFilter, setReviewFilter] = useState<ReviewFilter>('all')
+  const [secondLook, setSecondLook] = useState(false)
 
-  const clock = useClock(phase === 'test')
-  const { read: readClock, reset: resetClock } = clock
+  const { read: readClock, reset: resetClock } = useClock(phase === 'test')
   const submitted = useRef(false)
   const passagePane = useRef<HTMLDivElement>(null)
   const questionPane = useRef<HTMLDivElement>(null)
@@ -96,8 +100,6 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
 
   const attempts = stats.attempts.filter((a) => a.practiceId === info.id)
   const limit = info.minutes * 60
-  const remaining = limit - clock.elapsed
-  const timeUp = phase === 'test' && remaining <= 0
   const answeredCount = questions.filter((x) => isAnswered(answers[x.q.id])).length
   const unanswered = questions.filter((x) => !isAnswered(answers[x.q.id]))
   const currentIndex = Math.max(
@@ -114,7 +116,23 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
     window.scrollTo(0, 0)
   }, [])
 
+  // One alarm for the end of the candle, instead of checking the time on every tick.
+  useEffect(() => {
+    if (phase !== 'test') return
+    const left = limit - readClock()
+    if (left <= 0) {
+      const id = window.requestAnimationFrame(() => setTimeUp(true))
+      return () => window.cancelAnimationFrame(id)
+    }
+    const id = window.setTimeout(() => setTimeUp(true), left * 1000 + 50)
+    return () => window.clearTimeout(id)
+  }, [phase, limit, readClock, clockEpoch])
+
   // Keep a bookmark of the test in progress, so leaving the room never loses work.
+  const saveNow = useStableCallback(() => {
+    if (phase === 'test' && !submitted.current)
+      saveDraft(user.id, set.id, { answers, flagged: [...flagged], highlights, elapsed: readClock() })
+  })
   useEffect(() => {
     if (phase !== 'test') return
     const save = () => {
@@ -138,6 +156,8 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
     setFlagged(new Set(from?.flagged ?? []))
     setHighlights(from?.highlights ?? {})
     resetClock(from?.elapsed ?? 0)
+    setClockEpoch((e) => e + 1)
+    setTimeUp(Boolean(from && from.elapsed >= limit))
     if (!from) clearDraft(user.id, set.id)
     setDraft(null)
     setCurrent(questions[0].q.id)
@@ -146,9 +166,13 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
     setPulse(null)
     setTimeUpSeen(Boolean(from && from.elapsed >= limit))
     setResult(null)
+    setReviewFilter('all')
+    setSecondLook(false)
     setPhase('test')
     sfx.page()
     window.scrollTo(0, 0)
+    // The start button has gone: put keyboard and screen-reader users at the top of the passage.
+    window.requestAnimationFrame(() => passagePane.current?.focus({ preventScroll: true }))
   }
 
   const setAnswer = (id: string, value: string) => setAnswers((a) => ({ ...a, [id]: value }))
@@ -208,10 +232,15 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
     if (singlePage()) viewScroll.current[view] = window.scrollY
   }
 
-  const goTo = (id: string) => {
+  const goTo = useStableCallback((id: string) => {
     if (view !== 'questions') rememberScroll()
     setCurrent(id)
     setView('questions')
+    // In review, a filter or the second look may hide the question: show everything again.
+    if (phase === 'results' && !document.getElementById(`rd-q-${id}`)) {
+      setReviewFilter('all')
+      setSecondLook(false)
+    }
     window.requestAnimationFrame(() => {
       const el = document.getElementById(`rd-q-${id}`)
       if (!el) return
@@ -224,7 +253,7 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
       void el.offsetWidth
       el.classList.add('is-pinged')
     })
-  }
+  })
 
   const step = (delta: number) => {
     const next = questions[Math.min(questions.length - 1, Math.max(0, currentIndex + delta))]
@@ -234,7 +263,7 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
     }
   }
 
-  const showEvidence = (g: Graded) => {
+  const showEvidence = useStableCallback((g: Graded) => {
     if (view !== 'passage') rememberScroll()
     setCurrent(g.x.q.id)
     setView('passage')
@@ -243,6 +272,16 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
       const el = document.getElementById(`rd-s-${g.x.q.evidence[0]}`)
       if (el) reveal(el, passagePane.current)
     })
+  })
+
+  const setAnswerStable = useStableCallback(setAnswer)
+  const toggleFlagStable = useStableCallback(toggleFlag)
+
+  const changeSecondLook = (on: boolean) => {
+    setSecondLook(on)
+    setReviewFilter(on ? 'missed' : 'all')
+    // Don't leave a moonlit sentence showing where the answer is.
+    if (on) setPulse(null)
   }
 
   const submit = () => {
@@ -314,13 +353,12 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
   const mode = phase === 'test' ? 'test' : 'review'
   const gradedById = Object.fromEntries((result?.graded ?? []).map((g) => [g.x.q.id, g]))
   const marks = highlightCount(highlights)
-  const fraction = Math.max(0, remaining / limit)
 
   const desk = (
     <div className={`rd-desk rd-desk--${mode} is-view-${view}`}>
       <div className="rd-deskbar">
         {mode === 'test' ? (
-          <Link to={HUB_PATH} className="rd-deskbar__leave" title="Your answers are kept as a bookmark">
+          <Link to={HUB_PATH} className="rd-deskbar__leave" title="Your answers are kept as a bookmark" onClick={saveNow}>
             <span aria-hidden="true">←</span>
             <span className="rd-deskbar__leave-text">Leave</span>
             <span className="visually-hidden"> the reading room (your answers are saved)</span>
@@ -403,13 +441,7 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
         </div>
 
         {mode === 'test' ? (
-          <div className={`rd-timer ${remaining <= 120 ? 'is-low' : ''} ${timeUp ? 'is-up' : ''}`} role="timer" aria-live="off">
-            <BurningCandle fraction={fraction} lit={!timeUp} warn={remaining <= 120 && !timeUp} className="rd-timer__candle" />
-            <span className="rd-timer__digits">
-              <span className="visually-hidden">{timeUp ? 'Time is up. Overtime: ' : 'Time remaining: '}</span>
-              {timeUp ? `+${formatClock(-remaining)}` : formatClock(remaining)}
-            </span>
-          </div>
+          <DeskTimer read={readClock} limit={limit} timeUp={timeUp} onTimeUp={setTimeUp} />
         ) : (
           <div className="rd-timer is-done">
             <BurningCandle
@@ -417,7 +449,10 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
               lit={false}
               className="rd-timer__candle"
             />
-            <span className="rd-timer__digits">{formatClock(result?.attempt.durationSec ?? 0)}</span>
+            <span className="rd-timer__digits">
+              <span className="visually-hidden">Time used: </span>
+              {formatClock(result?.attempt.durationSec ?? 0)}
+            </span>
           </div>
         )}
 
@@ -433,7 +468,7 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
       </div>
 
       <div className="rd-openbook">
-        {timeUp && !timeUpSeen && (
+        {mode === 'test' && timeUp && !timeUpSeen && (
           <div className="rd-timeup" role="alert">
             <LibrarianOwl scale={3} look={1} />
             <div>
@@ -487,14 +522,25 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
               set={set}
               questions={questions}
               answers={answers}
-              onAnswer={setAnswer}
+              onAnswer={setAnswerStable}
               flagged={flagged}
-              onToggleFlag={toggleFlag}
+              onToggleFlag={toggleFlagStable}
               current={current}
               onCurrent={setCurrent}
             />
           ) : (
-            result && <ReviewSheet graded={result.graded} flagged={flagged} current={current} onShowEvidence={showEvidence} />
+            result && (
+              <ReviewSheet
+                graded={result.graded}
+                flagged={flagged}
+                current={current}
+                onShowEvidence={showEvidence}
+                filter={reviewFilter}
+                onFilter={setReviewFilter}
+                second={secondLook}
+                onSecond={changeSecondLook}
+              />
+            )
           )}
         </div>
       </div>
@@ -616,6 +662,45 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
     </div>
   )
 }
+
+/** The candle and mm:ss. It polls the clock itself, so only this little component re-renders each second. */
+const DeskTimer = memo(function DeskTimer({
+  read,
+  limit,
+  timeUp,
+  onTimeUp,
+}: {
+  read: () => number
+  limit: number
+  timeUp: boolean
+  /** Also raised from here, in case the page's own alarm was delayed (e.g. a throttled background tab). */
+  onTimeUp: (up: true) => void
+}) {
+  const [seconds, setSeconds] = useState(() => Math.floor(read()))
+  useEffect(() => {
+    const id = window.setInterval(() => setSeconds(Math.floor(read())), 250)
+    return () => window.clearInterval(id)
+  }, [read])
+  const remaining = limit - seconds
+  useEffect(() => {
+    if (remaining <= 0 && !timeUp) onTimeUp(true)
+  }, [remaining, timeUp, onTimeUp])
+  const low = remaining <= 120
+  return (
+    <div className={`rd-timer ${low ? 'is-low' : ''} ${timeUp ? 'is-up' : ''}`} role="timer" aria-live="off">
+      <BurningCandle
+        fraction={Math.max(0, remaining / limit)}
+        lit={!timeUp}
+        warn={low && !timeUp}
+        className="rd-timer__candle"
+      />
+      <span className="rd-timer__digits">
+        <span className="visually-hidden">{timeUp ? 'Time is up. Overtime: ' : 'Time remaining: '}</span>
+        {timeUp ? `+${formatClock(Math.max(0, -remaining))}` : formatClock(Math.max(0, remaining))}
+      </span>
+    </div>
+  )
+})
 
 function SubmitDialog({
   blanks,

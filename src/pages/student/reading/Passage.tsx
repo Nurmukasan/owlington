@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { Fragment, memo, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import type { PracticeInfo } from '../../../learn/types'
 import type { PracticeSet } from './practice-data'
@@ -29,7 +29,7 @@ function offsetIn(el: Element, node: Node, offset: number) {
 }
 
 /** The reading passage as a book page, with paragraph letters, highlights and evidence pulses. */
-export function Passage({
+export const Passage = memo(function Passage({
   set,
   info,
   callNumber,
@@ -129,8 +129,18 @@ export function Passage({
           key={`${s}-${e}`}
           className="rd-hl"
           title="Click to remove this highlight"
+          tabIndex={0}
+          role="button"
+          aria-label={`Remove highlight: ${text.slice(s, e)}`}
           onClick={() => {
             if (!justHighlighted.current) removeHighlight(sid, i)
+          }}
+          onKeyDown={(ev) => {
+            if (ev.key !== 'Enter' && ev.key !== ' ' && ev.key !== 'Delete' && ev.key !== 'Backspace') return
+            ev.preventDefault()
+            // Keep the keyboard in the passage once the mark is gone.
+            ev.currentTarget.closest<HTMLElement>('.rd-leaf')?.focus({ preventScroll: true })
+            removeHighlight(sid, i)
           }}
         >
           {text.slice(s, e)}
@@ -257,4 +267,4 @@ export function Passage({
         )}
     </article>
   )
-}
+})

@@ -3,13 +3,13 @@ import { Link } from 'react-router-dom'
 import type { Attempt } from '../../../learn/progress'
 import { formatClock } from '../../../learn/useTimer'
 import { practiceSets } from './content'
-import { HUB_PATH, accuracyOf, shortDate } from './library'
+import { BAND7_ACCURACY, HUB_PATH, accuracyOf, shortDate } from './library'
 import { useElementWidth, useInView } from './hooks'
 
 const HEIGHT = 230
 const M = { top: 22, right: 54, bottom: 30, left: 42 }
 const TICKS = [0, 0.25, 0.5, 0.75, 1]
-const TARGET = 0.75 // ≈ 30/40, roughly Band 7 on the Academic test
+const TARGET = BAND7_ACCURACY // ≈ 30/40, roughly Band 7 on the Academic test
 const MAX_POINTS = 12
 
 const titleOf = (id: string) => practiceSets.find((p) => p.id === id)?.title ?? id
@@ -39,6 +39,12 @@ export function AccuracyChart({ attempts }: { attempts: Attempt[] }) {
   const area = n > 1 ? `${line} L${points[n - 1][0].toFixed(1)},${y(0)} L${points[0][0].toFixed(1)},${y(0)} Z` : ''
   const bestIndex = values.length ? values.indexOf(Math.max(...values)) : -1
   const lastIndex = n - 1
+  // The latest value is labelled at the right edge, where the "Band 7" label also sits:
+  // when they would collide, the value label steps above (or below) the target line.
+  const targetY = y(TARGET)
+  const endY = n > 0 ? points[lastIndex][1] : 0
+  const endLabelY =
+    n > 0 && Math.abs(endY - targetY) < 15 ? (values[lastIndex] >= TARGET ? targetY - 15 : targetY + 15) : endY
 
   const onPointer = (e: PointerEvent<SVGSVGElement>) => {
     if (!n) return
@@ -167,7 +173,7 @@ export function AccuracyChart({ attempts }: { attempts: Attempt[] }) {
             ))}
 
             {n > 0 && (
-              <text className="rd-chart__label rd-chart__label--end" x={points[lastIndex][0] + 10} y={points[lastIndex][1]} dy="0.32em">
+              <text className="rd-chart__label rd-chart__label--end" x={points[lastIndex][0] + 10} y={endLabelY} dy="0.32em">
                 {Math.round(values[lastIndex] * 100)}%
               </text>
             )}
