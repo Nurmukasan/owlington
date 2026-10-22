@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { ProgressRing } from '../../../../learn/components/ProgressWidgets'
+import { ScrollLink } from '../../../../learn/components/ScrollLink'
 import { floatText, pixelConfetti } from '../../../../learn/fx'
 import type { Attempt } from '../../../../learn/progress'
 import { sfx } from '../../../../learn/sfx'
 import type { Lecture, PracticeInfo } from '../../../../learn/types'
+import { scrollToId } from '../../../../learn/scroll'
 import { formatClock } from '../../../../learn/useTimer'
-import { bandForAccuracy, type Marked, type Verdict } from '../answers'
+import { bandForAccuracy, bandText, type Marked, type Verdict } from '../answers'
 import { DjOwl } from '../components/DjOwl'
 import { useCountUp, useReducedMotion } from '../hooks'
 import { isPause, questionsOf, type PracticeSet, type Question, type SpokenLine } from '../practice-data'
@@ -47,9 +49,33 @@ const VERDICT: Record<Verdict, string> = {
   blank: 'Left blank',
   limit: 'Over the word limit',
   spelling: 'Spelling slip',
+  plural: 'Singular / plural slip',
+  misheard: 'Misheard?',
+}
+
+/** The lesson behind each kind of near miss. */
+const HINT: Partial<Record<Verdict, string>> = {
+  spelling: 'So close! You heard the right word, but on test day a misspelt answer scores nothing. Check it letter by letter.',
+  plural: 'Right word, wrong form. Check whether the gap needs one thing or several: words like “a” or “some” before the gap give it away.',
+  misheard: 'That is a different word that sounds close to the answer. Replay the line below and listen for the first sound.',
+  limit: 'The answer may be in there, but anything over the word limit scores nothing. Copy only the words the gap needs.',
 }
 
 const CONFETTI = ['#6fe3cf', '#7ff7ff', '#9b84ff', '#ff6fcf', '#ffcf5c', '#ffffff']
+
+/**
+ * Jumps to a review card or transcript line and makes it glow. In-page jumps never touch
+ * the URL hash (under hash routing that is the route), so :target can't do the glow.
+ */
+function jumpTo(id: string) {
+  scrollToId(id, 'center')
+  const el = document.getElementById(id)
+  if (!el) return
+  el.classList.remove('is-flash')
+  void el.offsetWidth // restart the animation on a second click
+  el.classList.add('is-flash')
+  window.setTimeout(() => el.classList.remove('is-flash'), 1600)
+}
 
 function tierOf(accuracy: number) {
   if (accuracy >= 0.9) return { name: 'Crystal clear', line: 'Hoo-hoo! Barely a word slipped past you. That’s the ear of a Band 8 listener.' }
@@ -119,6 +145,12 @@ export function Report({ info, set, station, result, answers, voices, cast, rate
   const reveal = mapGroup
     ? Object.fromEntries(mapGroup.questions.map((q) => [q.answer, q.kind === 'letter' ? q.label : '']))
     : undefined
+  const misses: [number, string, string][] = mapGroup
+    ? mapGroup.questions.flatMap((q) => {
+        const m = marks.find((x) => x.n === q.n)
+        return m && m.given && !m.correct ? [[q.n, m.given, q.answer] as [number, string, string]] : []
+      })
+    : []
 
   return (
     <div className="ls-report">
@@ -150,22 +182,32 @@ export function Report({ info, set, station, result, answers, voices, cast, rate
               {formatFreq(station.freq)} FM · {station.part} · {result.mode === 'exam' ? 'EXAM MODE' : 'PRACTICE MODE'}
             </p>
             <h1 className="ls-board__title" id="ls-board-title">
-              {tier.name}
-              {newBest && <span className="ls-board__best">{prevBest ? 'New best' : 'First score'}</span>}
+              <span className="ls-board__verdict">{done ? tier.name : 'Tuning in…'}</span>
+              {newBest && done && <span className="ls-board__best">{prevBest ? 'New best' : 'First score'}</span>}
             </h1>
             <div className="ls-board__dj">
               <span className="ls-board__owl" aria-hidden="true">
                 <DjOwl happy={celebrate && done} talking={!done} scale={4} />
               </span>
-              <p className="ls-board__line">{tier.line}</p>
+              <p className="ls-board__line">{done ? tier.line : 'Hold on, the scores are coming in over the airwaves…'}</p>
             </div>
 
             <ol className="ls-lamps" aria-label="Question results">
               {marks.map((m, i) => (
                 <li key={m.n} className={m.correct ? 'is-ok' : 'is-bad'} style={{ '--i': i } as CSSProperties}>
-                  <a href={`#ls-review-${m.n}`} aria-label={`Question ${m.n}: ${VERDICT[m.verdict]}`}>
+                  <ScrollLink
+                    to={`ls-review-${m.n}`}
+                    aria-label={`Question ${m.n}: ${VERDICT[m.verdict]}`}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      sfx.click()
+                      // a correct answer is hidden while "Missed" is on: show them all first
+                      if (m.correct && filter === 'missed') setFilter('all')
+                      window.requestAnimationFrame(() => jumpTo(`ls-review-${m.n}`))
+                    }}
+                  >
                     {m.n}
-                  </a>
+                  </ScrollLink>
                 </li>
               ))}
             </ol>
@@ -185,7 +227,7 @@ export function Report({ info, set, station, result, answers, voices, cast, rate
           </div>
           <div>
             <dt>Band estimate</dt>
-            <dd>{band.toFixed(1)}</dd>
+            <dd>{bandText(band)}</dd>
           </div>
           <div>
             <dt>Time</dt>
@@ -201,11 +243,11 @@ export function Report({ info, set, station, result, answers, voices, cast, rate
         </p>
 
         <div className="ls-board__actions">
-          <a href="#ls-review" className="ls-btn ls-btn--teal ls-btn--big">
-            Review {wrong ? `${wrong} to learn from` : 'answers'} <span aria-hidden="true">↓</span>
-          </a>
+          <ScrollLink to="ls-review" className="ls-btn ls-btn--teal ls-btn--big" onClick={() => sfx.click()}>
+            Review {wrong ? `${wrong} to learn from` : 'answers'} <span className="ls-icon-down" aria-hidden="true" />
+          </ScrollLink>
           <button type="button" className="ls-btn ls-btn--ghost ls-btn--big" onClick={onRetry}>
-            ↺ Tune in again
+            <span className="ls-icon-replay" aria-hidden="true" /> Tune in again
           </button>
           {next && nextStation && (
             <Link to={`/student/listening/practice/${next.id}`} className="ls-btn ls-btn--ghost ls-btn--big" onClick={() => sfx.click()}>
@@ -242,8 +284,11 @@ export function Report({ info, set, station, result, answers, voices, cast, rate
 
         {mapGroup && reveal && (
           <figure className="ls-review__map">
-            <ParkMap reveal={reveal} />
-            <figcaption>Answer key for the map: every place where the ranger says it is. C and F are never used.</figcaption>
+            <ParkMap reveal={reveal} misses={misses} />
+            <figcaption>
+              Answer key for the map: every place where the ranger says it is. C and F are never used.
+              {misses.length > 0 && ' Red tags show where your wrong answers went, with a dotted hop to the right place.'}
+            </figcaption>
           </figure>
         )}
 
@@ -444,6 +489,7 @@ function ReviewCard({ q, m, set, index, given, canHear, speaking, onHear }: Card
         )}
       </dl>
 
+      {HINT[m.verdict] && <p className={`ls-card__hint is-${m.verdict}`}>{HINT[m.verdict]}</p>}
       <p className="ls-card__explain">{q.explain}</p>
 
       {line && (
@@ -461,12 +507,20 @@ function ReviewCard({ q, m, set, index, given, canHear, speaking, onHear }: Card
             </span>
             {canHear && (
               <button type="button" className={`ls-card__hear ${speaking ? 'is-on' : ''}`} onClick={() => onHear(q.n, line)}>
-                {speaking ? '■ Stop' : '▶ Hear it again'}
+                <span className={`ls-card__hear-icon ${speaking ? 'is-stop' : ''}`} aria-hidden="true" />
+                {speaking ? 'Stop' : 'Hear it again'}
               </button>
             )}
-            <a href={`#ls-line-${lineIndex}`} className="ls-card__find">
+            <ScrollLink
+              to={`ls-line-${lineIndex}`}
+              className="ls-card__find"
+              onClick={(e) => {
+                e.preventDefault()
+                jumpTo(`ls-line-${lineIndex}`)
+              }}
+            >
               Find in transcript
-            </a>
+            </ScrollLink>
           </figcaption>
         </figure>
       )}

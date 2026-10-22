@@ -1,7 +1,7 @@
 import { Fragment, useState, type CSSProperties, type ReactNode } from 'react'
 import { sfx } from '../../../../learn/sfx'
 import { overLimit } from '../answers'
-import { questionsOf, type GapQuestion, type PracticeSet, type Question, type TaskGroup, type WordLimit } from '../practice-data'
+import { paperRange, questionsOf, type GapQuestion, type PracticeSet, type Question, type TaskGroup, type WordLimit } from '../practice-data'
 import { ParkMap } from './ParkMap'
 import { focusQuestion, groupRange, inRange, rangeText, type Answers, type Mode, type Range } from './script'
 
@@ -60,7 +60,7 @@ export function QuestionPaper({ set, part, title, answers, onAnswer, mode, live,
             {title}
           </h2>
           <p className="ls-paper__meta">
-            {rangeText([1, questions.length])} · answers can be changed until you submit
+            {rangeText(paperRange(set))} · answers can be changed until you submit
           </p>
         </header>
 
@@ -127,8 +127,10 @@ function Group({ group, index, answers, onAnswer, mode, live }: GroupProps) {
 
 function Gap({ q, value, onAnswer, limit, live, mode }: { q: GapQuestion; value: string; onAnswer: (n: number, v: string) => void; limit?: WordLimit; live: boolean; mode: Mode }) {
   const over = mode === 'practice' && overLimit(value, limit)
+  // The box grows with what you type (field-sizing where supported, `size` elsewhere), so every letter stays checkable.
+  const size = Math.max(q.numeric ? 14 : 10, value.length + 2)
   return (
-    <span className={`ls-gap ${live ? 'is-live' : ''} ${value.trim() ? 'is-filled' : ''} ${over ? 'is-over' : ''}`} data-q={q.n}>
+    <span className={`ls-gap ${live ? 'is-live' : ''} ${value.trim() ? 'is-filled' : ''} ${over ? 'is-over' : ''} ${q.numeric ? 'is-numeric' : ''}`} data-q={q.n}>
       <span className="ls-gap__no" aria-hidden="true">
         {q.n}
       </span>
@@ -136,6 +138,7 @@ function Gap({ q, value, onAnswer, limit, live, mode }: { q: GapQuestion; value:
         id={`ls-q-${q.n}`}
         className="ls-gap__input"
         type="text"
+        size={size}
         value={value}
         onChange={(e) => onAnswer(q.n, e.target.value)}
         aria-label={`Question ${q.n}`}

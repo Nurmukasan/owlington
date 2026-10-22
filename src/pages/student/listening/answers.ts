@@ -6,7 +6,7 @@ import type { GapQuestion, Question, WordLimit } from './practice-data'
  * answer over the word limit scores nothing.
  */
 
-export type Verdict = 'correct' | 'wrong' | 'blank' | 'limit' | 'spelling'
+export type Verdict = 'correct' | 'wrong' | 'blank' | 'limit' | 'spelling' | 'plural' | 'misheard'
 
 export interface Marked {
   n: number
@@ -83,7 +83,48 @@ function matchesGap(q: GapQuestion, raw: string) {
   return false
 }
 
-export function mark(q: Question, raw: string | undefined, limit?: WordLimit): Marked {
+/** "notebooks" for "notebook", "library" for "libraries": the right word in the wrong number. */
+function pluralSlip(given: string, key: string) {
+  const forms = (w: string) => [w + 's', w + 'es', w.endsWith('y') ? w.slice(0, -1) + 'ies' : '']
+  return forms(key).includes(given) || forms(given).includes(key)
+}
+
+const VOWEL = /[aeiouy]/
+
+/** Same length, one letter swapped, and both letters are vowels ("patch" for "pitch"). */
+function vowelSwap(a: string, b: string) {
+  if (a.length !== b.length) return false
+  const diff = [...a].map((c, i) => [c, b[i]]).filter(([x, y]) => x !== y)
+  return diff.length === 1 && VOWEL.test(diff[0][0]) && VOWEL.test(diff[0][1])
+}
+
+/**
+ * Why a near-miss gap answer lost the mark, so the review teaches the right lesson:
+ * - plural: right word, wrong number (the Numbers & spelling tape warns about this);
+ * - spelling: the right word, misspelt (same first letter, small slip in a longer word);
+ * - misheard: a different word that sounds close ("light" for "night"), or a word that was
+ *   actually said in the recording (a distractor);
+ * - wrong: anything else.
+ */
+function nearMiss(q: GapQuestion, raw: string, heard?: Set<string>): Verdict {
+  if (q.numeric) return 'wrong'
+  const given = tidy(raw)
+  const key = tidy(q.answer)
+  if (pluralSlip(given, key) || (q.accept ?? []).some((a) => pluralSlip(given, tidy(a)))) return 'plural'
+  const d = distance(given, key)
+  if (d > 2 || key.length < 4) return 'wrong'
+  if (heard?.has(given)) return 'misheard'
+  const spelling =
+    given[0] === key[0] && ((d === 1 && key.length >= 5) || key.length >= 7) && !(key.length <= 5 && vowelSwap(given, key))
+  return spelling ? 'spelling' : 'misheard'
+}
+
+/** Lower-case words of a recording, to tell a misheard distractor from a spelling slip. */
+export function wordsHeard(lines: string[]) {
+  return new Set(lines.flatMap((t) => tidy(t).split(/[^a-z0-9'-]+/).filter(Boolean)))
+}
+
+export function mark(q: Question, raw: string | undefined, limit?: WordLimit, heard?: Set<string>): Marked {
   const given = (raw ?? '').trim()
   if (!given) return { n: q.n, given, correct: false, verdict: 'blank' }
 
@@ -94,8 +135,7 @@ export function mark(q: Question, raw: string | undefined, limit?: WordLimit): M
 
   if (overLimit(given, limit)) return { n: q.n, given, correct: false, verdict: 'limit' }
   if (matchesGap(q, given)) return { n: q.n, given, correct: true, verdict: 'correct' }
-  const near = !q.numeric && q.answer.length >= 4 && distance(tidy(given), tidy(q.answer)) <= 2
-  return { n: q.n, given, correct: false, verdict: near ? 'spelling' : 'wrong' }
+  return { n: q.n, given, correct: false, verdict: nearMiss(q, given, heard) }
 }
 
 /** IELTS Listening raw score → band (the published conversion is close to this). */
@@ -114,11 +154,16 @@ const BANDS: [number, number][] = [
   [8, 3.5],
   [6, 3],
   [4, 2.5],
-  [0, 0],
+  [2, 2],
+  // Band 0 means "did not attempt"; anyone who sat the test is at least a 1.
+  [0, 1],
 ]
 
 /** A rough band for this accuracy, as if it held across all 40 questions. */
 export function bandForAccuracy(accuracy: number) {
   const raw = Math.round(accuracy * 40)
-  return BANDS.find(([min]) => raw >= min)?.[1] ?? 0
+  return BANDS.find(([min]) => raw >= min)?.[1] ?? 1
 }
+
+/** How a band estimate is shown: very low estimates read "below 2.5" rather than a discouraging 1.0. */
+export const bandText = (band: number) => (band < 2.5 ? 'Below 2.5' : band.toFixed(1))

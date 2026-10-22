@@ -315,9 +315,9 @@ const part2: PracticeSet = {
   speakers: [ANNOUNCER, { id: 'helen', name: 'Helen', role: 'Park ranger', gender: 'f', accents: ['en-AU', 'en-NZ', 'en-GB', 'en-US'] }],
   script: [
     { s: 'ann', t: 'Part 2. You will hear a park ranger talking to a group of new volunteers at Larkhill Country Park.' },
-    { s: 'ann', t: 'First, you have some time to look at questions 1 to 4.' },
-    { wait: 25, label: 'questions 1–4' },
-    { s: 'ann', t: 'Now listen carefully and answer questions 1 to 4.' },
+    { s: 'ann', t: 'First, you have some time to look at questions 11 to 14.' },
+    { wait: 25, label: 'questions 11–14' },
+    { s: 'ann', t: 'Now listen carefully and answer questions 11 to 14.' },
     { s: 'helen', t: "Good morning, everyone, and welcome to Larkhill Country Park. My name's Helen, and I'm one of the rangers here." },
     { s: 'helen', t: "Before we head out, I'll give you a bit of background, and then I'll show you on the map where everything is." },
     {
@@ -342,9 +342,9 @@ const part2: PracticeSet = {
       t: "Now, a few rules. You don't have to wear a uniform, although there are green jackets if you'd like one. Radios are only for rangers, so don't worry about those.",
     },
     { s: 'helen', t: "What you must always do is sign in at the visitor centre when you arrive, so we know who's in the park." },
-    { s: 'ann', t: 'Now look at the map. You have some time to look at questions 5 to 10.' },
-    { wait: 25, label: 'questions 5–10' },
-    { s: 'ann', t: 'Now listen and answer questions 5 to 10.' },
+    { s: 'ann', t: 'Now look at the map. You have some time to look at questions 15 to 20.' },
+    { wait: 25, label: 'questions 15–20' },
+    { s: 'ann', t: 'Now listen and answer questions 15 to 20.' },
     {
       s: 'helen',
       t: "Right, let's look at the map. We're standing at the main gate, at the bottom of the map, and the main path runs straight ahead of you, north towards the lake.",
@@ -377,7 +377,7 @@ const part2: PracticeSet = {
       questions: [
         {
           kind: 'choice',
-          n: 1,
+          n: 11,
           stem: 'Why was the park closed for most of last year?',
           options: ABC('Flooding had damaged the paths.', 'The lake had to be cleared.', 'The visitor centre was being repainted.'),
           answer: 'B',
@@ -386,7 +386,7 @@ const part2: PracticeSet = {
         },
         {
           kind: 'choice',
-          n: 2,
+          n: 12,
           stem: 'What will volunteers mainly do this season?',
           options: ABC('plant trees', 'collect litter', 'talk to visitors'),
           answer: 'C',
@@ -395,7 +395,7 @@ const part2: PracticeSet = {
         },
         {
           kind: 'choice',
-          n: 3,
+          n: 13,
           stem: 'What is new at the park this year?',
           options: ABC('an outdoor cinema', 'evening walks to listen to owls', 'a nature club for children'),
           answer: 'B',
@@ -404,7 +404,7 @@ const part2: PracticeSet = {
         },
         {
           kind: 'choice',
-          n: 4,
+          n: 14,
           stem: 'Volunteers must always',
           options: ABC('wear a green jacket.', 'sign in when they arrive.', 'carry a radio.'),
           answer: 'B',
@@ -416,13 +416,13 @@ const part2: PracticeSet = {
     {
       id: 'p2-map',
       type: 'map',
-      instruction: 'Label the map below. Choose the correct letter, A–H, for questions 5–10.',
+      instruction: 'Label the map below. Choose the correct letter, A–H, for questions 15–20.',
       optionsTitle: 'Larkhill Country Park',
       options: PARK_LETTERS.map((key) => ({ key, text: `Location ${key}` })),
       questions: [
         {
           kind: 'letter',
-          n: 5,
+          n: 15,
           label: 'Café',
           answer: 'B',
           evidence: "it's on your right, just before you reach the water",
@@ -430,7 +430,7 @@ const part2: PracticeSet = {
         },
         {
           kind: 'letter',
-          n: 6,
+          n: 16,
           label: 'Adventure playground',
           answer: 'A',
           evidence: 'Directly opposite the café, on the other side of the main path',
@@ -438,7 +438,7 @@ const part2: PracticeSet = {
         },
         {
           kind: 'letter',
-          n: 7,
+          n: 17,
           label: 'Bird hide',
           answer: 'D',
           evidence: "the north shore. That's where you'll find the bird hide",
@@ -446,7 +446,7 @@ const part2: PracticeSet = {
         },
         {
           kind: 'letter',
-          n: 8,
+          n: 18,
           label: 'Picnic area',
           answer: 'H',
           evidence: 'between the car park and Beech Wood',
@@ -454,7 +454,7 @@ const part2: PracticeSet = {
         },
         {
           kind: 'letter',
-          n: 9,
+          n: 19,
           label: 'Toilets',
           answer: 'G',
           evidence: 'in a small block just to the east of it',
@@ -462,7 +462,7 @@ const part2: PracticeSet = {
         },
         {
           kind: 'letter',
-          n: 10,
+          n: 20,
           label: 'Wildflower meadow',
           answer: 'E',
           evidence: "The meadow's on the north side of the stream, before you reach the bridge",
@@ -472,17 +472,17 @@ const part2: PracticeSet = {
     },
   ],
   traps: [
-    { phrase: 'because of the spring floods', q: 1, note: 'People assume this, but the paths coped well.' },
-    { phrase: 'repaint the visitor centre', q: 1, note: 'Done during the closure, not the reason for it.' },
-    { phrase: 'planting trees', q: 2, note: 'Only some of the time, in November.' },
-    { phrase: 'Our contractors take care of that now', q: 2, note: 'Litter is not the volunteers’ job.' },
-    { phrase: 'an outdoor cinema in the summer', q: 3, note: 'Only considered, never happening.' },
-    { phrase: 'has been running for years', q: 3, note: 'The nature club is not new.' },
-    { phrase: "there are green jackets if you'd like one", q: 4, note: 'Optional, not a rule.' },
-    { phrase: 'Radios are only for rangers', q: 4, note: 'Volunteers don’t carry radios.' },
-    { phrase: 'It used to be inside the visitor centre', q: 5, note: 'The café has moved.' },
-    { phrase: "that's where the old one was", q: 7, note: 'The old hide near Beech Wood (C) was taken down.' },
-    { phrase: "Please don't cross the bridge to the south bank", q: 10, note: 'The south bank (F) is farmland, not the meadow.' },
+    { phrase: 'because of the spring floods', q: 11, note: 'People assume this, but the paths coped well.' },
+    { phrase: 'repaint the visitor centre', q: 11, note: 'Done during the closure, not the reason for it.' },
+    { phrase: 'planting trees', q: 12, note: 'Only some of the time, in November.' },
+    { phrase: 'Our contractors take care of that now', q: 12, note: 'Litter is not the volunteers’ job.' },
+    { phrase: 'an outdoor cinema in the summer', q: 13, note: 'Only considered, never happening.' },
+    { phrase: 'has been running for years', q: 13, note: 'The nature club is not new.' },
+    { phrase: "there are green jackets if you'd like one", q: 14, note: 'Optional, not a rule.' },
+    { phrase: 'Radios are only for rangers', q: 14, note: 'Volunteers don’t carry radios.' },
+    { phrase: 'It used to be inside the visitor centre', q: 15, note: 'The café has moved.' },
+    { phrase: "that's where the old one was", q: 17, note: 'The old hide near Beech Wood (C) was taken down.' },
+    { phrase: "Please don't cross the bridge to the south bank", q: 20, note: 'The south bank (F) is farmland, not the meadow.' },
   ],
 }
 
@@ -499,9 +499,9 @@ const part3: PracticeSet = {
   ],
   script: [
     { s: 'ann', t: 'Part 3. You will hear two media students, Maya and Leo, discussing their podcast project with their tutor, Dr Grant.' },
-    { s: 'ann', t: 'First, you have some time to look at questions 1 to 4.' },
-    { wait: 25, label: 'questions 1–4' },
-    { s: 'ann', t: 'Now listen carefully and answer questions 1 to 4.' },
+    { s: 'ann', t: 'First, you have some time to look at questions 21 to 24.' },
+    { wait: 25, label: 'questions 21–24' },
+    { s: 'ann', t: 'Now listen carefully and answer questions 21 to 24.' },
     { s: 'grant', t: "Come in, both of you. So, how's the podcast going? Have you settled on a topic yet?" },
     { s: 'maya', t: "We have, finally. We started with the history of the city's markets." },
     { s: 'leo', t: "I was worried we wouldn't find anyone to interview, but actually that wasn't a problem at all. There were plenty of people." },
@@ -532,9 +532,9 @@ const part3: PracticeSet = {
       s: 'grant',
       t: "I'm not concerned about that. You've both done the recording workshop. And the deadline isn't until May, so you've got plenty of time.",
     },
-    { s: 'ann', t: 'Before you hear the rest of the discussion, you have some time to look at questions 5 to 9.' },
-    { wait: 25, label: 'questions 5–9' },
-    { s: 'ann', t: 'Now listen and answer questions 5 to 9.' },
+    { s: 'ann', t: 'Before you hear the rest of the discussion, you have some time to look at questions 25 to 29.' },
+    { wait: 25, label: 'questions 25–29' },
+    { s: 'ann', t: 'Now listen and answer questions 25 to 29.' },
     { s: 'maya', t: "So, we've got four people in mind. The first is a nurse who works nights at the city hospital." },
     { s: 'grant', t: "Excellent. But nurses' shifts change at short notice, so it may be hard to fix a time. Have a back-up date ready." },
     { s: 'leo', t: "Then there's a baker. He starts work at three in the morning, and he's been doing it for forty years." },
@@ -568,7 +568,7 @@ const part3: PracticeSet = {
       questions: [
         {
           kind: 'choice',
-          n: 1,
+          n: 21,
           stem: 'Why did the students change the topic of their podcast?',
           options: ABC('They could not find people to interview.', 'There was too much material.', 'The topic had already been covered.'),
           answer: 'B',
@@ -577,7 +577,7 @@ const part3: PracticeSet = {
         },
         {
           kind: 'choice',
-          n: 2,
+          n: 22,
           stem: 'What does Dr Grant say about the length of the episode?',
           options: ABC('It must be exactly twenty minutes.', 'It can be shorter if the content is strong.', 'Music can be added to make it longer.'),
           answer: 'B',
@@ -586,7 +586,7 @@ const part3: PracticeSet = {
         },
         {
           kind: 'choice',
-          n: 3,
+          n: 23,
           stem: 'Where will the interviews be recorded?',
           options: ABC('in the library studio', 'in Maya’s flat', 'at the guests’ workplaces'),
           answer: 'C',
@@ -595,7 +595,7 @@ const part3: PracticeSet = {
         },
         {
           kind: 'choice',
-          n: 4,
+          n: 24,
           stem: 'What is Dr Grant most concerned about?',
           options: ABC('getting permission', 'the sound quality', 'the deadline'),
           answer: 'A',
@@ -607,7 +607,7 @@ const part3: PracticeSet = {
     {
       id: 'p3-match',
       type: 'matching',
-      instruction: 'What comment does Dr Grant make about each guest? Choose FOUR answers from the box and write the correct letter, A–E, next to questions 5–8.',
+      instruction: 'What comment does Dr Grant make about each guest? Choose FOUR answers from the box and write the correct letter, A–E, next to questions 25–28.',
       optionsTitle: 'Comments',
       options: [
         { key: 'A', text: 'would add humour' },
@@ -619,7 +619,7 @@ const part3: PracticeSet = {
       questions: [
         {
           kind: 'letter',
-          n: 5,
+          n: 25,
           label: 'the nurse',
           answer: 'B',
           evidence: 'it may be hard to fix a time',
@@ -627,7 +627,7 @@ const part3: PracticeSet = {
         },
         {
           kind: 'letter',
-          n: 6,
+          n: 26,
           label: 'the baker',
           answer: 'D',
           evidence: 'That would give the whole episode a sense of history',
@@ -635,7 +635,7 @@ const part3: PracticeSet = {
         },
         {
           kind: 'letter',
-          n: 7,
+          n: 27,
           label: 'the taxi driver',
           answer: 'C',
           evidence: "Isn't that rather like the bus driver you interviewed for your pilot episode?",
@@ -643,7 +643,7 @@ const part3: PracticeSet = {
         },
         {
           kind: 'letter',
-          n: 8,
+          n: 28,
           label: 'the radio presenter',
           answer: 'A',
           evidence: "she's hilarious on air",
@@ -658,7 +658,7 @@ const part3: PracticeSet = {
       questions: [
         {
           kind: 'choice',
-          n: 9,
+          n: 29,
           stem: 'What will the students do next?',
           options: ABC('write the interview questions', 'contact the employers', 'book the editing suite'),
           answer: 'B',
@@ -669,17 +669,17 @@ const part3: PracticeSet = {
     },
   ],
   traps: [
-    { phrase: "I was worried we wouldn't find anyone to interview", q: 1, note: 'A worry that turned out to be wrong.' },
-    { phrase: "nobody's done that before", q: 1, note: 'The topic has NOT been covered before.' },
-    { phrase: 'the guidelines say twenty minutes per episode', q: 2, note: 'Only a guideline; she accepts fifteen minutes.' },
-    { phrase: "please don't fill the gaps with music", q: 2, note: 'Music as filler is marked down.' },
-    { phrase: "record in the library studio, but it's booked for weeks", q: 3, note: 'The studio is unavailable.' },
-    { phrase: 'Leo suggested my flat', q: 3, note: 'Rejected: too noisy.' },
-    { phrase: "I'm not concerned about that", q: 4, note: 'Sound quality is not her worry.' },
-    { phrase: "the deadline isn't until May", q: 4, note: 'Plenty of time, so not a concern.' },
-    { phrase: "We thought we'd interview her first", q: 8, note: 'The students’ idea, not the tutor’s comment.' },
-    { phrase: 'The questions can wait until next week', q: 9, note: 'Writing questions comes later.' },
-    { phrase: "we'll book the editing suite after that", q: 9, note: '“After that” means not next.' },
+    { phrase: "I was worried we wouldn't find anyone to interview", q: 21, note: 'A worry that turned out to be wrong.' },
+    { phrase: "nobody's done that before", q: 21, note: 'The topic has NOT been covered before.' },
+    { phrase: 'the guidelines say twenty minutes per episode', q: 22, note: 'Only a guideline; she accepts fifteen minutes.' },
+    { phrase: "please don't fill the gaps with music", q: 22, note: 'Music as filler is marked down.' },
+    { phrase: "record in the library studio, but it's booked for weeks", q: 23, note: 'The studio is unavailable.' },
+    { phrase: 'Leo suggested my flat', q: 23, note: 'Rejected: too noisy.' },
+    { phrase: "I'm not concerned about that", q: 24, note: 'Sound quality is not her worry.' },
+    { phrase: "the deadline isn't until May", q: 24, note: 'Plenty of time, so not a concern.' },
+    { phrase: "We thought we'd interview her first", q: 28, note: 'The students’ idea, not the tutor’s comment.' },
+    { phrase: 'The questions can wait until next week', q: 29, note: 'Writing questions comes later.' },
+    { phrase: "we'll book the editing suite after that", q: 29, note: '“After that” means not next.' },
   ],
 }
 
@@ -691,9 +691,9 @@ const part4: PracticeSet = {
   speakers: [ANNOUNCER, { id: 'ellis', name: 'Dr Ellis', role: 'Lecturer', gender: 'm', accents: ['en-GB', 'en-IN', 'en-AU', 'en-US'] }],
   script: [
     { s: 'ann', t: 'Part 4. You will hear a lecture about soundscape ecology.' },
-    { s: 'ann', t: 'You now have some time to look at questions 1 to 10.' },
-    { wait: 40, label: 'questions 1–10' },
-    { s: 'ann', t: 'Now listen carefully and answer questions 1 to 10.' },
+    { s: 'ann', t: 'You now have some time to look at questions 31 to 40.' },
+    { wait: 40, label: 'questions 31–40' },
+    { s: 'ann', t: 'Now listen carefully and answer questions 31 to 40.' },
     { s: 'ellis', t: 'Good afternoon, everyone. Today I want to introduce a field that has grown enormously over the last twenty years: soundscape ecology.' },
     { s: 'ellis', t: "Put simply, it's the study of all the sounds in a landscape, and of what those sounds can tell us about the health of an ecosystem." },
     { s: 'ellis', t: 'Researchers usually divide a soundscape into three parts. The first is biophony: the sounds made by living things, such as birdsong, insects or whale calls.' },
@@ -741,91 +741,91 @@ const part4: PracticeSet = {
       limit: ONE_WORD_ONLY,
       title: 'Soundscape ecology',
       rows: [
-        { kind: 'item', text: 'Definition: the study of all the sounds in a {1} and what they reveal about the health of an ecosystem' },
+        { kind: 'item', text: 'Definition: the study of all the sounds in a {31} and what they reveal about the health of an ecosystem' },
         { kind: 'sub', text: 'Three parts of a soundscape' },
         { kind: 'item', text: 'Biophony: sounds made by living things, e.g. birdsong, insects' },
-        { kind: 'item', text: 'Geophony: natural sounds not made by living things, e.g. wind, {2} and running water' },
-        { kind: 'item', text: 'Anthrophony: all the noise produced by {3}' },
+        { kind: 'item', text: 'Geophony: natural sounds not made by living things, e.g. wind, {32} and running water' },
+        { kind: 'item', text: 'Anthrophony: all the noise produced by {33}' },
         { kind: 'sub', text: 'Methods' },
         { kind: 'item', text: 'In the past: scientists listened in the field, so studies lasted only a few hours' },
-        { kind: 'item', text: 'Today: a small, weatherproof {4} is fixed to a tree for months' },
-        { kind: 'item', text: 'Devices are cheap: some cost less than a pair of {5}' },
-        { kind: 'item', text: 'Software turns sound into a picture called a {6}; AI identifies the species' },
+        { kind: 'item', text: 'Today: a small, weatherproof {34} is fixed to a tree for months' },
+        { kind: 'item', text: 'Devices are cheap: some cost less than a pair of {35}' },
+        { kind: 'item', text: 'Software turns sound into a picture called a {36}; AI identifies the species' },
         { kind: 'sub', text: 'Findings' },
-        { kind: 'item', text: 'Coral reefs: a healthy reef is extremely {7}' },
-        { kind: 'item', text: 'Recordings of a healthy reef attracted young {8} to a damaged one' },
-        { kind: 'item', text: 'Cities: many birds sing at a higher {9}, so traffic does not mask their songs' },
-        { kind: 'item', text: 'Some robins sing at {10}, when the streets are quieter' },
+        { kind: 'item', text: 'Coral reefs: a healthy reef is extremely {37}' },
+        { kind: 'item', text: 'Recordings of a healthy reef attracted young {38} to a damaged one' },
+        { kind: 'item', text: 'Cities: many birds sing at a higher {39}, so traffic does not mask their songs' },
+        { kind: 'item', text: 'Some robins sing at {40}, when the streets are quieter' },
         { kind: 'sub', text: 'Conservation' },
         { kind: 'item', text: 'Recorders detect rare, shy and nocturnal animals, e.g. owls and bats' },
       ],
       questions: [
         {
           kind: 'gap',
-          n: 1,
+          n: 31,
           answer: 'landscape',
           evidence: 'the study of all the sounds in a landscape',
           explain: '“Put simply” introduces the definition. The notes copy it almost word for word.',
         },
         {
           kind: 'gap',
-          n: 2,
+          n: 32,
           answer: 'rain',
           evidence: 'wind, rain and running water',
           explain: 'The example list is read in the same order as the notes: wind, rain, running water.',
         },
         {
           kind: 'gap',
-          n: 3,
+          n: 33,
           answer: 'humans',
           evidence: 'all the noise produced by humans',
           explain: 'Anthrophony is human-made noise. The examples (traffic, aircraft) come straight after the answer.',
         },
         {
           kind: 'gap',
-          n: 4,
+          n: 34,
           answer: 'recorder',
           evidence: 'a small, weatherproof recorder',
           explain: '“Today, the key tool is…” signals the answer. The note needs a singular noun after “a small, weatherproof”.',
         },
         {
           kind: 'gap',
-          n: 5,
+          n: 35,
           answer: 'headphones',
           evidence: 'Some cost less than a pair of headphones',
           explain: 'A microphone is mentioned as a size comparison. The price comparison, which the notes ask for, is headphones.',
         },
         {
           kind: 'gap',
-          n: 6,
+          n: 36,
           answer: 'spectrogram',
           evidence: 'called a spectrogram',
           explain: '“Called a…” introduces the technical term. Spell it the way it sounds: spectro + gram.',
         },
         {
           kind: 'gap',
-          n: 7,
+          n: 37,
           answer: 'noisy',
           evidence: 'a healthy reef is extremely noisy',
           explain: '“You might imagine that the sea is quiet, but…” sets up the contrast. The answer comes after “but”.',
         },
         {
           kind: 'gap',
-          n: 8,
+          n: 38,
           answer: 'fish',
           evidence: 'Young fish were attracted by the sound',
           explain: 'Shrimps are mentioned as reef noise-makers, but it was young fish that the recordings attracted.',
         },
         {
           kind: 'gap',
-          n: 9,
+          n: 39,
           answer: 'pitch',
           evidence: 'sing at a higher pitch',
           explain: '“Louder” is mentioned first, but it doesn’t fit “a higher ___”. The answer is pitch.',
         },
         {
           kind: 'gap',
-          n: 10,
+          n: 40,
           answer: 'night',
           evidence: 'recorded singing at night',
           explain: 'Robins usually sing at dawn. In noisy cities they have been recorded singing at night, when it is quieter.',
@@ -834,11 +834,11 @@ const part4: PracticeSet = {
     },
   ],
   traps: [
-    { phrase: 'not much bigger than a microphone', q: 5, note: 'A size comparison, not a price one.' },
-    { phrase: 'You might imagine that the sea is quiet', q: 7, note: 'An assumption the speaker contradicts.' },
-    { phrase: 'shrimps snap their claws', q: 8, note: 'Noise-makers on the reef, not the animals attracted.' },
-    { phrase: 'Some birds simply sing louder', q: 9, note: 'Doesn’t fit “a higher ___”.' },
-    { phrase: 'Robins are famous for singing at dawn', q: 10, note: 'Their usual time, not the change.' },
+    { phrase: 'not much bigger than a microphone', q: 35, note: 'A size comparison, not a price one.' },
+    { phrase: 'You might imagine that the sea is quiet', q: 37, note: 'An assumption the speaker contradicts.' },
+    { phrase: 'shrimps snap their claws', q: 38, note: 'Noise-makers on the reef, not the animals attracted.' },
+    { phrase: 'Some birds simply sing louder', q: 39, note: 'Doesn’t fit “a higher ___”.' },
+    { phrase: 'Robins are famous for singing at dawn', q: 40, note: 'Their usual time, not the change.' },
   ],
 }
 
@@ -850,4 +850,9 @@ export const PRACTICE_SETS: Record<string, PracticeSet> = {
 }
 
 export const questionsOf = (set: PracticeSet) => set.groups.flatMap((g) => g.questions)
-export const groupOf = (set: PracticeSet, n: number) => set.groups.find((g) => g.questions.some((q) => q.n === n))
+
+/** First and last question numbers on the paper (Part 2 runs 11–20, as in the real test). */
+export function paperRange(set: PracticeSet): [number, number] {
+  const qs = questionsOf(set)
+  return [qs[0].n, qs[qs.length - 1].n]
+}

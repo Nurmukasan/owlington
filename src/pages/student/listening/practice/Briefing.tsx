@@ -5,9 +5,11 @@ import type { PracticeInfo } from '../../../../learn/types'
 import { formatClock } from '../../../../learn/useTimer'
 import { DjOwl } from '../components/DjOwl'
 import { SignalBars } from '../components/SignalBars'
-import type { PracticeSet } from '../practice-data'
+import { questionsOf, type PracticeSet } from '../practice-data'
 import { accentName, accentOf, estimateSeconds, type Cast, type VoiceStatus } from '../speech'
 import { DIAL_MAX, DIAL_MIN, formatFreq, type Station } from '../stations'
+import type { Draft } from './draft'
+import { prefersReducedMotion } from '../hooks'
 import { RATES, readingSeconds, speakerColor, spokenLines, type AudioSource, type Mode } from './script'
 
 /** DJ Hoot's advice for each broadcast (strategy only, never answers). */
@@ -34,14 +36,17 @@ interface BriefingProps {
   cast: Cast
   history: Attempt[]
   best?: Attempt
+  /** A broadcast left half-way on this device, if any. */
+  draft: Draft | null
   onStart: () => void
+  onResume: () => void
 }
 
 const shortDate = (iso: string) => new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })
 const pct = (a: Attempt) => (a.total ? Math.round((a.score / a.total) * 100) : 0)
 
 export function Briefing(props: BriefingProps) {
-  const { info, set, station, mode, audio, rate, voices, voiceStatus, cast, history, best } = props
+  const { info, set, station, mode, audio, rate, voices, voiceStatus, cast, history, best, draft } = props
   const title = info.title.replace(/^Part \d · /, '')
   const freq = formatFreq(station.freq)
   const cast0 = set.speakers.filter((s) => s.id !== 'ann')
@@ -53,6 +58,16 @@ export function Briefing(props: BriefingProps) {
   const accents = [...new Set(voices.map((v) => accentName(accentOf(v))))]
   const transcript = audio === 'transcript' || !voicesReady
   const needle = ((station.freq - DIAL_MIN) / (DIAL_MAX - DIAL_MIN)) * 100
+  const total = questionsOf(set).length
+  const draftAnswered = draft ? Object.values(draft.answers).filter((v) => v.trim()).length : 0
+  const settings = `${mode === 'exam' ? 'Exam mode' : 'Practice mode'} · ${rate}× · ${transcript ? 'transcript' : 'voices'}`
+
+  const toSetup = () => {
+    sfx.click()
+    const panel = document.getElementById('ls-setup')
+    panel?.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' })
+    panel?.querySelector<HTMLInputElement>('input:checked')?.focus({ preventScroll: true })
+  }
 
   return (
     <div className="ls-brief">
@@ -73,6 +88,43 @@ export function Briefing(props: BriefingProps) {
               </li>
             ))}
           </ul>
+
+          {/* the main action, above the fold: start (or resume) with the current settings */}
+          <div className={`ls-brief__go ${draft ? 'has-draft' : ''}`}>
+            {draft ? (
+              <>
+                <button type="button" className="ls-golive ls-golive--hero ls-golive--resume" onClick={props.onResume}>
+                  <span className="ls-golive__lamp" aria-hidden="true" />
+                  <span className="ls-golive__text">Resume</span>
+                  <span className="ls-golive__sub">
+                    {draftAnswered}/{total} answered · {formatClock(draft.elapsed)} on air · {mode === 'exam' ? 'exam' : 'practice'}
+                  </span>
+                </button>
+                <div className="ls-brief__go-meta">
+                  <p>
+                    <strong>Your broadcast is waiting.</strong> Your answers are saved, and the recording picks up from the line you reached.
+                  </p>
+                  <button type="button" className="ls-linkbtn" onClick={props.onStart}>
+                    Start over instead
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <button type="button" className="ls-golive ls-golive--hero" onClick={props.onStart}>
+                  <span className="ls-golive__lamp" aria-hidden="true" />
+                  <span className="ls-golive__text">Go live</span>
+                  <span className="ls-golive__sub">{freq} FM · {settings}</span>
+                </button>
+                <div className="ls-brief__go-meta">
+                  <p>{history.length ? `Broadcast ${history.length + 1} on this station. Beat ${best?.score}/${best?.total}.` : 'Your first broadcast on this station.'}</p>
+                  <button type="button" className="ls-linkbtn" onClick={toSetup}>
+                    Change mode or speed <span className="ls-linkbtn__arrow" aria-hidden="true" />
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         <div className="ls-faceplate" aria-hidden="true">
@@ -157,7 +209,7 @@ export function Briefing(props: BriefingProps) {
         </section>
 
         {/* --------------------------------------------------------- setup */}
-        <section className="ls-panel ls-brief__setup" aria-labelledby="ls-setup-title">
+        <section className="ls-panel ls-brief__setup" id="ls-setup" aria-labelledby="ls-setup-title">
           <h2 className="ls-panel__title" id="ls-setup-title">
             How will you listen?
           </h2>
@@ -179,8 +231,8 @@ export function Briefing(props: BriefingProps) {
                     props.onMode(id)
                   }}
                 />
+                <span className="ls-mode__icon" aria-hidden="true" />
                 <span className="ls-mode__head">
-                  <span className="ls-mode__icon" aria-hidden="true" />
                   <span className="ls-mode__name">{name}</span>
                   <span className="ls-mode__tag">{tag}</span>
                 </span>
@@ -253,10 +305,10 @@ export function Briefing(props: BriefingProps) {
             </div>
           </div>
 
-          <button type="button" className="ls-golive" onClick={props.onStart}>
+          <button type="button" className="ls-golive" onClick={draft ? props.onResume : props.onStart}>
             <span className="ls-golive__lamp" aria-hidden="true" />
-            <span className="ls-golive__text">Go live</span>
-            <span className="ls-golive__sub">{mode === 'exam' ? 'Exam mode' : 'Practice mode'} · {freq} FM</span>
+            <span className="ls-golive__text">{draft ? 'Resume' : 'Go live'}</span>
+            <span className="ls-golive__sub">{draft ? `${draftAnswered}/${total} answered · ${freq} FM` : `${freq} FM · ${settings}`}</span>
           </button>
           <p className="ls-brief__fine">The clock starts when you go live. Nothing is scored until you submit your answers.</p>
         </section>

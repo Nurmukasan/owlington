@@ -26,6 +26,7 @@ interface TunerProps {
 export function Tuner({ sets, best, attempts, initial }: TunerProps) {
   const [selected, setSelected] = useState(initial)
   const [tuning, setTuning] = useState(false)
+  const [announce, setAnnounce] = useState('')
   const buttons = useRef<(HTMLButtonElement | null)[]>([])
   const index = Math.max(0, sets.findIndex((s) => s.id === selected))
   const set = sets[index]
@@ -47,6 +48,9 @@ export function Tuner({ sets, best, attempts, initial }: TunerProps) {
     setSelected(next.id)
     setTuning(true)
     crackle()
+    const st = stationFor(next.id, (i + sets.length) % sets.length)
+    const b = best[next.id]
+    setAnnounce(`${formatFreq(st.freq)} FM, ${next.title.replace(/^Part \d · /, '')}, ${b ? `best ${b.score} of ${b.total}` : 'not tuned in yet'}`)
   }
 
   const onKeyDown = (e: KeyboardEvent) => {
@@ -161,7 +165,11 @@ export function Tuner({ sets, best, attempts, initial }: TunerProps) {
         </div>
       </div>
 
-      <article key={set.id} className="ls-station" aria-live="polite">
+      {/* one short, persistent announcement per retune (the card itself remounts for its entrance) */}
+      <p className="visually-hidden" aria-live="polite">
+        {announce}
+      </p>
+      <article key={set.id} className="ls-station" aria-label={`${formatFreq(station.freq)} FM station card`}>
         <header className="ls-station__head">
           <p className="ls-station__freq">
             <span>{formatFreq(station.freq)}</span>
@@ -206,7 +214,7 @@ export function Tuner({ sets, best, attempts, initial }: TunerProps) {
           )}
         </div>
         <Link to={`/student/listening/practice/${set.id}`} className="ls-btn ls-btn--teal ls-station__go" onClick={() => sfx.click()}>
-          <span aria-hidden="true">▶</span> {top ? 'Tune in again' : 'Tune in'}
+          <span className="ls-icon-play" aria-hidden="true" /> {top ? 'Tune in again' : 'Tune in'}
           <span className="visually-hidden">: {set.title}</span>
         </Link>
       </article>

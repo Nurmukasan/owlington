@@ -2,7 +2,7 @@ import { useMemo, type CSSProperties, type KeyboardEvent, type MouseEvent } from
 import { sfx } from '../../../../learn/sfx'
 import { formatClock } from '../../../../learn/useTimer'
 import { DjOwl } from '../components/DjOwl'
-import { isPause, type PracticeSet, type SpokenLine } from '../practice-data'
+import { isPause, paperRange, type PracticeSet, type SpokenLine } from '../practice-data'
 import {
   ACCENT_ORDER,
   accentName,
@@ -254,7 +254,7 @@ export function BroadcastDesk(props: DeskProps) {
             <p className="ls-crt__end">Check your answers, then submit.</p>
             {!exam && (
               <button type="button" className="ls-btn ls-btn--small ls-btn--ghost" onClick={start}>
-                ↺ Play again
+                <span className="ls-icon-replay" aria-hidden="true" /> Play again
               </button>
             )}
           </div>
@@ -269,7 +269,8 @@ export function BroadcastDesk(props: DeskProps) {
               <span className="ls-captions__who" style={{ color: speaker ? speakerColor(set, speaker.id) : undefined }}>
                 {speaker?.name}:
               </span>{' '}
-              {words.map((w, i) => (
+              {/* exam mode never puts unspoken words in the page, so nothing can be read ahead */}
+              {(exam ? words.slice(0, snap.word) : words).map((w, i) => (
                 <span key={i} className={i < snap.word ? 'is-said' : ''}>
                   {w}{' '}
                 </span>
@@ -316,14 +317,18 @@ export function BroadcastDesk(props: DeskProps) {
       {/* transport */}
       {exam ? (
         <div className="ls-transport ls-transport--exam">
-          {started ? (
+          {snap.phase === 'paused' ? (
+            <button type="button" className="ls-btn ls-btn--teal" onClick={start}>
+              <span className="ls-icon-play" aria-hidden="true" /> Resume broadcast
+            </button>
+          ) : started ? (
             <p className="ls-transport__lock">
               <span className="ls-transport__lockicon" aria-hidden="true" />
               {snap.phase === 'ended' ? 'The broadcast has ended. In the exam you hear it once.' : 'Live: no pausing or replays in exam mode.'}
             </p>
           ) : (
             <button type="button" className="ls-btn ls-btn--teal" onClick={start}>
-              <span aria-hidden="true">▶</span> Start broadcast
+              <span className="ls-icon-play" aria-hidden="true" /> Start broadcast
             </button>
           )}
         </div>
@@ -350,7 +355,7 @@ export function BroadcastDesk(props: DeskProps) {
             <span className="ls-tbtn__icon ls-tbtn__icon--next" aria-hidden="true" />
           </button>
           <button type="button" className="ls-tbtn ls-tbtn--wide" onClick={replay} disabled={!started || !line} aria-label="Replay this line">
-            ↺ LINE
+            <span className="ls-icon-replay" aria-hidden="true" /> LINE
           </button>
         </div>
       )}
@@ -470,7 +475,7 @@ export function BroadcastDesk(props: DeskProps) {
                   aria-label={`Hear ${sp.name}'s voice`}
                   title={running ? 'Pause the broadcast to audition voices' : `Hear ${sp.name}`}
                 >
-                  ▶
+                  <span className="ls-icon-play" aria-hidden="true" />
                 </button>
               </li>
             ))}
@@ -484,7 +489,7 @@ export function BroadcastDesk(props: DeskProps) {
           {exam ? 'EXAM MODE' : 'PRACTICE MODE'}
         </span>
         <span>
-          ~{minutes} min suggested · {rangeText([1, set.groups.flatMap((g) => g.questions).length])}
+          ~{minutes} min suggested · {rangeText(paperRange(set))}
         </span>
       </p>
     </section>

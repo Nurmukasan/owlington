@@ -2,7 +2,7 @@
  * Helpers for the practice page: question ranges, marking a whole paper, and
  * cutting transcript lines into answer / trap / plain pieces for the review.
  */
-import { mark, type Marked } from '../answers'
+import { mark, wordsHeard, type Marked } from '../answers'
 import { prefersReducedMotion } from '../hooks'
 import { isPause, questionsOf, type PracticeSet, type Question, type ScriptItem, type SpokenLine, type TaskGroup } from '../practice-data'
 
@@ -34,7 +34,8 @@ export const inRange = (n: number, r: Range | null) => Boolean(r && n >= r[0] &&
 export const rangeText = ([a, b]: Range) => (a === b ? `Question ${a}` : `Questions ${a}–${b}`)
 
 export function markAll(set: PracticeSet, answers: Answers): Marked[] {
-  return set.groups.flatMap((g) => g.questions.map((q) => mark(q, answers[q.n], g.limit)))
+  const heard = wordsHeard(spokenLines(set).map((l) => l.t))
+  return set.groups.flatMap((g) => g.questions.map((q) => mark(q, answers[q.n], g.limit, heard)))
 }
 
 export const answeredCount = (set: PracticeSet, answers: Answers) => questionsOf(set).filter((q) => (answers[q.n] ?? '').trim()).length

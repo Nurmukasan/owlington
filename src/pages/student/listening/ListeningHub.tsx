@@ -1,6 +1,9 @@
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { StreakFlame, XpBar } from '../../../learn/components/ProgressWidgets'
+import { ScrollLink } from '../../../learn/components/ScrollLink'
+import { XP_RULES } from '../../../learn/progress'
+import { scrollToId } from '../../../learn/scroll'
 import { sfx } from '../../../learn/sfx'
 import { useProgress } from '../../../learn/useProgress'
 import { bandForAccuracy } from './answers'
@@ -15,7 +18,7 @@ import { Skyline } from './components/Skyline'
 import { Tuner } from './components/Tuner'
 import { VuMeter } from './components/VuMeter'
 import { lectures, practiceSets } from './content'
-import { prefersReducedMotion, useReducedMotion, useSeen } from './hooks'
+import { useReducedMotion, useSeen } from './hooks'
 import { formatFreq, stationFor } from './stations'
 import './listening.css'
 import './hub.css'
@@ -54,6 +57,11 @@ function slots(count: number) {
   })
 }
 
+const NUMBER_WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve']
+/** 7 → "seven" (small counts read better as words in DJ copy). */
+const say = (n: number) => NUMBER_WORDS[n] ?? String(n)
+const capital = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
+
 const shortDate = (iso: string) => new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })
 
 export default function ListeningHub() {
@@ -63,12 +71,11 @@ export default function ListeningHub() {
   const { streak, today, level, xp } = progress
 
   // Links like /student/listening#ls-dial arrive from other pages: scroll to the section once it has rendered.
+  // (The router's location, not window.location: under hash routing the section id sits after the route.)
   const { hash } = useLocation()
   useEffect(() => {
     if (!hash) return
-    const t = window.setTimeout(() => {
-      document.getElementById(decodeURIComponent(hash.slice(1)))?.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' })
-    }, 150)
+    const t = window.setTimeout(() => scrollToId(decodeURIComponent(hash.slice(1))), 150)
     return () => window.clearTimeout(t)
   }, [hash])
 
@@ -92,7 +99,8 @@ export default function ListeningHub() {
 
   // ------------------------------------------------------------ DJ talk
   const opener = (() => {
-    if (isNew) return 'Hoo-hoo, welcome to Owl FM! I’m your night DJ. Start with Tape 01 — nine minutes that change how you listen.'
+    if (isNew)
+      return `Hoo-hoo, welcome to Owl FM! I’m your night DJ. Start with Tape 01 — ${say(lectures[0].minutes)} minutes that change how you listen.`
     if (today.met) return `Goal smashed tonight: ${today.xp} XP! The signal has never been stronger. Fancy an encore?`
     if (streak.days > 0 && !streak.activeToday)
       return `Welcome back! Your ${streak.days}-night streak is still glowing. One tape or broadcast tonight keeps it alive.`
@@ -121,6 +129,15 @@ export default function ListeningHub() {
     }))
 
   const [rackRef, rackSeen] = useSeen<HTMLElement>()
+  const shelf = useRef<HTMLOListElement>(null)
+  // On phones the rack is a sideways shelf: start it at the tape that's up next.
+  const nextId = nextLecture?.id
+  useEffect(() => {
+    const el = shelf.current
+    const tape = el?.querySelector<HTMLElement>('.ls-rack__tape.is-next')?.closest<HTMLElement>('li')
+    if (!el || !tape || el.scrollWidth <= el.clientWidth + 4) return
+    el.scrollLeft = tape.offsetLeft - parseFloat(getComputedStyle(el).paddingLeft || '0')
+  }, [nextId])
   const [consoleRef, consoleSeen] = useSeen<HTMLElement>()
   const times = slots(3)
 
@@ -161,17 +178,17 @@ export default function ListeningHub() {
             <div className="ls-hero__cta">
               {nextLecture ? (
                 <Link to={`lecture/${nextLecture.id}`} className="ls-btn ls-btn--teal ls-btn--big" onClick={() => sfx.click()}>
-                  <span aria-hidden="true">▶</span>
+                  <span className="ls-icon-play" aria-hidden="true" />
                   {nextLectureWatched > 0 ? `Resume Tape ${String(nextLectureIndex + 1).padStart(2, '0')}` : `Play Tape ${String(nextLectureIndex + 1).padStart(2, '0')}`}
                 </Link>
               ) : (
                 <Link to={`practice/${nextPractice.id}`} className="ls-btn ls-btn--teal ls-btn--big" onClick={() => sfx.click()}>
-                  <span aria-hidden="true">▶</span> Tune in to {formatFreq(nextStation.freq)}
+                  <span className="ls-icon-play" aria-hidden="true" /> Tune in to {formatFreq(nextStation.freq)}
                 </Link>
               )}
-              <a href="#ls-dial" className="ls-btn ls-btn--ghost ls-btn--big">
+              <ScrollLink to="ls-dial" className="ls-btn ls-btn--ghost ls-btn--big" onClick={() => sfx.click()}>
                 Practice broadcasts
-              </a>
+              </ScrollLink>
             </div>
             <ul className="ls-hero__stats" aria-label="Your listening at a glance">
               <li>
@@ -200,11 +217,15 @@ export default function ListeningHub() {
           </div>
 
           <div className="ls-scene">
-            <div className="ls-scene__bubble pixel-panel" aria-live="polite">
+            <div className="ls-scene__bubble pixel-panel">
               <p className="ls-scene__speaker">DJ HOOT · ON AIR</p>
-              <p className="ls-scene__text">
+              {/* the typewriter is visual only; screen readers get the whole line once */}
+              <p className="ls-scene__text" aria-hidden="true">
                 {typed.text}
-                {!typed.done && <span className="ls-caret" aria-hidden="true" />}
+                {!typed.done && <span className="ls-caret" />}
+              </p>
+              <p className="visually-hidden" aria-live="polite">
+                {line}
               </p>
               <button type="button" className="ls-scene__next" onClick={askDj}>
                 {tip < 0 ? 'Tip of the night' : 'Another tip'} <span aria-hidden="true">»</span>
@@ -304,7 +325,7 @@ export default function ListeningHub() {
             </li>
             <li style={{ '--i': 2 } as CSSProperties}>
               <span className="ls-schedule__time">{times[2]}</span>
-              <a href="#ls-signal" className="ls-schedule__show">
+              <ScrollLink to="ls-signal" className="ls-schedule__show" onClick={() => sfx.click()}>
                 <span className="ls-schedule__kind">SIGNAL CHECK</span>
                 <span className="ls-schedule__name">{today.met ? 'Tonight’s goal reached' : `${today.goal - today.xp} XP to tonight’s goal`}</span>
                 <span className="ls-schedule__meter" aria-hidden="true">
@@ -313,7 +334,7 @@ export default function ListeningHub() {
                 <span className="ls-schedule__go" aria-hidden="true">
                   ↓
                 </span>
-              </a>
+              </ScrollLink>
             </li>
           </ol>
         </div>
@@ -328,11 +349,11 @@ export default function ListeningHub() {
           </h2>
           <p className="ls-section__lead">
             {stats.lecturesCompleted === 0
-              ? 'Seven tapes, from prediction tricks to Part 4 lectures. Pop one in: the reels wind on as you watch, and finished tapes get stamped.'
-              : `${stats.lecturesCompleted} of ${stats.lecturesTotal} tapes recorded. Every finished tape is worth +50 XP.`}
+              ? `${capital(say(lectures.length))} tapes, from prediction tricks to Part 4 lectures. Pop one in: the reels wind on as you watch, and finished tapes get stamped.`
+              : `${stats.lecturesCompleted} of ${stats.lecturesTotal} tapes recorded. Every finished tape is worth +${XP_RULES.lectureComplete} XP.`}
           </p>
         </header>
-        <ol className="ls-rack">
+        <ol className="ls-rack" ref={shelf}>
           {lectures.map((l, i) => {
             const p = lectureState[i]
             const watched = p?.watched ?? 0
@@ -356,6 +377,9 @@ export default function ListeningHub() {
             )
           })}
         </ol>
+        <p className="ls-rack__swipe" aria-hidden="true">
+          <span className="ls-crumbs__back" /> SWIPE THE SHELF · {lectures.length} TAPES <span className="ls-icon-fwd" />
+        </p>
       </section>
 
       {/* ============================================================== dial */}
@@ -366,8 +390,8 @@ export default function ListeningHub() {
             Practice broadcasts
           </h2>
           <p className="ls-section__lead">
-            Four stations, one for each part of the test. Turn the dial, tune in, and the voices read the recording live, with real reading
-            time before each block of questions.
+            {capital(say(practiceSets.length))} stations, one for each part of the test. Turn the dial, tune in, and the voices read the
+            recording live, with real reading time before each block of questions.
           </p>
         </header>
         <Tuner sets={practiceSets} best={stats.best} attempts={stats.attempts} initial={nextPractice.id} />

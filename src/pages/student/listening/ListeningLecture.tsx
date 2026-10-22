@@ -105,7 +105,10 @@ function Studio({ lecture }: { lecture: Lecture }) {
 
       <div className="ls-studio__inner">
         <nav className="ls-crumbs" aria-label="Breadcrumb">
-          <Link to="/student/listening">← Owl FM</Link>
+          <Link to="/student/listening">
+            <span className="ls-crumbs__back" aria-hidden="true" />
+            Owl FM
+          </Link>
           <span aria-hidden="true">/</span>
           <span aria-current="page">Tape {tapeNo(index)}</span>
         </nav>
@@ -137,7 +140,7 @@ function Studio({ lecture }: { lecture: Lecture }) {
               <span style={{ width: `${(completed ? 1 : watched) * 100}%` }} />
             </div>
             <p className="ls-studio__wound-label">
-              {completed ? 'Recorded ✓ · +50 XP earned' : watched > 0 ? `${Math.round(watched * 100)}% wound · resume where you stopped` : `Not played yet · +${XP_RULES.lectureComplete} XP when it’s done`}
+              {completed ? `Recorded · +${XP_RULES.lectureComplete} XP earned` : watched > 0 ? `${Math.round(watched * 100)}% wound · resume where you stopped` : `Not played yet · +${XP_RULES.lectureComplete} XP when it’s done`}
             </p>
           </div>
         </header>
@@ -224,7 +227,7 @@ function Studio({ lecture }: { lecture: Lecture }) {
               <div className="ls-nextup__actions">
                 {nextUp && nextUp.id !== lecture.id && remaining.length > 0 && (
                   <Link to={`/student/listening/lecture/${nextUp.id}`} className="ls-btn ls-btn--teal ls-btn--big" onClick={() => sfx.click()}>
-                    <span aria-hidden="true">▶</span> Load Tape {tapeNo(nextUpIndex)}
+                    <span className="ls-icon-play" aria-hidden="true" /> Load Tape {tapeNo(nextUpIndex)}
                   </Link>
                 )}
                 {practice && practiceStation && (
@@ -251,7 +254,10 @@ function Studio({ lecture }: { lecture: Lecture }) {
                 />
               </span>
               <span className="ls-tapenav__text">
-                <span className="ls-tapenav__dir">← PREVIOUS · TAPE {tapeNo(index - 1)}</span>
+                <span className="ls-tapenav__dir">
+                  <span className="ls-crumbs__back" aria-hidden="true" />
+                  PREVIOUS · TAPE {tapeNo(index - 1)}
+                </span>
                 <span className="ls-tapenav__name">{prev.title}</span>
               </span>
             </Link>
@@ -261,7 +267,10 @@ function Studio({ lecture }: { lecture: Lecture }) {
           {next ? (
             <Link to={`/student/listening/lecture/${next.id}`} className="ls-tapenav__link ls-tapenav__link--next" onClick={() => sfx.page()}>
               <span className="ls-tapenav__text">
-                <span className="ls-tapenav__dir">NEXT · TAPE {tapeNo(index + 1)} →</span>
+                <span className="ls-tapenav__dir">
+                  NEXT · TAPE {tapeNo(index + 1)}
+                  <span className="ls-icon-fwd" aria-hidden="true" />
+                </span>
                 <span className="ls-tapenav__name">{next.title}</span>
               </span>
               <span className="ls-tapenav__tape">
@@ -278,7 +287,10 @@ function Studio({ lecture }: { lecture: Lecture }) {
           ) : (
             <Link to="/student/listening#ls-dial" className="ls-tapenav__link ls-tapenav__link--next">
               <span className="ls-tapenav__text">
-                <span className="ls-tapenav__dir">END OF THE RACK →</span>
+                <span className="ls-tapenav__dir">
+                  END OF THE RACK
+                  <span className="ls-icon-fwd" aria-hidden="true" />
+                </span>
                 <span className="ls-tapenav__name">Tune in to a practice broadcast</span>
               </span>
             </Link>

@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
+import { useUser } from '../../../auth/auth-context'
 import { findPractice } from '../../../learn/catalog'
 import { sfx } from '../../../learn/sfx'
 import type { PracticeInfo } from '../../../learn/types'
@@ -12,6 +13,7 @@ import { lectures, practiceSets } from './content'
 import { isPause, PRACTICE_SETS, questionsOf, type PracticeSet } from './practice-data'
 import { BroadcastDesk } from './practice/BroadcastDesk'
 import { Briefing } from './practice/Briefing'
+import { clearDraft, readDraft, saveDraft, type Draft } from './practice/draft'
 import { QuestionPaper } from './practice/QuestionPaper'
 import { Report, type Result } from './practice/Report'
 import { answeredCount, focusQuestion, liveRanges, markAll, type Answers, type AudioSource, type Mode } from './practice/script'
@@ -89,30 +91,128 @@ function OnAir({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
 
   const driver: Driver = prefs.audio === 'voices' && status === 'ready' ? 'speech' : 'text'
 
+  const userId = useUser().id
   const [stage, setStage] = useState<Stage>('intro')
   const [run, setRun] = useState(0)
   const [answers, setAnswers] = useState<Answers>({})
   const [result, setResult] = useState<Result | null>(null)
   const [confirming, setConfirming] = useState(false)
+  const [leaving, setLeaving] = useState(false)
   const submitted = useRef(false)
   const { elapsed, reset } = useStopwatch(stage === 'test')
+
+  // A broadcast left half-way (HUD tab, back button, closed tab) is saved on this device and offered back on the briefing.
+  const [draft, setDraft] = useState(() => readDraft(userId, info.id))
+  const [resume, setResume] = useState({ elapsed: 0, index: 0 })
+  const [position, setPosition] = useState(0)
+  const onAir = resume.elapsed + elapsed
 
   const history = stats.attempts.filter((a) => a.practiceId === info.id)
   const best = stats.best[info.id]
   const questions = questionsOf(set)
+  const answered = answeredCount(set, answers)
 
-  // Leaving mid-broadcast would lose the answers.
+  const latest = useRef({ answers, onAir, position })
+  useEffect(() => {
+    latest.current = { answers, onAir, position }
+  })
+  const persist = useCallback(() => {
+    const now = latest.current
+    if (submitted.current) return
+    if (!answeredCount(set, now.answers) && !now.position) clearDraft(userId, info.id)
+    else saveDraft(userId, info.id, { answers: now.answers, elapsed: Math.round(now.onAir), index: now.position, savedAt: Date.now() })
+  }, [set, userId, info.id])
+
+  // Save on every answer, every new line of the recording, and every few seconds of the clock.
+  const clockTick = Math.floor(onAir / 5)
+  useEffect(() => {
+    if (stage === 'test') persist()
+  }, [stage, answers, position, clockTick, persist])
+
+  // Leaving by any route (back button included) keeps the latest draft.
   useEffect(() => {
     if (stage !== 'test') return
-    const warn = (e: BeforeUnloadEvent) => e.preventDefault()
+    return () => persist()
+  }, [stage, persist])
+
+  // Reloading or closing the tab mid-broadcast asks first (the draft is saved either way).
+  useEffect(() => {
+    if (stage !== 'test') return
+    const warn = (e: BeforeUnloadEvent) => {
+      persist()
+      e.preventDefault()
+      e.returnValue = ''
+    }
     window.addEventListener('beforeunload', warn)
     return () => window.removeEventListener('beforeunload', warn)
+  }, [stage, persist])
+
+  // Links that leave the page mid-broadcast (breadcrumb, HUD tabs, logo) ask first. The click is held
+  // back, and replayed on the same link if the student chooses to leave, so it works the same under
+  // browser and hash routing (no URL parsing: under hash routing every route shares one pathname).
+  const held = useRef<HTMLAnchorElement | null>(null)
+  const departing = useRef<HTMLAnchorElement | null>(null)
+  const replaying = useRef(false)
+  useEffect(() => {
+    if (stage !== 'test') return
+    const onClick = (e: MouseEvent) => {
+      if (replaying.current || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+      const link = e.target instanceof Element ? e.target.closest<HTMLAnchorElement>('a[href]') : null
+      if (!link || (link.target && link.target !== '_self') || link.hasAttribute('download')) return
+      const raw = link.getAttribute('href') ?? ''
+      // in-page jumps (ScrollLink renders "#id"; hash-routed links are "#/route")
+      if (raw.startsWith('#') && !raw.startsWith('#/')) return
+      if (link.origin !== window.location.origin || link.href === window.location.href) return
+      e.preventDefault()
+      e.stopPropagation()
+      sfx.click()
+      held.current = link
+      setLeaving(true)
+    }
+    document.addEventListener('click', onClick, true)
+    return () => document.removeEventListener('click', onClick, true)
   }, [stage])
 
-  const goLive = () => {
+  const stay = () => {
+    held.current = null
+    setLeaving(false)
+  }
+
+  const leave = () => {
+    departing.current = held.current
+    held.current = null
+    persist()
+    setLeaving(false)
+  }
+
+  // Replay the held click once the dialog has closed (the page behind a modal dialog is inert).
+  useEffect(() => {
+    const link = departing.current
+    if (leaving || !link) return
+    departing.current = null
+    replaying.current = true
+    try {
+      link.click()
+    } finally {
+      replaying.current = false
+    }
+  }, [leaving])
+
+  const goLive = (from?: Draft | null) => {
     sfx.click()
     submitted.current = false
-    setAnswers({})
+    if (from) {
+      setAnswers(from.answers)
+      const index = Math.min(from.index, set.script.length - 1)
+      setResume({ elapsed: from.elapsed, index })
+      setPosition(index)
+    } else {
+      clearDraft(userId, info.id)
+      setDraft(null)
+      setAnswers({})
+      setResume({ elapsed: 0, index: 0 })
+      setPosition(0)
+    }
     setResult(null)
     reset()
     setRun((r) => r + 1)
@@ -124,10 +224,12 @@ function OnAir({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
     if (submitted.current) return
     submitted.current = true
     setConfirming(false)
+    clearDraft(userId, info.id)
+    setDraft(null)
     const marks = markAll(set, answers)
     const score = marks.filter((m) => m.correct).length
     const total = marks.length
-    const durationSec = Math.max(1, Math.round(elapsed))
+    const durationSec = Math.max(1, Math.round(onAir))
     const prevBest = stats.best[info.id]
     const attempt = progress.recordAttempt('listening', {
       practiceId: info.id,
@@ -144,7 +246,7 @@ function OnAir({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
 
   const requestSubmit = () => {
     sfx.click()
-    if (answeredCount(set, answers) < questions.length) setConfirming(true)
+    if (answered < questions.length) setConfirming(true)
     else submit()
   }
 
@@ -153,6 +255,8 @@ function OnAir({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
     submitted.current = false
     setAnswers({})
     setResult(null)
+    setResume({ elapsed: 0, index: 0 })
+    setPosition(0)
     reset()
     setStage('intro')
     scrollTop()
@@ -176,7 +280,10 @@ function OnAir({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
 
       <div className="ls-practice__inner">
         <nav className="ls-crumbs" aria-label="Breadcrumb">
-          <Link to="/student/listening">← Owl FM</Link>
+          <Link to="/student/listening">
+            <span className="ls-crumbs__back" aria-hidden="true" />
+            Owl FM
+          </Link>
           <span aria-hidden="true">/</span>
           <Link to="/student/listening#ls-dial">The dial</Link>
           <span aria-hidden="true">/</span>
@@ -199,7 +306,9 @@ function OnAir({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
             cast={cast}
             history={history}
             best={best}
-            onStart={goLive}
+            draft={draft}
+            onStart={() => goLive()}
+            onResume={() => goLive(draft)}
           />
         )}
 
@@ -222,7 +331,9 @@ function OnAir({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
             answers={answers}
             onAnswer={(n, v) => setAnswers((a) => ({ ...a, [n]: v }))}
             onSubmit={requestSubmit}
-            elapsed={elapsed}
+            elapsed={onAir}
+            resumeAt={resume.index}
+            onPosition={setPosition}
           />
         )}
 
@@ -256,6 +367,31 @@ function OnAir({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
           }}
         />
       )}
+      {stage === 'test' && (
+        <StationDialog
+          open={leaving}
+          id="ls-leave"
+          kicker="LEAVING THE STUDIO?"
+          title="The broadcast is still on air"
+          look={1}
+          onCancel={stay}
+          actions={
+            <>
+              <button type="button" className="ls-btn ls-btn--teal" onClick={stay} autoFocus>
+                Stay on air
+              </button>
+              <button type="button" className="ls-btn ls-btn--ghost" onClick={leave}>
+                Leave for now
+              </button>
+            </>
+          }
+        >
+          {answered
+            ? `Your ${answered === 1 ? 'answer' : `${answered} answers`} and your place in the recording are saved on this device.`
+            : 'Your place in the recording is saved on this device.'}{' '}
+          Come back to {formatFreq(station.freq)} FM any time today and pick up where you left off. Nothing is scored until you submit.
+        </StationDialog>
+      )}
     </div>
   )
 }
@@ -280,13 +416,20 @@ interface LiveProps {
   onAnswer: (n: number, value: string) => void
   onSubmit: () => void
   elapsed: number
+  /** Script item to pick up from (a resumed broadcast); 0 for a fresh start. */
+  resumeAt: number
+  onPosition: (index: number) => void
 }
 
 const DOCK_STATUS = { idle: 'Standing by', reading: 'Reading time', playing: 'On air', paused: 'Paused', ended: 'Broadcast over' }
 
 function LiveTest(props: LiveProps) {
-  const { info, set, station, mode, driver, voices, voiceStatus, cast, rate, answers } = props
-  const [bc] = useState(() => new Broadcast(set.script, { driver, cast, rate, voices }))
+  const { info, set, station, mode, driver, voices, voiceStatus, cast, rate, answers, onPosition } = props
+  const [bc] = useState(() => {
+    const b = new Broadcast(set.script, { driver, cast, rate, voices })
+    if (props.resumeAt > 0) b.seek(props.resumeAt)
+    return b
+  })
   const snap = useSyncExternalStore(bc.subscribe, bc.getSnapshot)
   const [captions, setCaptions] = useState(false)
   const ranges = useMemo(() => liveRanges(set.script), [set])
@@ -305,6 +448,9 @@ function LiveTest(props: LiveProps) {
   useEffect(() => {
     bc.setDriver(driver)
   }, [bc, driver])
+  useEffect(() => {
+    if (snap.phase !== 'idle') onPosition(snap.index)
+  }, [snap.index, snap.phase, onPosition])
 
   const chooseAudio = (audio: AudioSource) => {
     props.onAudio(audio)
@@ -370,7 +516,7 @@ function LiveTest(props: LiveProps) {
 
       {/* phones: a dock with the essentials while you scroll the paper */}
       <div className="ls-dock" role="region" aria-label="Broadcast status">
-        {mode === 'practice' || snap.phase === 'idle' ? (
+        {mode === 'practice' || snap.phase === 'idle' || snap.phase === 'paused' ? (
           <button
             type="button"
             className={`ls-dock__play ${running ? 'is-on' : ''}`}
@@ -379,7 +525,7 @@ function LiveTest(props: LiveProps) {
               if (snap.phase === 'idle') bc.play()
               else bc.toggle()
             }}
-            aria-label={running ? 'Pause' : 'Play'}
+            aria-label={running ? 'Pause' : snap.phase === 'paused' ? 'Resume' : 'Play'}
           >
             <span className={`ls-tbtn__icon ${running ? 'ls-tbtn__icon--pause' : 'ls-tbtn__icon--play'}`} aria-hidden="true" />
           </button>
@@ -411,6 +557,45 @@ interface ConfirmProps {
 }
 
 function ConfirmSubmit({ open, blanks, onCancel, onConfirm, onGoTo }: ConfirmProps) {
+  const list = blanks.length > 4 ? `${blanks.slice(0, 4).join(', ')} and ${blanks.length - 4} more` : blanks.join(', ')
+  return (
+    <StationDialog
+      open={open}
+      id="ls-confirm"
+      kicker="BEFORE YOU SIGN OFF"
+      title={blanks.length === 1 ? 'One answer is still blank' : `${blanks.length} answers are still blank`}
+      look={-1}
+      onCancel={onCancel}
+      actions={
+        <>
+          <button type="button" className="ls-btn ls-btn--teal" onClick={() => onGoTo(blanks[0])} autoFocus>
+            Go to Q{blanks[0]}
+          </button>
+          <button type="button" className="ls-btn ls-btn--ghost" onClick={onConfirm}>
+            Submit anyway
+          </button>
+        </>
+      }
+    >
+      {blanks.length === 1 ? 'Question' : 'Questions'} {list}. A blank never scores, but a sensible guess might. Fill{' '}
+      {blanks.length === 1 ? 'it' : 'them'} in with your best guess, or submit as it is.
+    </StationDialog>
+  )
+}
+
+interface DialogProps {
+  open: boolean
+  id: string
+  kicker: string
+  title: string
+  look: -1 | 0 | 1
+  onCancel: () => void
+  actions: ReactNode
+  children: ReactNode
+}
+
+/** A modal styled as a note from DJ Hoot (native <dialog>: focus trap and Esc come for free). */
+function StationDialog({ open, id, kicker, title, look, onCancel, actions, children }: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null)
   useEffect(() => {
     const d = ref.current
@@ -419,32 +604,23 @@ function ConfirmSubmit({ open, blanks, onCancel, onConfirm, onGoTo }: ConfirmPro
     if (!open && d.open) d.close()
   }, [open])
 
-  const list = blanks.length > 4 ? `${blanks.slice(0, 4).join(', ')} and ${blanks.length - 4} more` : blanks.join(', ')
   return (
-    <dialog ref={ref} className="ls-dialog" aria-labelledby="ls-dialog-title" onClose={onCancel}>
-      <div className="ls-dialog__body" style={{ '--ls-n': blanks.length } as CSSProperties}>
+    <dialog ref={ref} className="ls-dialog" aria-labelledby={`${id}-title`} aria-describedby={`${id}-text`} onClose={onCancel}>
+      <div className="ls-dialog__body">
         <span className="ls-dialog__owl" aria-hidden="true">
-          <DjOwl scale={4} look={-1} />
+          <DjOwl scale={4} look={look} />
         </span>
         <div>
-          <p className="ls-kicker">BEFORE YOU SIGN OFF</p>
-          <h2 className="ls-dialog__title" id="ls-dialog-title">
-            {blanks.length === 1 ? 'One answer is still blank' : `${blanks.length} answers are still blank`}
+          <p className="ls-kicker">{kicker}</p>
+          <h2 className="ls-dialog__title" id={`${id}-title`}>
+            {title}
           </h2>
-          <p className="ls-dialog__text">
-            {blanks.length === 1 ? 'Question' : 'Questions'} {list}. A blank never scores, but a sensible guess might. Fill{' '}
-            {blanks.length === 1 ? 'it' : 'them'} in with your best guess, or submit as it is.
+          <p className="ls-dialog__text" id={`${id}-text`}>
+            {children}
           </p>
         </div>
       </div>
-      <div className="ls-dialog__actions">
-        <button type="button" className="ls-btn ls-btn--teal" onClick={() => onGoTo(blanks[0])} autoFocus>
-          Go to Q{blanks[0]}
-        </button>
-        <button type="button" className="ls-btn ls-btn--ghost" onClick={onConfirm}>
-          Submit anyway
-        </button>
-      </div>
+      <div className="ls-dialog__actions">{actions}</div>
     </dialog>
   )
 }

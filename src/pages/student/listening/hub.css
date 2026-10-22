@@ -187,7 +187,7 @@
 .ls-hero__stat-k {
   color: var(--ls-muted);
   font-family: var(--font-pixel);
-  font-size: 7px;
+  font-size: 8px;
   letter-spacing: 1px;
 }
 
@@ -734,6 +734,7 @@
 
 .ls-rack {
   --ls-rack-gap: clamp(20px, 3vw, 40px);
+  position: relative;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 228px), 1fr));
   gap: 64px var(--ls-rack-gap);
@@ -823,7 +824,7 @@
   background: var(--ls-teal);
   color: var(--ls-teal-ink);
   font-family: var(--font-pixel);
-  font-size: 7px;
+  font-size: 8px;
   letter-spacing: 1px;
   transform: translateX(-50%);
   box-shadow: 0 0 16px rgb(111 227 207 / 0.6);
@@ -844,10 +845,10 @@
   gap: 8px;
   margin: 0;
   color: var(--ls-muted);
-  font-family: var(--font-pixel);
-  font-size: 7px;
-  letter-spacing: 0.5px;
-  line-height: 1.6;
+  font-family: var(--font-pixel-body);
+  font-size: 13px;
+  letter-spacing: 0.3px;
+  line-height: 1.4;
 }
 
 .ls-rack__caption .is-started {
@@ -918,7 +919,7 @@
 .ls-radio__model {
   color: rgb(246 230 200 / 0.6);
   font-family: var(--font-pixel);
-  font-size: 7px;
+  font-size: 8px;
   letter-spacing: 1px;
 }
 
@@ -967,10 +968,10 @@
 .ls-band__unit {
   position: absolute;
   top: 10px;
-  left: 12px;
+  right: 12px;
   color: rgb(184 255 242 / 0.55);
   font-family: var(--font-pixel);
-  font-size: 7px;
+  font-size: 8px;
 }
 
 .ls-band__marquee {
@@ -1042,7 +1043,7 @@
   background: rgb(255 111 207 / 0.15);
   color: #ffc5ec;
   font-family: var(--font-pixel);
-  font-size: 7px;
+  font-size: 8px;
   transition:
     background-color 200ms,
     color 200ms;
@@ -1183,7 +1184,7 @@
 
 .ls-preset__part {
   font-family: var(--font-pixel);
-  font-size: 7px;
+  font-size: 8px;
   opacity: 0.7;
 }
 
@@ -1316,7 +1317,7 @@
   margin-bottom: 4px;
   color: var(--ls-muted);
   font-family: var(--font-pixel);
-  font-size: 7px;
+  font-size: 8px;
   letter-spacing: 1px;
   text-transform: uppercase;
 }
@@ -1410,7 +1411,7 @@
   padding-left: 10px;
   color: var(--ls-muted);
   font-family: var(--font-pixel);
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 400;
   letter-spacing: 1.5px;
 }
@@ -1550,19 +1551,19 @@
 .ls-vu__num {
   fill: #2b2116;
   font-family: var(--font-pixel);
-  font-size: 7px;
+  font-size: 8px;
 }
 
 .ls-vu__goal-label {
   fill: #0f7a6b;
   font-family: var(--font-pixel);
-  font-size: 6px;
+  font-size: 8px;
 }
 
 .ls-vu__brand {
   fill: rgb(43 33 22 / 0.65);
   font-family: var(--font-pixel);
-  font-size: 6px;
+  font-size: 8px;
   letter-spacing: 0.5px;
 }
 
@@ -1962,7 +1963,7 @@
   min-width: 0;
   color: var(--ls-muted);
   font-family: var(--font-pixel);
-  font-size: 7px;
+  font-size: 8px;
   letter-spacing: 1px;
 }
 
@@ -2135,6 +2136,53 @@
   }
 }
 
+/* phones: the rack becomes a sideways shelf, so the dial and the signal console are a short scroll away */
+.ls-rack__swipe {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .ls-rack {
+    --ls-rack-gap: 22px;
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: min(70vw, 260px);
+    gap: 0 var(--ls-rack-gap);
+    margin: 0 calc(var(--ls-gutter) * -1);
+    padding: 38px 24px 30px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 24px;
+    scrollbar-width: none;
+  }
+
+  .ls-rack::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ls-rack__slot {
+    scroll-snap-align: start;
+  }
+
+  .ls-rack__tape:hover,
+  .ls-rack__tape:focus-visible {
+    transform: translateY(-12px) rotate(0deg) scale(1.02);
+  }
+
+  .ls-rack__swipe {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    margin: 14px 0 0;
+    color: var(--ls-muted);
+    font-family: var(--font-pixel);
+    font-size: 8px;
+    letter-spacing: 1px;
+  }
+}
+
 @media (max-width: 420px) {
   .ls-radio__controls {
     flex-direction: column-reverse;
@@ -2153,4 +2201,9 @@
 /* sections reached by #hash links sit clear of the fixed HUD */
 .ls-hub .ls-section[id] {
   scroll-margin-top: calc(var(--hud-space) - 30px);
+}
+
+/* a section reached by a jump link takes focus for screen readers, without a ring round the whole section */
+.ls-hub .ls-section[id]:focus {
+  outline: none;
 }

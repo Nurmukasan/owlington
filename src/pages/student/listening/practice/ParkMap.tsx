@@ -21,7 +21,7 @@ const MAP_POINTS: Record<string, { x: number; y: number }> = {
   D: { x: 320, y: 70 },
   E: { x: 482, y: 112 },
   F: { x: 546, y: 236 },
-  G: { x: 486, y: 386 },
+  G: { x: 486, y: 370 },
   H: { x: 44, y: 268 },
 }
 
@@ -67,11 +67,13 @@ interface ParkMapProps {
   placed?: Record<string, number[]>
   /** Review mode: the place name shown on each answer letter. */
   reveal?: Record<string, string>
+  /** Review mode: wrong placements, as [question number, letter chosen, correct letter]. */
+  misses?: [number, string, string][]
   onPick?: (letter: string) => void
   className?: string
 }
 
-export function ParkMap({ highlight = null, placed = {}, reveal, onPick, className = '' }: ParkMapProps) {
+export function ParkMap({ highlight = null, placed = {}, reveal, misses = [], onPick, className = '' }: ParkMapProps) {
   return (
     <>
       <figure className={`ls-map ${reveal ? 'is-reveal' : ''} ${className}`}>
@@ -104,7 +106,7 @@ export function ParkMap({ highlight = null, placed = {}, reveal, onPick, classNa
           <path d="M150 400 C 210 412, 270 430, 320 436" className="ls-map__path" />
           <path d="M320 446 V 246" className="ls-map__path ls-map__path--main" />
           <ellipse cx="320" cy="150" rx="140" ry="96" className="ls-map__path" />
-          <path d="M320 386 H 360" className="ls-map__path" />
+          <path d="M320 368 H 360" className="ls-map__path" />
           <path d="M452 128 C 488 134, 520 150, 546 160" className="ls-map__path ls-map__path--trail" />
           <path d="M546 194 V 222" className="ls-map__path ls-map__path--trail" />
 
@@ -153,12 +155,12 @@ export function ParkMap({ highlight = null, placed = {}, reveal, onPick, classNa
           </g>
 
           {/* visitor centre */}
-          <rect x="360" y="362" width="92" height="48" rx="4" className="ls-map__building" />
-          <path d="M360 362 l46 -16 l46 16" className="ls-map__roof" />
-          <text x="406" y="384" textAnchor="middle" className="ls-map__label ls-map__label--small">
+          <rect x="360" y="344" width="92" height="48" rx="4" className="ls-map__building" />
+          <path d="M360 344 l46 -16 l46 16" className="ls-map__roof" />
+          <text x="406" y="366" textAnchor="middle" className="ls-map__label ls-map__label--small">
             Visitor
           </text>
-          <text x="406" y="398" textAnchor="middle" className="ls-map__label ls-map__label--small">
+          <text x="406" y="380" textAnchor="middle" className="ls-map__label ls-map__label--small">
             centre
           </text>
 
@@ -168,10 +170,10 @@ export function ParkMap({ highlight = null, placed = {}, reveal, onPick, classNa
             <rect x="338" y="436" width="8" height="16" />
             <path d="M320 410 l5 10 l11 1 l-8 7 l3 11 l-11 -6 l-11 6 l3 -11 l-8 -7 l11 -1 z" className="ls-map__star" />
           </g>
-          <text x="352" y="432" className="ls-map__label ls-map__label--small">
+          <text x="352" y="431" className="ls-map__label ls-map__label--small">
             Main gate
           </text>
-          <text x="352" y="418" className="ls-map__label ls-map__label--here">
+          <text x="352" y="414" className="ls-map__label ls-map__label--here">
             YOU ARE HERE
           </text>
 
@@ -184,15 +186,25 @@ export function ParkMap({ highlight = null, placed = {}, reveal, onPick, classNa
             </text>
           </g>
 
+          {/* review: where a wrong answer went, with a dashed hop to the right place */}
+          {misses.map(([n, from, to]) => {
+            const a = MAP_POINTS[from]
+            const b = MAP_POINTS[to]
+            if (!a || !b) return null
+            return <path key={`hop-${n}`} d={`M${a.x} ${a.y} L${b.x} ${b.y}`} className="ls-map__hop" />
+          })}
+
           {/* letters */}
           {Object.entries(MAP_POINTS).map(([letter, p]) => {
             const tags = placed[letter] ?? []
             const name = reveal?.[letter]
             const lit = highlight === letter
+            const wrong = misses.filter(([, from]) => from === letter).map(([n]) => n)
+            const wrongText = wrong.map((n) => `Q${n}`).join(' ')
             return (
               <g
                 key={letter}
-                className={`ls-map__pin ${lit ? 'is-lit' : ''} ${tags.length ? 'is-placed' : ''} ${reveal ? (name ? 'is-answer' : 'is-unused') : ''}`}
+                className={`ls-map__pin ${lit ? 'is-lit' : ''} ${tags.length ? 'is-placed' : ''} ${reveal ? (name ? 'is-answer' : 'is-unused') : ''} ${wrong.length ? 'is-missed' : ''}`}
                 style={
                   {
                     '--ls-x': `${p.x}px`,
@@ -212,6 +224,21 @@ export function ParkMap({ highlight = null, placed = {}, reveal, onPick, classNa
                     <rect x={p.x + 10} y={p.y - 24} width={12 + tags.join(',').length * 7} height="16" rx="3" />
                     <text x={p.x + 16} y={p.y - 12}>
                       {tags.join(',')}
+                    </text>
+                  </g>
+                )}
+                {wrong.length > 0 && (
+                  // below the pin (A's answer label already hangs below A, so its tag goes above)
+                  <g className="ls-map__miss">
+                    <rect
+                      x={p.x - (wrongText.length * 7 + 26) / 2}
+                      y={letter === 'A' ? p.y - 40 : p.y + 17}
+                      width={wrongText.length * 7 + 26}
+                      height="19"
+                      rx="4"
+                    />
+                    <text x={p.x} y={letter === 'A' ? p.y - 26 : p.y + 31} textAnchor="middle">
+                      {wrongText} ×
                     </text>
                   </g>
                 )}

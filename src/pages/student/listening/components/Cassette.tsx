@@ -11,8 +11,6 @@ interface CassetteProps {
   /** 0..1 — how much tape has wound onto the right reel. */
   watched: number
   completed: boolean
-  /** Spin the reels regardless of hover (e.g. while the lecture plays). */
-  spinning?: boolean
   className?: string
 }
 
@@ -36,7 +34,8 @@ function Hub({ cx, cy }: { cx: number; cy: number }) {
 }
 
 /** An SVG cassette whose reels show lecture progress: the left pack empties as the right one fills. */
-export function Cassette({ index, title, minutes, level, watched, completed, spinning = false, className = '' }: CassetteProps) {
+/* The reels spin from CSS: on hover / focus in the rack, and while the lecture player is playing. */
+export function Cassette({ index, title, minutes, level, watched, completed, className = '' }: CassetteProps) {
   const uid = useId().replace(/[^a-zA-Z0-9_-]/g, '')
   const shell = tapeShell(index)
   const f = completed ? 1 : watched
@@ -46,7 +45,7 @@ export function Cassette({ index, title, minutes, level, watched, completed, spi
 
   return (
     <span
-      className={`ls-cassette ${spinning ? 'is-spinning' : ''} ${completed ? 'is-recorded' : ''} ${className}`}
+      className={`ls-cassette ${completed ? 'is-recorded' : ''} ${className}`}
       style={{ '--ls-shell': shell.shell, '--ls-shade': shell.shade, '--ls-paper': shell.label } as CSSProperties}
     >
       <svg className="ls-cassette__svg" viewBox="0 0 300 190" aria-hidden="true">
