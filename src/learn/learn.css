@@ -762,3 +762,25 @@
   background: #ff7a7a;
   transform: rotate(-40deg);
 }
+
+/* ========================================================= full screen === */
+
+.lp-btn--full svg {
+  display: block;
+}
+
+.lecture-player.is-fullscreen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  background: #05061a;
+}
+
+/* Keep 16:9 and leave room for the control bar below. */
+.lecture-player.is-fullscreen .lp-screen,
+.lecture-player.is-fullscreen .lp-controls {
+  width: min(100vw, calc((100vh - 64px) * 16 / 9));
+  margin-inline: auto;
+}

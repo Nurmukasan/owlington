@@ -119,6 +119,48 @@ function buildSlides(lecture: Lecture): Slide[] {
   return slides
 }
 
+/** Fullscreen for an element, with Safari's prefixed API as a fallback. */
+function useFullscreen<T extends HTMLElement>() {
+  const ref = useRef<T>(null)
+  const [active, setActive] = useState(false)
+  const [supported] = useState(() => {
+    const d = document as Document & { webkitFullscreenEnabled?: boolean }
+    return Boolean(d.fullscreenEnabled ?? d.webkitFullscreenEnabled)
+  })
+  useEffect(() => {
+    const d = document as Document & { webkitFullscreenElement?: Element | null }
+    const sync = () => setActive((d.fullscreenElement ?? d.webkitFullscreenElement) === ref.current && ref.current !== null)
+    document.addEventListener('fullscreenchange', sync)
+    document.addEventListener('webkitfullscreenchange', sync)
+    return () => {
+      document.removeEventListener('fullscreenchange', sync)
+      document.removeEventListener('webkitfullscreenchange', sync)
+    }
+  }, [])
+  const toggle = () => {
+    const d = document as Document & { webkitExitFullscreen?: () => void; webkitFullscreenElement?: Element | null }
+    const el = ref.current as (T & { webkitRequestFullscreen?: () => void }) | null
+    if (d.fullscreenElement ?? d.webkitFullscreenElement) {
+      if (d.exitFullscreen) void d.exitFullscreen()
+      else d.webkitExitFullscreen?.()
+    } else if (el?.requestFullscreen) void el.requestFullscreen().catch(() => {})
+    else el?.webkitRequestFullscreen?.()
+  }
+  return { ref, active, supported, toggle }
+}
+
+function FullscreenIcon({ exit }: { exit: boolean }) {
+  // Four corner brackets: pointing out to enter, in to leave.
+  const d = exit
+    ? 'M6 2v4H2M10 2v4h4M6 14v-4H2M10 14v-4h4'
+    : 'M2 6V2h4M14 6V2h-4M2 10v4h4M14 10v4h-4'
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+      <path d={d} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" />
+    </svg>
+  )
+}
+
 function NotesPlayer({ section, lecture, className = '', ref, onChapterChange, onComplete, onReachChange }: LecturePlayerProps) {
   const progress = useProgress()
   const { updateLecture } = progress
@@ -146,6 +188,7 @@ function NotesPlayer({ section, lecture, className = '', ref, onChapterChange, o
   const screenRef = useRef<HTMLDivElement>(null)
   const celebrate = useCelebrate(onComplete)
   const lockHint = useLockHint()
+  const { ref: fullRef, active: isFull, supported: canFull, toggle: toggleFull } = useFullscreen<HTMLDivElement>()
   // How far the student may skip ahead, in timeline seconds (a small margin absorbs rounding).
   // The title card can always be skipped, so the first chapter is open from the start.
   const reachTime = Math.max(seen * total, starts[Math.min(1, last)]) + 0.05
@@ -260,7 +303,10 @@ function NotesPlayer({ section, lecture, className = '', ref, onChapterChange, o
 
   const onKeyDown = (e: KeyboardEvent) => {
     if (e.target instanceof HTMLButtonElement && (e.key === ' ' || e.key === 'Enter')) return
-    if (e.key === ' ' || e.key === 'k') {
+    if ((e.key === 'f' || e.key === 'F') && canFull) {
+      e.preventDefault()
+      toggleFull()
+    } else if (e.key === ' ' || e.key === 'k') {
       e.preventDefault()
       togglePlay()
     } else if (e.key === 'ArrowRight') {
@@ -294,7 +340,8 @@ function NotesPlayer({ section, lecture, className = '', ref, onChapterChange, o
 
   return (
     <div
-      className={`lecture-player ${playing ? 'is-playing' : 'is-paused'} ${className}`}
+      ref={fullRef}
+      className={`lecture-player ${playing ? 'is-playing' : 'is-paused'} ${isFull ? 'is-fullscreen' : ''} ${className}`}
       onKeyDown={onKeyDown}
     >
       <div
@@ -420,6 +467,17 @@ function NotesPlayer({ section, lecture, className = '', ref, onChapterChange, o
         >
           {speed}×
         </button>
+        {canFull && (
+          <button
+            type="button"
+            className="lp-btn lp-btn--full"
+            onClick={toggleFull}
+            aria-label={isFull ? 'Exit full screen (F)' : 'Full screen (F)'}
+            title={isFull ? 'Exit full screen (F)' : 'Full screen (F)'}
+          >
+            <FullscreenIcon exit={isFull} />
+          </button>
+        )}
       </div>
     </div>
   )
