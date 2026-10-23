@@ -734,11 +734,115 @@
   min-width: 0;
 }
 
+/* ranks ladder */
+
+.pf-ranks {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pf-rank {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  color: var(--pf-muted);
+}
+
+.pf-rank__n {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  box-shadow: inset 0 0 0 2px var(--frame);
+  font-family: var(--font-pixel);
+  font-size: 10px;
+}
+
+.pf-rank__text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.pf-rank__text strong {
+  color: var(--pf-ink);
+  font-size: 15px;
+}
+
+.pf-rank__xp {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.pf-rank.is-passed .pf-rank__n {
+  background: rgb(255 182 39 / 0.18);
+  box-shadow: inset 0 0 0 2px rgb(255 182 39 / 0.5);
+  color: var(--amber);
+}
+
+.pf-rank.is-passed .pf-rank__xp {
+  color: var(--amber);
+  font-weight: 800;
+}
+
+.pf-rank.is-current {
+  background: rgb(255 182 39 / 0.1);
+  box-shadow: inset 3px 0 0 var(--amber);
+}
+
+.pf-rank.is-current .pf-rank__n {
+  background: var(--amber);
+  box-shadow: none;
+  color: var(--ink);
+}
+
+.pf-rank.is-ahead .pf-rank__text strong {
+  color: var(--pf-muted);
+}
+
+.pf-tile__motto {
+  font-style: italic;
+}
+
 /* achievements */
+
+.pf-ach-groups {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.pf-ach-group {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.pf-ach-group__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid color-mix(in srgb, var(--pf-color) 60%, transparent);
+  color: var(--pf-ink);
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  font-weight: 400;
+  text-transform: uppercase;
+}
 
 .pf-achievements {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(150px, 100%), 1fr));
   gap: 10px;
   margin: 0;
   padding: 0;
@@ -746,62 +850,64 @@
 }
 
 .pf-ach {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 4px 12px;
+  padding: 10px;
   background: rgb(255 255 255 / 0.03);
-  opacity: 0.6;
+  box-shadow: inset 0 0 0 1px var(--pf-line);
+}
+
+.pf-ach .achievement-badge {
+  grid-row: 1 / span 2;
 }
 
 .pf-ach.is-unlocked {
   background: rgb(255 182 39 / 0.08);
-  box-shadow: inset 0 0 0 1px rgb(255 182 39 / 0.35);
-  opacity: 1;
+  box-shadow: inset 0 0 0 1px rgb(255 182 39 / 0.45);
 }
 
 .pf-ach__text {
   display: grid;
-  gap: 2px;
+  gap: 4px;
   min-width: 0;
-  font-size: 12px;
-  line-height: 1.3;
+  color: var(--pf-muted);
+  font-size: 13px;
+  line-height: 1.35;
 }
 
 .pf-ach__text strong {
-  font-size: 14px;
-}
-
-.pf-ach__text span {
-  color: var(--pf-muted);
-}
-
-.pf-soon {
-  display: grid;
-  justify-items: center;
-  gap: 10px;
-  padding: 26px 16px;
-  border: 2px dashed var(--pf-line);
-  color: var(--pf-muted);
-  text-align: center;
-}
-
-.pf-soon p {
-  max-width: 34ch;
-  margin: 0;
-  font-size: 14px;
-}
-
-.pf-soon .pf-soon__title {
   color: var(--pf-ink);
-  font-family: var(--font-pixel);
-  font-size: 11px;
+  font-size: 15px;
 }
 
-.pf-soon__badges {
-  display: flex;
+.pf-ach__done {
+  color: var(--amber);
+  font-weight: 700;
+}
+
+.pf-ach__progress {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
   gap: 10px;
-  margin-bottom: 4px;
+  color: var(--pf-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.pf-ach__progress .pf-meter {
+  margin: 0;
+}
+
+.pf-ach__xp {
+  grid-column: 2;
+  justify-self: start;
+  padding: 3px 6px 2px;
+  background: rgb(255 182 39 / 0.14);
+  color: var(--amber);
+  font-family: var(--font-pixel);
+  font-size: 8px;
 }
 
 /* -------------------------------------------------------------- results --- */
@@ -1546,6 +1652,10 @@
 @media (max-width: 980px) {
   .pf-kpis {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pf-ach-groups {
+    grid-template-columns: 1fr;
   }
 
   .pf-skills {

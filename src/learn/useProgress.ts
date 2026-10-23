@@ -89,7 +89,7 @@ function createView(state: ProgressState, store: ProgressStore) {
     rank: rankFor(state.xp),
     streak: streakFor(state.dailyXp, today),
     today: { xp: todayXp, goal: DAILY_GOAL, met: todayXp >= DAILY_GOAL },
-    achievements: ACHIEVEMENTS.map((a) => ({ ...a, unlockedAt: state.achievements[a.id] })),
+    achievements: ACHIEVEMENTS.map((a) => ({ ...a, unlockedAt: state.achievements[a.id], have: Math.min(a.goal, a.count(state)) })),
     lecture: (section: SectionId, lectureId: string) => state.lectures[lectureKey(section, lectureId)],
     section: (section: SectionId) => sectionStats(state, section),
     updateLecture: store.updateLecture,

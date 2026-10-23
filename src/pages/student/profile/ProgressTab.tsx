@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { PixelSprite } from '../../../components/PixelSprite'
 import { AchievementBadge, RankBar, StreakFlame } from '../../../learn/components/ProgressWidgets'
-import type { Attempt } from '../../../learn/progress'
+import { RANKS, type Attempt } from '../../../learn/progress'
 import { SECTION_META, SECTION_ORDER, formatBand, formatWhen, pct } from '../../../learn/results/results'
 import { sfx } from '../../../learn/sfx'
 import type { SectionId } from '../../../learn/types'
@@ -97,8 +97,16 @@ export function ProgressTab({ progress }: { progress: ProgressView }) {
         <article className="pf-tile pf-tile--level">
           <h2 className="pf-tile__label">Rank</h2>
           <RankBar rank={rank} xp={xp} className="pf-xp" />
+          <p className="pf-tile__note pf-tile__motto">{rank.description}</p>
           <p className="pf-tile__note">
-            {rank.next - xp} XP to <strong>{rank.nextTitle}</strong> · {xp} XP in total
+            {rank.next === null ? (
+              'The highest rank there is.'
+            ) : (
+              <>
+                {rank.next - xp} XP to <strong>{rank.nextTitle}</strong>
+              </>
+            )}{' '}
+            · {xp} XP in total
           </p>
         </article>
 
@@ -180,42 +188,80 @@ export function ProgressTab({ progress }: { progress: ProgressView }) {
           <ActivityHeatmap dailyXp={state.dailyXp} />
         </section>
 
-        <section className="pf-card" aria-labelledby="pf-ach-title">
+        <section className="pf-card" aria-labelledby="pf-ranks-title">
           <header className="pf-card__head">
-            <h2 id="pf-ach-title" className="pf-card__title">
-              Achievements
+            <h2 id="pf-ranks-title" className="pf-card__title">
+              Ranks
             </h2>
-            {achievements.length > 0 && (
-              <p className="pf-card__note">
-                {unlocked} of {achievements.length} unlocked
-              </p>
-            )}
+            <p className="pf-card__note">{rank.next === null ? 'You reached the top.' : `${rank.next - xp} XP to the next`}</p>
           </header>
-          {achievements.length ? (
-            <ul className="pf-achievements">
-              {achievements.map((a) => (
-                <li key={a.id} className={`pf-ach ${a.unlockedAt ? 'is-unlocked' : ''}`}>
-                  <AchievementBadge icon={a.icon} unlocked={Boolean(a.unlockedAt)} scale={2} />
-                  <span className="pf-ach__text">
-                    <strong>{a.title}</strong>
-                    <span>{a.unlockedAt ? `Unlocked ${formatWhen(a.unlockedAt, false)}` : a.description}</span>
+          <ol className="pf-ranks">
+            {RANKS.map((r, i) => {
+              const where = i + 1 < rank.rank ? 'passed' : i + 1 === rank.rank ? 'current' : 'ahead'
+              return (
+                <li key={r.title} className={`pf-rank is-${where}`} aria-current={where === 'current' ? 'step' : undefined}>
+                  <span className="pf-rank__n">{i + 1}</span>
+                  <span className="pf-rank__text">
+                    <strong>{r.title}</strong>
+                    <span>{r.description}</span>
+                  </span>
+                  <span className="pf-rank__xp">
+                    {where === 'passed' ? <span aria-label="reached">✓</span> : `${r.xp.toLocaleString('en-GB')} XP`}
                   </span>
                 </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="pf-soon">
-              <span className="pf-soon__badges" aria-hidden="true">
-                {(['star', 'flame', 'trophy', 'owl'] as const).map((icon) => (
-                  <AchievementBadge key={icon} icon={icon} unlocked={false} scale={2} />
-                ))}
-              </span>
-              <p className="pf-soon__title">Coming soon</p>
-              <p>New badges to unlock are being made. Everything you do now will count towards them.</p>
-            </div>
-          )}
+              )
+            })}
+          </ol>
         </section>
       </div>
+
+      <section className="pf-card" aria-labelledby="pf-ach-title">
+        <header className="pf-card__head">
+          <h2 id="pf-ach-title" className="pf-card__title">
+            Achievements
+          </h2>
+          <p className="pf-card__note">
+            {unlocked} of {achievements.length} unlocked · {achievements.filter((a) => a.unlockedAt).reduce((s, a) => s + a.xp, 0)} XP
+            earned
+          </p>
+        </header>
+        <div className="pf-ach-groups">
+          {SECTION_ORDER.map((sec) => (
+            <section key={sec} className="pf-ach-group" style={{ '--pf-color': SECTION_META[sec].color } as CSSProperties} aria-label={SECTION_META[sec].name}>
+              <h3 className="pf-ach-group__title">
+                <PixelSprite sprite={SECTION_META[sec].icon} scale={2} />
+                {SECTION_META[sec].name}
+              </h3>
+              <ul className="pf-achievements">
+                {achievements
+                  .filter((a) => a.section === sec)
+                  .map((a) => (
+                    <li key={a.id} className={`pf-ach ${a.unlockedAt ? 'is-unlocked' : ''}`}>
+                      <AchievementBadge icon={a.icon} unlocked={Boolean(a.unlockedAt)} scale={3} />
+                      <span className="pf-ach__text">
+                        <strong>{a.title}</strong>
+                        <span>{a.description}</span>
+                        {a.unlockedAt ? (
+                          <span className="pf-ach__done">✓ Unlocked {formatWhen(a.unlockedAt, false)}</span>
+                        ) : (
+                          a.goal > 1 && (
+                            <span className="pf-ach__progress">
+                              <span className="pf-meter" aria-hidden="true">
+                                <span style={{ width: `${(a.have / a.goal) * 100}%` }} />
+                              </span>
+                              {a.have} / {a.goal}
+                            </span>
+                          )
+                        )}
+                      </span>
+                      <span className="pf-ach__xp">+{a.xp} XP</span>
+                    </li>
+                  ))}
+              </ul>
+            </section>
+          ))}
+        </div>
+      </section>
     </div>
   )
 }

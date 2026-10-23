@@ -16,7 +16,7 @@ makes studying feel like an adventure.
 | **Reading, Listening and Writing sections**: each its own animated world. The section home shows an overview and two doors, **Lectures** and **Practice**, each on its own page (see below) | ✅ (lectures play as animated notes until videos are uploaded) |
 | **Practice catalogue**: built for 20–30 tests per section, split into **Full tests** and **By question type**, with type filters, search, status/level filters and sorting | ✅ (the test content is still being written) |
 | **Student profile** (opened from the avatar): progress, every result in one shared design, avatar and account settings | ✅ |
-| **Progress & motivation**: XP, ranks, a daily goal, streaks, a weekly leaderboard, band history, celebrations, 8-bit sounds | ✅ (stored in the browser for now) |
+| **Progress & motivation**: XP, 7 ranks, 8 achievements, a daily goal, streaks, a weekly leaderboard, band history, celebrations, 8-bit sounds | ✅ (stored in the browser for now) |
 | **Teacher dashboard** | 🟡 placeholder |
 
 ![Student dashboard](docs/screenshots/student-dashboard.png)
@@ -95,11 +95,36 @@ tags: ['Yes / No / Not Given'] // question types for the filter chips (default: 
   to 10 XP, a 40-question full test up to 40), and the band for Writing (band 6 → 6 XP; half bands round up).
   Finishing a lecture gives 5 XP. The rules live in `XP_RULES` and `attemptXp()` in
   [`src/learn/progress.ts`](src/learn/progress.ts).
-- **Ranks** (shown as `RANK n` in the top bar). The current names and XP thresholds are placeholders until the final
-  list is ready: edit `RANKS` in `progress.ts`.
+- **Ranks** (shown as `RANK n` in the top bar), in `RANKS` in `progress.ts`:
+
+  | Rank | XP | |
+  | --- | --- | --- |
+  | 1. Fledgling | 0 | A student taking the first steps |
+  | 2. Owlet | 1,000 | A student soaking up knowledge |
+  | 3. Night Watcher | 1,200 | An adept learning what is hidden |
+  | 4. Feather Scholar | 1,400 | A master who has gathered wisdom |
+  | 5. Silver Wing | 1,600 | Keeper of the ancient scrolls |
+  | 6. Arch-Owl | 1,800 | The high mage — or the dean |
+  | 7. The Silent Glide | 2,500 | A legend who has reached perfect enlightenment |
+
 - **Tonight's goal** is 30 XP a day; anything beyond it is a bonus. **Daily streaks** show as the flame in the top bar.
-- **Achievements**: the engine (unlock once, toast with confetti, +25 XP) is ready; the list itself (`ACHIEVEMENTS`)
-  is empty until the final set of badges is decided.
+- **Achievements** (`ACHIEVEMENTS` in `progress.ts`), each unlocked once for the XP shown. "Different tests" means
+  retakes of the same test count once.
+
+  | Section | Achievement | How to unlock | XP |
+  | --- | --- | --- | --- |
+  | Listening | Sharp-Eared Owl | Complete 10 different full tests | 100 |
+  | Listening | The Owl Codebreaker | All answers right in 3 different spelling tasks | 20 |
+  | Listening | Echoing Owl | Band 8.5–9.0 on a full test | 200 |
+  | Reading | Skimming Owl | A skimming & scanning focused test with no mistakes | 30 |
+  | Reading | True-False-Owl | Complete a True / False / Not Given focused test | 10 |
+  | Reading | Bookworm Owl | Complete 10 different full tests | 100 |
+  | Writing | Graph-Watching Owl | Band 8.5–9.0 on a Task 1 | 50 |
+  | Writing | Essay-Weaving Owl | Band 7.5+ on a full test | 100 |
+
+  A focused test counts for a question type when that type is its **only** tag (`tags`, or `kinds` when there are
+  no tags): `'Spelling'` for spelling tasks, a tag containing "skim" (e.g. `'Skimming & scanning'`),
+  `'True / False / Not Given'`, or `'Task 1 · …'` for Writing Task 1.
 - **Lecture progress** with resume, and best scores per practice test.
 - A **sound toggle** in the top bar for the 8-bit effects.
 
@@ -109,7 +134,7 @@ tags: ['Yes / No / Not Given'] // question types for the filter chips (default: 
 
 - **Progress**: rank and XP, streak, tonight's goal, a card per skill with its current band, a
   **band-over-time chart** (one line per section, with hover, keyboard and table views), a 12-week **study-nights**
-  calendar and achievements.
+  calendar, the ladder of ranks and the achievements by section, with progress towards each.
 - **Results**: every test from every section in **one design**: the estimated band up front, the raw score, a strip
   of right/wrong squares, and the change since the last try. Opening a result shows the breakdown by question type
   (or by criterion for Writing) and every answer next to the correct one. Each section's results screen links here.
@@ -235,7 +260,6 @@ Pages…). Configure the host to serve `index.html` for unknown paths so routes 
 - [x] Reading, Listening and Writing sections with lectures, practice tests and progress tracking
 - [x] Student profile: progress, unified results, avatar and account settings
 - [ ] Write 20–30 practice tests per section (half full tests, half by question type)
-- [ ] Final rank names and XP thresholds, and the achievements list
 - [ ] Record and upload the real video lectures
 - [ ] Design the teacher dashboard (upload lectures, organise courses, see students, review essays)
 - [ ] Real backend: accounts, sessions, progress, video storage

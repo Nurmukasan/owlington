@@ -6,7 +6,8 @@
  * exists. Components use it through `useProgress()`; the store emits
  * `ProgressEvent`s (XP gained, rank-up, achievement) for toasts and effects.
  */
-import type { SectionId } from './types'
+import { findPractice } from './catalog'
+import type { PracticeInfo, SectionId } from './types'
 
 // --- state ----------------------------------------------------------------------
 
@@ -81,7 +82,6 @@ const emptyState = (): ProgressState => ({
 
 export const XP_RULES = {
   lectureComplete: 5,
-  achievement: 25,
 }
 
 /** XP a night to keep "tonight's goal". Anything beyond it is a bonus. */
@@ -99,45 +99,43 @@ export function attemptXp({ section, score, band }: { section: SectionId; score:
   return Math.max(0, Math.round(score))
 }
 
-// Placeholder ranks until the final list (names and XP for each) is decided.
-const RANKS = [
-  { title: 'Owlet', xp: 0 },
-  { title: 'Fledgling', xp: 150 },
-  { title: 'Night Flyer', xp: 400 },
-  { title: 'Moon Watcher', xp: 800 },
-  { title: 'Star Reader', xp: 1400 },
-  { title: 'Wise Owl', xp: 2200 },
-  { title: 'Grand Owl', xp: 3300 },
-  { title: 'Owl Sage', xp: 4800 },
-  { title: 'Legend of the Night', xp: 7000 },
+export const RANKS = [
+  { title: 'Fledgling', xp: 0, description: 'A student taking the first steps.' },
+  { title: 'Owlet', xp: 1000, description: 'A student soaking up knowledge.' },
+  { title: 'Night Watcher', xp: 1200, description: 'An adept learning what is hidden.' },
+  { title: 'Feather Scholar', xp: 1400, description: 'A master who has gathered wisdom.' },
+  { title: 'Silver Wing', xp: 1600, description: 'Keeper of the ancient scrolls.' },
+  { title: 'Arch-Owl', xp: 1800, description: 'The high mage — or the dean.' },
+  { title: 'The Silent Glide', xp: 2500, description: 'A legend who has reached perfect enlightenment.' },
 ]
-const RANK_STEP_AFTER_LAST = 2500
 
 export interface RankInfo {
   rank: number
   title: string
+  description: string
   /** XP at which this rank started. */
   floor: number
-  /** XP needed for the next rank. */
-  next: number
-  /** 0..1 progress towards the next rank. */
+  /** XP needed for the next rank, or null at the top rank. */
+  next: number | null
+  nextTitle: string | null
+  /** 0..1 progress towards the next rank (1 at the top). */
   progress: number
-  nextTitle: string
 }
 
 export function rankFor(xp: number): RankInfo {
   let i = 0
   while (i + 1 < RANKS.length && xp >= RANKS[i + 1].xp) i++
-  if (i < RANKS.length - 1) {
-    const floor = RANKS[i].xp
-    const next = RANKS[i + 1].xp
-    return { rank: i + 1, title: RANKS[i].title, floor, next, progress: (xp - floor) / (next - floor), nextTitle: RANKS[i + 1].title }
+  const current = RANKS[i]
+  const next = RANKS[i + 1]
+  return {
+    rank: i + 1,
+    title: current.title,
+    description: current.description,
+    floor: current.xp,
+    next: next?.xp ?? null,
+    nextTitle: next?.title ?? null,
+    progress: next ? (xp - current.xp) / (next.xp - current.xp) : 1,
   }
-  const last = RANKS[RANKS.length - 1]
-  const extra = Math.floor((xp - last.xp) / RANK_STEP_AFTER_LAST)
-  const floor = last.xp + extra * RANK_STEP_AFTER_LAST
-  const next = floor + RANK_STEP_AFTER_LAST
-  return { rank: RANKS.length + extra, title: last.title, floor, next, progress: (xp - floor) / (next - floor), nextTitle: last.title }
 }
 
 // --- dates & streaks ------------------------------------------------------------------
@@ -183,27 +181,148 @@ export function streakFor(dailyXp: Record<string, number>, today = dayKey()): St
 
 // --- achievements ------------------------------------------------------------------
 
-export type AchievementIcon = 'star' | 'flame' | 'trophy' | 'book' | 'headphones' | 'pencil' | 'owl'
+export type AchievementIcon =
+  | 'star'
+  | 'flame'
+  | 'trophy'
+  | 'book'
+  | 'headphones'
+  | 'pencil'
+  | 'owl'
+  | 'tufted-owl'
+  | 'key'
+  | 'medal'
+  | 'magnifier'
+  | 'true-false'
+  | 'bookworm'
+  | 'graph'
+  | 'scroll'
 
 export interface Achievement {
   id: string
   title: string
   description: string
   icon: AchievementIcon
-  check: (state: ProgressState) => boolean
+  section: SectionId
+  /** XP awarded once, when it unlocks. */
+  xp: number
+  /** How many are needed: 1 for a one-off feat, 10 for "ten full tests". */
+  goal: number
+  /** How many the student has so far; it unlocks when this reaches `goal`. */
+  count: (state: ProgressState) => number
 }
 
-/**
- * The achievements students can unlock. Empty until the final list is decided; the
- * machinery (check after every XP change → unlock once → toast → +25 XP) is ready.
- */
-export const ACHIEVEMENTS: Achievement[] = []
+const infoOf = (a: Attempt) => findPractice(a.section, a.practiceId)
+const isFull = (a: Attempt) => infoOf(a)?.format === 'full'
+const isPerfect = (a: Attempt) => a.total > 0 && a.score >= a.total
+const hasBand = (a: Attempt, min: number) => typeof a.band === 'number' && a.band >= min
+
+/** The one question type a focused test drills: its only tag. Mixed or full tests have none. */
+export function focusOf(info: PracticeInfo | undefined) {
+  if (!info || info.format === 'full') return undefined
+  const tags = info.tags ?? info.kinds
+  return tags.length === 1 ? tags[0] : undefined
+}
+
+/** Different tests (not attempts) in a section that pass `test`, so retakes don't count twice. */
+const distinctTests = (state: ProgressState, section: SectionId, test: (a: Attempt) => boolean) =>
+  new Set(state.attempts.filter((a) => a.section === section && test(a)).map((a) => a.practiceId)).size
+
+const once = (state: ProgressState, section: SectionId, test: (a: Attempt) => boolean) =>
+  state.attempts.some((a) => a.section === section && test(a)) ? 1 : 0
+
+export const ACHIEVEMENTS: Achievement[] = [
+  // Listening
+  {
+    id: 'sharp-eared-owl',
+    title: 'Sharp-Eared Owl',
+    description: 'Complete 10 different Listening full tests.',
+    icon: 'tufted-owl',
+    section: 'listening',
+    xp: 100,
+    goal: 10,
+    count: (s) => distinctTests(s, 'listening', isFull),
+  },
+  {
+    id: 'owl-codebreaker',
+    title: 'The Owl Codebreaker',
+    description: 'Get every answer right in 3 different spelling tasks.',
+    icon: 'key',
+    section: 'listening',
+    xp: 20,
+    goal: 3,
+    count: (s) => distinctTests(s, 'listening', (a) => isPerfect(a) && /spell/i.test(focusOf(infoOf(a)) ?? '')),
+  },
+  {
+    id: 'echoing-owl',
+    title: 'Echoing Owl',
+    description: 'Score band 8.5–9.0 on a Listening full test.',
+    icon: 'medal',
+    section: 'listening',
+    xp: 200,
+    goal: 1,
+    count: (s) => once(s, 'listening', (a) => isFull(a) && hasBand(a, 8.5)),
+  },
+  // Reading
+  {
+    id: 'skimming-owl',
+    title: 'Skimming Owl',
+    description: 'Finish a skimming & scanning focused test without a single mistake.',
+    icon: 'magnifier',
+    section: 'reading',
+    xp: 30,
+    goal: 1,
+    count: (s) => once(s, 'reading', (a) => isPerfect(a) && /skim/i.test(focusOf(infoOf(a)) ?? '')),
+  },
+  {
+    id: 'true-false-owl',
+    title: 'True-False-Owl',
+    description: 'Complete a True / False / Not Given focused test.',
+    icon: 'true-false',
+    section: 'reading',
+    xp: 10,
+    goal: 1,
+    count: (s) => once(s, 'reading', (a) => focusOf(infoOf(a)) === 'True / False / Not Given'),
+  },
+  {
+    id: 'bookworm-owl',
+    title: 'Bookworm Owl',
+    description: 'Complete 10 different Reading full tests.',
+    icon: 'bookworm',
+    section: 'reading',
+    xp: 100,
+    goal: 10,
+    count: (s) => distinctTests(s, 'reading', isFull),
+  },
+  // Writing
+  {
+    id: 'graph-watching-owl',
+    title: 'Graph-Watching Owl',
+    description: 'Score band 8.5–9.0 on a Writing Task 1.',
+    icon: 'graph',
+    section: 'writing',
+    xp: 50,
+    goal: 1,
+    count: (s) =>
+      once(s, 'writing', (a) => hasBand(a, 8.5) && (focusOf(infoOf(a)) ?? '').startsWith('Task 1')),
+  },
+  {
+    id: 'essay-weaving-owl',
+    title: 'Essay-Weaving Owl',
+    description: 'Score band 7.5 or higher on a Writing full test.',
+    icon: 'scroll',
+    section: 'writing',
+    xp: 100,
+    goal: 1,
+    count: (s) => once(s, 'writing', (a) => isFull(a) && hasBand(a, 7.5)),
+  },
+]
 
 // --- events ----------------------------------------------------------------------
 
 export type ProgressEvent =
   | { type: 'xp'; amount: number; reason: string }
-  | { type: 'rank-up'; rank: number; title: string }
+  | { type: 'rank-up'; rank: number; title: string; description: string }
   | { type: 'achievement'; achievement: Achievement }
 
 type EventListener = (event: ProgressEvent) => void
@@ -243,7 +362,8 @@ function migrateFromV1(old: Stored): Stored {
     shiftXp(state, a.at, fresh - a.xp)
     return { ...a, xp: fresh }
   })
-  for (const at of Object.values(state.achievements)) shiftXp(state, at, -XP_RULES.achievement)
+  // The retired achievements were worth 25 XP each.
+  for (const at of Object.values(state.achievements)) shiftXp(state, at, -25)
   return { ...state, achievements: {}, version: 2 }
 }
 
@@ -335,21 +455,21 @@ export class ProgressStore {
     }
     if (amount > 0) events.push({ type: 'xp', amount, reason })
 
-    // Unlock achievements (each one is worth a little XP, which may unlock more).
+    // Unlock achievements (each one is worth XP, which may unlock more).
     for (let guard = 0; guard < ACHIEVEMENTS.length; guard++) {
-      const fresh = ACHIEVEMENTS.find((a) => !next.achievements[a.id] && a.check(next))
+      const fresh = ACHIEVEMENTS.find((a) => !next.achievements[a.id] && a.count(next) >= a.goal)
       if (!fresh) break
       next = {
         ...next,
-        xp: next.xp + XP_RULES.achievement,
-        dailyXp: { ...next.dailyXp, [today]: (next.dailyXp[today] ?? 0) + XP_RULES.achievement },
+        xp: next.xp + fresh.xp,
+        dailyXp: { ...next.dailyXp, [today]: (next.dailyXp[today] ?? 0) + fresh.xp },
         achievements: { ...next.achievements, [fresh.id]: new Date().toISOString() },
       }
       events.push({ type: 'achievement', achievement: fresh })
     }
 
     const after = rankFor(next.xp)
-    if (after.rank > before) events.push({ type: 'rank-up', rank: after.rank, title: after.title })
+    if (after.rank > before) events.push({ type: 'rank-up', rank: after.rank, title: after.title, description: after.description })
     return next
   }
 

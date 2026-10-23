@@ -212,7 +212,7 @@ export function LeaderboardTab({ progress }: { progress: ProgressView }) {
             <strong>Writing:</strong> your band in XP. A band 6 essay earns 6 XP.
           </li>
         </ul>
-        <p className="pf-rules__note">The week runs Monday to Sunday. Lecture XP counts towards your rank, but not here.</p>
+        <p className="pf-rules__note">The week runs Monday to Sunday. XP from lectures and achievements counts towards your rank, but not here.</p>
       </section>
     </div>
   )

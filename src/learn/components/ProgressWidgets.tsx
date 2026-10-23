@@ -2,12 +2,20 @@ import type { CSSProperties, ReactNode } from 'react'
 import { PixelSprite } from '../../components/PixelSprite'
 import {
   BOOK_ICON,
+  BOOKWORM_ICON,
   FLAME_ICON,
+  GRAPH_ICON,
   HEADPHONES_ICON,
+  KEY_ICON,
+  MAGNIFIER_ICON,
+  MEDAL_ICON,
   OWL_HEAD,
   PENCIL_ICON,
+  SCROLL_ICON,
   STAR_ICON,
   TROPHY_ICON,
+  TRUE_FALSE_ICON,
+  TUFTED_OWL_ICON,
   type Sprite,
 } from '../../scene/sprites'
 import type { AchievementIcon, RankInfo, StreakInfo } from '../progress'
@@ -101,14 +109,16 @@ export function RankBar({ rank, xp, className = '' }: { rank: RankInfo; xp: numb
       <div className="xp-bar__body">
         <p className="xp-bar__title">
           {rank.title}
-          <span>
-            {xp - rank.floor} / {rank.next - rank.floor} XP
-          </span>
+          <span>{rank.next === null ? 'Top rank' : `${xp - rank.floor} / ${rank.next - rank.floor} XP`}</span>
         </p>
         <div
           className="xp-bar__track"
           role="progressbar"
-          aria-label={`Rank ${rank.rank}, ${rank.title}: ${xp - rank.floor} of ${rank.next - rank.floor} XP to ${rank.nextTitle}`}
+          aria-label={
+            rank.next === null
+              ? `Rank ${rank.rank}, ${rank.title}: the highest rank`
+              : `Rank ${rank.rank}, ${rank.title}: ${xp - rank.floor} of ${rank.next - rank.floor} XP to ${rank.nextTitle}`
+          }
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={Math.round(rank.progress * 100)}
@@ -146,6 +156,14 @@ const ACHIEVEMENT_SPRITES: Record<AchievementIcon, Sprite> = {
   headphones: HEADPHONES_ICON,
   pencil: PENCIL_ICON,
   owl: OWL_HEAD,
+  'tufted-owl': TUFTED_OWL_ICON,
+  key: KEY_ICON,
+  medal: MEDAL_ICON,
+  magnifier: MAGNIFIER_ICON,
+  'true-false': TRUE_FALSE_ICON,
+  bookworm: BOOKWORM_ICON,
+  graph: GRAPH_ICON,
+  scroll: SCROLL_ICON,
 }
 
 export function AchievementBadge({

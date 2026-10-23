@@ -211,3 +211,135 @@ export const TEST_ICON: Sprite = {
   ],
   palette: { o: ICON_INK, w: '#fff7e6', a: '#9a9ab5', g: '#2f9e6e' },
 }
+
+// ---------------------------------------------------------------------------
+// Achievement badges
+// ---------------------------------------------------------------------------
+
+/** Sharp-Eared Owl: a long-eared owl, tufts up. */
+export const TUFTED_OWL_ICON: Sprite = {
+  rows: [
+    'o..........o',
+    'oo........oo',
+    'obo......obo',
+    'obbooooooobo',
+    'obbbbbbbbbbo',
+    'obwwbbbbwwbo',
+    'owyywbbwyywo',
+    'owykwnnwykwo',
+    'obwwbnnbwwbo',
+    '.obbbbbbbbo.',
+    '..oobbbboo..',
+    '....oooo....',
+  ],
+  palette: { o: ICON_INK, b: '#7f5236', w: '#f3e3c3', y: '#ffb627', k: '#120c08', n: '#f08a24' },
+}
+
+/** The Owl Codebreaker: a golden key. */
+export const KEY_ICON: Sprite = {
+  rows: [
+    '.oooo.......',
+    'oyyyyo......',
+    'oyooyo......',
+    'oyooyooooooo',
+    'oyyyyyyyyyyo',
+    '.oooooyooyyo',
+    '......oo.oyo',
+    '.........oo.',
+  ],
+  palette: { o: ICON_INK, y: '#ffcf5c' },
+}
+
+/** Echoing Owl: a gold medal stamped with a 9. */
+export const MEDAL_ICON: Sprite = {
+  rows: [
+    'oo........oo',
+    'orro....orro',
+    '.orro..orro.',
+    '..orroorro..',
+    '...oooooo...',
+    '..oyyyyyyo..',
+    '.oyyhhyyyyo.',
+    '.oyhyyhyyyo.',
+    '.oyyhhhyyyo.',
+    '.oyyyyhyyyo.',
+    '..oyhhyyyo..',
+    '...oooooo...',
+  ],
+  palette: { o: ICON_INK, r: '#6fe3cf', y: '#ffcf5c', h: '#7a4b00' },
+}
+
+/** Skimming Owl: a magnifying glass. */
+export const MAGNIFIER_ICON: Sprite = {
+  rows: [
+    '..oooo......',
+    '.owwwwo.....',
+    'owwhwwwo....',
+    'owhwwwwo....',
+    'owwwwwwo....',
+    'owwwwwwo....',
+    '.owwwwoo....',
+    '..oooooao...',
+    '.......oaao.',
+    '........oaao',
+    '.........oao',
+    '..........o.',
+  ],
+  palette: { o: ICON_INK, w: '#bfe6ff', h: '#ffffff', a: '#c08a1e' },
+}
+
+/** True-False-Owl: a tick and a cross. */
+export const TRUE_FALSE_ICON: Sprite = {
+  rows: ['.....g.r...r', '....gg..r.r.', 'g..gg....r..', 'gggg....r.r.', '.gg....r...r'],
+  palette: { g: '#4fd18b', r: '#ff6b6b' },
+}
+
+/** Bookworm Owl: an open book with a worm on top. */
+export const BOOKWORM_ICON: Sprite = {
+  rows: [
+    '........gg..',
+    '...ggg.gkgg.',
+    '..g...gg....',
+    '.oooo..oooo.',
+    'owwwwoowwwwo',
+    'owaawoowaawo',
+    'owwwwoowwwwo',
+    'owaawoowaawo',
+    'owwwwoowwwwo',
+    'oooooooooooo',
+  ],
+  palette: { o: ICON_INK, w: '#fff7e6', a: '#ffb627', g: '#7fd36b', k: '#14163a' },
+}
+
+/** Graph-Watching Owl: a bar chart climbing. */
+export const GRAPH_ICON: Sprite = {
+  rows: [
+    'o........aa.',
+    'o........aa.',
+    'o.....cc.aa.',
+    'o.....cc.aa.',
+    'o..bb.cc.aa.',
+    'o..bb.cc.aa.',
+    'o..bb.cc.aa.',
+    'o..bb.cc.aa.',
+    'oooooooooooo',
+  ],
+  palette: { o: '#e8e6ff', a: '#ff9a85', b: '#9ad3ff', c: '#ffcf5c' },
+}
+
+/** Essay-Weaving Owl: a written scroll. */
+export const SCROLL_ICON: Sprite = {
+  rows: [
+    '.oooooooooo.',
+    'oyyyyyyyyyyo',
+    '.owwwwwwwwo.',
+    '.owaaaaawwo.',
+    '.owwwwwwwwo.',
+    '.owaaaaaawo.',
+    '.owwwwwwwwo.',
+    '.owaaaawwwo.',
+    'oyyyyyyyyyyo',
+    '.oooooooooo.',
+  ],
+  palette: { o: ICON_INK, y: '#d9b464', w: '#fbf4e4', a: '#8a8aa8' },
+}
