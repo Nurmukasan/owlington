@@ -1616,3 +1616,51 @@
 .rd-gateway .gateway__profile:hover {
   color: var(--rd-gold);
 }
+
+/* Short laptop screens: the doors and the plaques must be in view without scrolling. */
+@media (min-width: 641px) and (max-height: 940px) {
+  .rd-hero {
+    min-height: 100dvh;
+    padding-top: calc(var(--hud-space) + clamp(10px, 2.5vh, 40px));
+    padding-bottom: calc(var(--rd-floor-h) * 0.35 + 12px);
+  }
+
+  .rd-hero__eyebrow {
+    margin-bottom: clamp(8px, 1.6vh, 22px);
+  }
+
+  .rd-hero__title {
+    margin-bottom: clamp(10px, 2vh, 24px);
+    font-size: clamp(44px, min(6.8vw, 8.2vh), 108px);
+  }
+
+  .rd-hero__tagline {
+    margin-bottom: clamp(14px, 2.4vh, 30px);
+    font-size: clamp(15px, min(1.5vw, 2.2vh), 20px);
+    line-height: 1.42;
+  }
+
+  .rd-plaques {
+    margin-top: 14px;
+    margin-bottom: 0;
+  }
+}
+
+@media (min-width: 641px) and (max-height: 760px) {
+  .rd-hero__tagline {
+    max-width: 40em;
+    line-height: 1.36;
+  }
+
+  .rd-gateway .gateway__profile {
+    margin-top: -4px;
+  }
+
+  .rd-plaques {
+    margin-top: 10px;
+  }
+
+  .rd-plaque {
+    padding-block: 9px 7px;
+  }
+}

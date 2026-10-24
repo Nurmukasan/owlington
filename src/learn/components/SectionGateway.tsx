@@ -53,9 +53,11 @@ export function SectionGateway({ section, icon, lectureNoun = 'lecture', classNa
         <span className="gateway__icon" aria-hidden="true">
           <PixelSprite sprite={icon} scale={3} />
         </span>
-        <span className="gateway__body">
+        <span className="gateway__head">
           <span className="gateway__kicker">LECTURES</span>
           <span className="gateway__title">{plural(lectures.length, 'video lesson')}</span>
+        </span>
+        <span className="gateway__body">
           <span className="gateway__meter" aria-hidden="true">
             <span style={{ width: `${(stats.lecturesCompleted / Math.max(1, stats.lecturesTotal)) * 100}%` }} />
           </span>
@@ -72,9 +74,11 @@ export function SectionGateway({ section, icon, lectureNoun = 'lecture', classNa
         <span className="gateway__icon" aria-hidden="true">
           <PixelSprite sprite={TEST_ICON} scale={4} />
         </span>
-        <span className="gateway__body">
+        <span className="gateway__head">
           <span className="gateway__kicker">PRACTICE</span>
           <span className="gateway__title">{plural(practiceSets.length, 'test')}</span>
+        </span>
+        <span className="gateway__body">
           <span className="gateway__tags">
             <span>{plural(full, 'full test')}</span>
             <span>{focused} by question type</span>
