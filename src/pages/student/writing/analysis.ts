@@ -617,11 +617,11 @@ export const CHECKS: Record<CheckId, CheckFn> = {
   passive: ({ text }) => {
     const hits = [...normalise(text).matchAll(PASSIVE)].map((m) => m[0])
     return {
-      label: 'Passive voice for the process (4+)',
+      label: 'Passive voice (4+)',
       criterion: 'GRA',
       met: hits.length >= 4,
       found: hits.length ? `${plural(hits.length, 'passive')}: ${hits.slice(0, 4).map((h) => `“${h}”`).join(', ')}${hits.length > 4 ? '…' : ''}` : 'No passive forms found.',
-      why: 'In a process the action matters more than who does it: “the grounds are collected”, “the mixture is heated”.',
+      why: 'In processes and maps the action matters more than who does it: “the mixture is heated”, “the shops have been demolished”.',
     }
   },
   position: ({ analysis }) => {
