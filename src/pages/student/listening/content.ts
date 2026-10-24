@@ -367,4 +367,15 @@ export const practiceSets: PracticeInfo[] = [
     format: 'full',
     added: '2026-10-24',
   },
+  {
+    id: 'full-04',
+    title: 'Full Test 4',
+    summary: 'Booking a children’s party · jobs at a music festival · students report on a recycling plant · a lecture on the history of maps.',
+    minutes: 40,
+    questionCount: 40,
+    kinds: ['Form completion', 'Note completion', 'Multiple choice', 'Matching'],
+    level: 'Intermediate',
+    format: 'full',
+    added: '2026-10-24',
+  },
 ]
