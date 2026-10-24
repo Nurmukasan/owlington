@@ -43,6 +43,14 @@ for (const info of practiceSets) {
   for (const sp of new Set(lines.map((l) => l.s))) if (!set.speakers.some((s) => s.id === sp)) report(info.id, `unknown speaker ${sp}`)
 
   for (const g of set.groups) {
+    const said = g.instruction?.match(/Questions (\d+)–(\d+)/)
+    if (said) {
+      const [a, b] = [g.questions[0].n, g.questions[g.questions.length - 1].n]
+      if (+said[1] !== a || +said[2] !== b) report(info.id, `instruction says Questions ${said[1]}–${said[2]}, group is ${a}–${b}`)
+      const count = said.input.match(/Choose (\w+) answers/)?.[1]
+      const WORDS = ['', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT']
+      if (count && WORDS.indexOf(count) !== g.questions.length) report(info.id, `instruction says ${count} answers, group has ${g.questions.length}`)
+    }
     for (const q of g.questions) {
       const where = `${info.id} Q${q.n}`
       const line = lines.find((l) => l.t.includes(q.evidence))
