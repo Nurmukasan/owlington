@@ -2635,6 +2635,127 @@
   animation: ls-bounce 360ms var(--ls-spring);
 }
 
+/* choose two */
+.ls-opt--check .ls-opt__key {
+  border-radius: 4px;
+}
+
+.ls-opt--check.is-blocked {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ls-opt--check.is-blocked:hover {
+  background: rgb(255 255 255 / 0.45);
+  transform: none;
+}
+
+.ls-pair__count {
+  margin: 10px 0 0;
+  color: #5a5070;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* table and flow-chart completion */
+.ls-table-wrap {
+  overflow-x: auto;
+}
+
+.ls-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgb(255 255 255 / 0.4);
+  font-size: 15px;
+  line-height: 2;
+}
+
+.ls-table th,
+.ls-table td {
+  padding: 6px 10px;
+  border: 2px solid #2a2140;
+  text-align: left;
+  vertical-align: top;
+}
+
+.ls-table thead th {
+  background: rgb(42 33 64 / 0.08);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.ls-table tbody th {
+  font-weight: 800;
+}
+
+.ls-flow {
+  display: grid;
+  gap: 24px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ls-flow__step {
+  position: relative;
+  padding: 8px 14px;
+  border: 2px solid #2a2140;
+  border-radius: 4px;
+  background: #fffaf0;
+  font-size: 16px;
+  line-height: 2.1;
+  text-align: center;
+}
+
+.ls-flow__step + .ls-flow__step::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 5px);
+  left: 50%;
+  border-top: 12px solid #2a2140;
+  border-right: 8px solid transparent;
+  border-left: 8px solid transparent;
+  translate: -50% 0;
+}
+
+.ls-notes.is-sentences .ls-notes__item::before {
+  display: none;
+}
+
+.ls-notes.is-sentences .ls-notes__item {
+  padding-left: 0;
+}
+
+/* part headings on a full test */
+.ls-paper__part {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 34px 0 4px;
+  padding: 10px 14px;
+  border-radius: 4px;
+  background: #2a2140;
+  color: #f7efdd;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.ls-paper__part span {
+  color: var(--ls-teal, #6fe3cf);
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+
+.ls-loading {
+  padding: 160px 20px 0;
+  color: #cfc6e8;
+  font-size: 18px;
+  text-align: center;
+}
+
 /* letter grid (map + matching) */
 
 .ls-lettergrid {
@@ -2937,6 +3058,68 @@
   stroke: #2a2140;
   stroke-width: 2;
   stroke-linejoin: round;
+}
+
+/* Generic maps and plans (PlanMap). */
+.ls-map__floor {
+  fill: #f1e8d6;
+}
+
+.ls-map__outer-wall {
+  fill: none;
+  stroke: #2a2140;
+  stroke-width: 5;
+}
+
+.ls-map__wall {
+  fill: none;
+  stroke: #2a2140;
+  stroke-width: 4;
+  stroke-linecap: square;
+}
+
+.ls-map__road {
+  fill: none;
+  stroke: #b8b2a6;
+  stroke-width: 22;
+  stroke-linecap: butt;
+}
+
+.ls-map__room {
+  fill: #fbf6ea;
+  stroke: #2a2140;
+  stroke-width: 3;
+}
+
+.ls-map__lawn {
+  fill: #c9dca0;
+  stroke: #7fa86a;
+  stroke-width: 2;
+}
+
+.ls-map__wood {
+  fill: #8fb879;
+  stroke: #5d8a4c;
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+}
+
+.ls-map__field {
+  fill: #ead9a0;
+  stroke: #b49a62;
+  stroke-width: 2;
+}
+
+.ls-map__sand {
+  fill: #f3e2b4;
+  stroke: #d1b97a;
+  stroke-width: 2;
+}
+
+.ls-map__stage {
+  fill: #ffcfa8;
+  stroke: #2a2140;
+  stroke-width: 2;
 }
 
 .ls-map__here rect {

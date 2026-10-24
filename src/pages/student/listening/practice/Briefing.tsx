@@ -56,11 +56,12 @@ export function Briefing(props: BriefingProps) {
   const limit = set.groups.find((g) => g.limit)?.limit
   const voicesReady = voiceStatus === 'ready'
   const accents = [...new Set(voices.map((v) => accentName(accentOf(v))))]
-  const transcript = audio === 'transcript' || !voicesReady
+  const recorded = Boolean(set.audio)
+  const transcript = audio === 'transcript' || (!recorded && !voicesReady)
   const needle = ((station.freq - DIAL_MIN) / (DIAL_MAX - DIAL_MIN)) * 100
   const total = questionsOf(set).length
   const draftAnswered = draft ? Object.values(draft.answers).filter((v) => v.trim()).length : 0
-  const settings = `${mode === 'exam' ? 'Exam mode' : 'Practice mode'} · ${rate}× · ${transcript ? 'transcript' : 'voices'}`
+  const settings = `${mode === 'exam' ? 'Exam mode' : 'Practice mode'} · ${rate}× · ${transcript ? 'transcript' : recorded ? 'recording' : 'voices'}`
 
   const toSetup = () => {
     sfx.click()
@@ -169,7 +170,9 @@ export function Briefing(props: BriefingProps) {
                     <strong>{sp.name}</strong>
                     <small>{sp.role}</small>
                   </span>
-                  <span className="ls-brief__voice">{transcript ? 'Transcript' : v ? `${accentName(accentOf(v))} voice` : '—'}</span>
+                  <span className="ls-brief__voice">
+                    {transcript ? 'Transcript' : recorded ? `${accentName(sp.accents[0] ?? 'other')} voice` : v ? `${accentName(accentOf(v))} voice` : '—'}
+                  </span>
                 </li>
               )
             })}
@@ -254,13 +257,13 @@ export function Briefing(props: BriefingProps) {
                 type="button"
                 className={!transcript ? 'is-on' : ''}
                 aria-pressed={!transcript}
-                disabled={!voicesReady}
+                disabled={!recorded && !voicesReady}
                 onClick={() => {
                   sfx.click()
                   props.onAudio('voices')
                 }}
               >
-                Voices
+                {recorded ? 'Recording' : 'Voices'}
               </button>
               <button
                 type="button"
@@ -275,8 +278,10 @@ export function Briefing(props: BriefingProps) {
               </button>
             </div>
           </div>
-          <p className={`ls-brief__voices ${voicesReady ? '' : 'is-warn'}`} aria-live="polite">
-            {voiceStatus === 'loading'
+          <p className={`ls-brief__voices ${recorded || voicesReady ? '' : 'is-warn'}`} aria-live="polite">
+            {recorded
+              ? 'A studio recording with real voices and accents, as in the exam. Prefer to read? Switch to the transcript at any time before you start.'
+              : voiceStatus === 'loading'
               ? 'Looking for speech voices on this device…'
               : voicesReady
                 ? `${voices.length} English ${voices.length === 1 ? 'voice' : 'voices'} found (${accents.slice(0, 4).join(', ')}). Each speaker gets their own voice, so you hear different accents, as in the real test.`

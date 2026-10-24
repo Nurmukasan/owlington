@@ -14,6 +14,8 @@ export interface Speaker {
   gender: 'f' | 'm'
   /** Preferred voice accents, best first (BCP 47 prefixes). */
   accents: string[]
+  /** The studio (ElevenLabs) voice the recording uses. */
+  voice?: string
 }
 
 /** One spoken line. `say` overrides what the voice reads (e.g. digits read as “double five”). */
@@ -74,7 +76,13 @@ export interface LetterQuestion extends BaseQuestion {
   answer: string
 }
 
-export type Question = GapQuestion | ChoiceQuestion | LetterQuestion
+/** One of the two answers to a "Choose TWO letters" question (stem and options live on the group). */
+export interface PickQuestion extends BaseQuestion {
+  kind: 'pick'
+  answer: string
+}
+
+export type Question = GapQuestion | ChoiceQuestion | LetterQuestion | PickQuestion
 
 export interface Row {
   kind?: 'heading' | 'sub' | 'item' | 'example'
@@ -85,15 +93,62 @@ export interface Row {
 
 export interface TaskGroup {
   id: string
-  type: 'form' | 'notes' | 'choice' | 'map' | 'matching'
+  type: 'form' | 'notes' | 'table' | 'flow' | 'sentences' | 'choice' | 'choose2' | 'map' | 'matching'
   instruction: string
   limit?: WordLimit
   title?: string
   rows?: Row[]
-  /** Matching box, or the letters on the map. */
+  /** Table completion: column headings, then rows of cells (gaps written {n}). */
+  columns?: string[]
+  cells?: string[][]
+  /** "Choose TWO letters": the question both answers share. */
+  stem?: string
+  /** Matching box, the choose-two options, or the letters on the map. */
   options?: Option[]
   optionsTitle?: string
+  /** A drawn map or plan (groups without one use the Larkhill park map). */
+  map?: MapSpec
+  /** Part of a full test (1–4) the group belongs to. */
+  part?: number
   questions: Question[]
+}
+
+/** A map or floor plan, drawn on a 640 × 460 grid unless given another size. */
+export interface MapSpec {
+  title: string
+  /** What a screen reader hears: the layout, never the answers. */
+  description: string
+  width?: number
+  height?: number
+  /** Outdoor maps sit on grass; plans of buildings on a floor. */
+  ground?: 'grass' | 'floor'
+  shapes: MapShape[]
+  /** Where each letter sits. */
+  points: Record<string, [number, number]>
+  /** The speaker's position ("You are here"). */
+  here?: [number, number]
+  /** Label under the star, e.g. "Entrance". */
+  hereLabel?: string
+}
+
+export type MapShape =
+  | {
+      kind: 'building' | 'room' | 'water' | 'green' | 'trees' | 'parking' | 'field' | 'sand' | 'stage'
+      x: number
+      y: number
+      w: number
+      h: number
+      label?: string
+      round?: boolean
+    }
+  | { kind: 'path' | 'road' | 'river' | 'wall'; d: string }
+  | { kind: 'label'; x: number; y: number; text: string; small?: boolean }
+
+/** A studio recording of the script: one audio file, and where each spoken line sits in it (seconds). */
+export interface Recording {
+  src: string
+  /** Script item index → [start, end]. */
+  clips: Record<number, [number, number]>
 }
 
 export interface Trap {
@@ -110,6 +165,10 @@ export interface PracticeSet {
   script: ScriptItem[]
   groups: TaskGroup[]
   traps: Trap[]
+  /** Present once the script has been recorded; otherwise browser voices read it. */
+  audio?: Recording
+  /** Full tests: the four parts, with the script item where each begins. */
+  parts?: { n: number; title: string; start: number }[]
 }
 
 const ONE_WORD_AND_OR_NUMBER: WordLimit = { words: 1, number: true, text: 'ONE WORD AND/OR A NUMBER' }

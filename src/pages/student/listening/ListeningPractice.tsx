@@ -10,7 +10,7 @@ import { bandForAccuracy } from './answers'
 import { Aurora } from './components/Aurora'
 import { DjOwl } from './components/DjOwl'
 import { lectures, practiceSets } from './content'
-import { isPause, PRACTICE_SETS, questionsOf, type PracticeSet } from './practice-data'
+import { isPause, questionsOf, type PracticeSet } from './practice-data'
 import { BroadcastDesk } from './practice/BroadcastDesk'
 import { Briefing } from './practice/Briefing'
 import { clearDraft, readDraft, saveDraft, type Draft } from './practice/draft'
@@ -19,6 +19,7 @@ import { Report, type Result } from './practice/Report'
 import { answeredCount, attemptItems, focusQuestion, liveRanges, markAll, type Answers, type AudioSource, type Mode } from './practice/script'
 import { autoCast, Broadcast, type Cast, type Driver, type VoiceStatus, useVoices } from './speech'
 import { formatFreq, LECTURE_PRACTICE, stationFor, type Station } from './stations'
+import { loadSet } from './tests'
 import './listening.css'
 import './practice.css'
 
@@ -62,9 +63,28 @@ const scrollTop = () => window.scrollTo({ top: 0, behavior: 'auto' })
 export default function ListeningPractice() {
   const id = useParams().practiceId
   const info = findPractice('listening', id)
-  const set = id ? PRACTICE_SETS[id] : undefined
-  if (!info || !set) return <Navigate to="/student/listening" replace />
-  return <OnAir key={info.id} info={info} set={set} />
+  const [loaded, setLoaded] = useState<{ id: string; set: PracticeSet | null } | null>(null)
+  useEffect(() => {
+    if (!info) return
+    let live = true
+    loadSet(info.id).then(
+      (set) => live && setLoaded({ id: info.id, set: set ?? null }),
+      () => live && setLoaded({ id: info.id, set: null }),
+    )
+    return () => {
+      live = false
+    }
+  }, [info])
+  if (!info || (loaded?.id === info.id && !loaded.set)) return <Navigate to="/student/listening" replace />
+  if (loaded?.id !== info.id || !loaded.set)
+    return (
+      <div className="ls-world ls-practice is-intro">
+        <p className="ls-loading" role="status">
+          Tuning in…
+        </p>
+      </div>
+    )
+  return <OnAir key={info.id} info={info} set={loaded.set} />
 }
 
 type Stage = 'intro' | 'test' | 'results'
@@ -73,7 +93,13 @@ function OnAir({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
   const progress = useProgress()
   const stats = progress.section('listening')
   const index = practiceSets.findIndex((p) => p.id === info.id)
-  const station = stationFor(info.id, index)
+  const base = stationFor(info.id, index)
+  const station: Station =
+    base.part !== 'BROADCAST'
+      ? base
+      : info.format === 'full'
+        ? { ...base, part: 'FULL TEST', callsign: 'Four parts' }
+        : { ...base, part: set.groups[0]?.part ? `PART ${set.groups[0].part}` : base.part, callsign: info.kinds[0] ?? base.callsign }
   const { voices, status } = useVoices()
 
   const [prefs, setPrefs] = useState(readPrefs)
@@ -89,7 +115,8 @@ function OnAir({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
   const onCast = (speaker: string, voiceURI: string) =>
     setCustom((c) => ({ ...c, [speaker]: { voiceURI, pitch: cast[speaker]?.pitch ?? 1 } }))
 
-  const driver: Driver = prefs.audio === 'voices' && status === 'ready' ? 'speech' : 'text'
+  const recorded = Boolean(set.audio)
+  const driver: Driver = prefs.audio !== 'voices' ? 'text' : recorded ? 'audio' : status === 'ready' ? 'speech' : 'text'
 
   const userId = useUser().id
   const [stage, setStage] = useState<Stage>('intro')
@@ -427,7 +454,7 @@ const DOCK_STATUS = { idle: 'Standing by', reading: 'Reading time', playing: 'On
 function LiveTest(props: LiveProps) {
   const { info, set, station, mode, driver, voices, voiceStatus, cast, rate, answers, onPosition } = props
   const [bc] = useState(() => {
-    const b = new Broadcast(set.script, { driver, cast, rate, voices })
+    const b = new Broadcast(set.script, { driver, cast, rate, voices, recording: set.audio })
     if (props.resumeAt > 0) b.seek(props.resumeAt)
     return b
   })
@@ -455,7 +482,7 @@ function LiveTest(props: LiveProps) {
 
   const chooseAudio = (audio: AudioSource) => {
     props.onAudio(audio)
-    bc.setDriver(audio === 'voices' && voiceStatus === 'ready' ? 'speech' : 'text')
+    bc.setDriver(audio !== 'voices' ? 'text' : set.audio ? 'audio' : voiceStatus === 'ready' ? 'speech' : 'text')
   }
 
   const dockStatus =

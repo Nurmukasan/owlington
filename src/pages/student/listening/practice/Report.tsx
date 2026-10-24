@@ -13,9 +13,10 @@ import { bandForAccuracy, bandText, type Marked, type Verdict } from '../answers
 import { DjOwl } from '../components/DjOwl'
 import { useCountUp, useReducedMotion } from '../hooks'
 import { isPause, questionsOf, type PracticeSet, type Question, type SpokenLine } from '../practice-data'
-import { speakOnce, type Cast } from '../speech'
+import { playClipOnce, speakOnce, type Cast } from '../speech'
 import { formatFreq, stationFor, type Station } from '../stations'
 import { ParkMap } from './ParkMap'
+import { PlanMap } from './PlanMap'
 import { evidenceIndex, optionText, piecesOf, questionLabel, speakerColor, type Answers, type Mode } from './script'
 
 export interface Result {
@@ -138,7 +139,10 @@ export function Report({ info, set, station, result, answers, voices, cast, rate
     }
     sfx.click()
     setSpeaking(n)
-    stopRef.current = speakOnce(line, cast[line.s], voices, rate, () => setSpeaking((s) => (s === n ? null : s)))
+    const done = () => setSpeaking((s) => (s === n ? null : s))
+    const at = set.script.indexOf(line)
+    const clip = set.audio?.clips[at]
+    stopRef.current = set.audio && clip ? playClipOnce(set.audio, clip, rate, done) : speakOnce(line, cast[line.s], voices, rate, done)
   }
 
   const reviewed = questions.filter((q) => filter === 'all' || !marks.find((m) => m.n === q.n)?.correct)
@@ -285,9 +289,11 @@ export function Report({ info, set, station, result, answers, voices, cast, rate
 
         {mapGroup && reveal && (
           <figure className="ls-review__map">
-            <ParkMap reveal={reveal} misses={misses} />
+            {mapGroup.map ? <PlanMap spec={mapGroup.map} reveal={reveal} misses={misses} /> : <ParkMap reveal={reveal} misses={misses} />}
             <figcaption>
-              Answer key for the map: every place where the ranger says it is. C and F are never used.
+              {mapGroup.map
+                ? 'Answer key: each place where the speaker says it is. Letters with no label are never used.'
+                : 'Answer key for the map: every place where the ranger says it is. C and F are never used.'}
               {misses.length > 0 && ' Red tags show where your wrong answers went, with a dotted hop to the right place.'}
             </figcaption>
           </figure>
@@ -304,7 +310,7 @@ export function Report({ info, set, station, result, answers, voices, cast, rate
                 set={set}
                 index={i}
                 given={answers[q.n] ?? ''}
-                canHear={voices.length > 0}
+                canHear={Boolean(set.audio) || voices.length > 0}
                 speaking={speaking === q.n}
                 onHear={hear}
               />

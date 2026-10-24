@@ -61,6 +61,7 @@ export function BroadcastDesk(props: DeskProps) {
   const waiting = Boolean(pauseItem) && (snap.phase === 'reading' || snap.phase === 'paused')
   const waitRange = pauseItem ? rangeOf(pauseItem.label) : null
   const transcript = snap.driver === 'text'
+  const recorded = Boolean(set.audio)
   const showCaptions = transcript || (!exam && captions)
   const voicesReady = voiceStatus === 'ready'
   const voice = line && !transcript ? voices.find((v) => v.voiceURI === cast[line.s]?.voiceURI) : undefined
@@ -189,7 +190,15 @@ export function BroadcastDesk(props: DeskProps) {
               <span className="ls-crt__dot" style={{ background: speakerColor(set, speaker.id) }} aria-hidden="true" />
               <span className="ls-crt__name">{speaker.name}</span>
               <span className="ls-crt__role">{speaker.role}</span>
-              <span className="ls-crt__voice">{transcript ? 'TRANSCRIPT' : voice ? accentName(accentOf(voice)).toUpperCase() : 'VOICE'}</span>
+              <span className="ls-crt__voice">
+                {transcript
+                  ? 'TRANSCRIPT'
+                  : snap.driver === 'audio'
+                    ? accentName(speaker.accents[0] ?? 'other').toUpperCase()
+                    : voice
+                      ? accentName(accentOf(voice)).toUpperCase()
+                      : 'VOICE'}
+              </span>
             </>
           ) : waiting && waitRange ? (
             <span className="ls-crt__role">Silence on air · reading time</span>
@@ -393,13 +402,13 @@ export function BroadcastDesk(props: DeskProps) {
               type="button"
               className={audio === 'voices' && !transcript ? 'is-on' : ''}
               aria-pressed={audio === 'voices' && !transcript}
-              disabled={locked || !voicesReady}
+              disabled={locked || (!recorded && !voicesReady)}
               onClick={() => {
                 sfx.click()
                 props.onAudio('voices')
               }}
             >
-              Voices
+              {recorded ? 'Recording' : 'Voices'}
             </button>
             <button
               type="button"
@@ -424,17 +433,20 @@ export function BroadcastDesk(props: DeskProps) {
         )}
       </div>
 
-      {(voiceStatus === 'none' || voiceStatus === 'unsupported') && (
+      {!recorded && (voiceStatus === 'none' || voiceStatus === 'unsupported') && (
         <p className="ls-desk__note is-warn">
           <strong>No speech voices on this device</strong>, so lines appear word by word at speaking pace{exam ? ', once only' : ''}.
         </p>
       )}
-      {voiceStatus === 'loading' && <p className="ls-desk__note">Tuning in the voices…</p>}
-      {snap.fellBack && voicesReady && (
-        <p className="ls-desk__note is-warn">The voice stopped responding, so the broadcast switched to transcript mode to keep the test going.</p>
+      {!recorded && voiceStatus === 'loading' && <p className="ls-desk__note">Tuning in the voices…</p>}
+      {snap.fellBack && (recorded || voicesReady) && (
+        <p className="ls-desk__note is-warn">
+          {recorded ? 'The recording could not be played' : 'The voice stopped responding'}, so the broadcast switched to transcript
+          mode to keep the test going.
+        </p>
       )}
 
-      {voicesReady && (
+      {!recorded && voicesReady && (
         <details className="ls-cast">
           <summary>
             <span>Cast &amp; voices</span>

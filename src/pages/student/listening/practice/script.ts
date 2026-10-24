@@ -37,7 +37,11 @@ export const rangeText = ([a, b]: Range) => (a === b ? `Question ${a}` : `Questi
 export const GROUP_LABEL: Record<TaskGroup['type'], string> = {
   form: 'Form completion',
   notes: 'Note completion',
+  table: 'Table completion',
+  flow: 'Flow-chart completion',
+  sentences: 'Sentence completion',
   choice: 'Multiple choice',
+  choose2: 'Multiple choice (choose two)',
   map: 'Map labelling',
   matching: 'Matching',
 }
@@ -64,7 +68,18 @@ export function attemptItems(set: PracticeSet, marks: Marked[]) {
 
 export function markAll(set: PracticeSet, answers: Answers): Marked[] {
   const heard = wordsHeard(spokenLines(set).map((l) => l.t))
-  return set.groups.flatMap((g) => g.questions.map((q) => mark(q, answers[q.n], g.limit, heard)))
+  return set.groups.flatMap((g) =>
+    g.questions.map((q) => {
+      if (q.kind !== 'pick') return mark(q, answers[q.n], g.limit, heard)
+      // "Choose TWO": either answer may go in either box, but one letter cannot score twice.
+      const given = (answers[q.n] ?? '').trim().toUpperCase()
+      if (!given) return { n: q.n, given, correct: false, verdict: 'blank' as const }
+      const keys = g.questions.map((p) => p.answer)
+      const dup = g.questions.some((p) => p.n < q.n && (answers[p.n] ?? '').trim().toUpperCase() === given)
+      const correct = keys.includes(given) && !dup
+      return { n: q.n, given, correct, verdict: correct ? ('correct' as const) : ('wrong' as const) }
+    }),
+  )
 }
 
 export const answeredCount = (set: PracticeSet, answers: Answers) => questionsOf(set).filter((q) => (answers[q.n] ?? '').trim()).length
@@ -77,6 +92,15 @@ export function questionLabel(set: PracticeSet, q: Question) {
   if (q.kind === 'choice') return q.stem
   if (q.kind === 'letter') return q.label
   const group = set.groups.find((g) => g.questions.includes(q))
+  if (q.kind === 'pick') return `${group?.stem ?? 'Choose TWO letters'} (one of two answers)`
+  if (group?.cells) {
+    for (const row of group.cells) {
+      const c = row.findIndex((cell) => cell.includes(`{${q.n}}`))
+      if (c < 0) continue
+      const where = [row[0], group.columns?.[c]].filter((x) => x && !x.includes('{')).join(' · ')
+      return where || `Gap ${q.n}`
+    }
+  }
   const row = group?.rows?.find((r) => r.text.includes(`{${q.n}}`))
   if (!row) return `Gap ${q.n}`
   if (row.label) return row.label
@@ -91,7 +115,7 @@ export function questionLabel(set: PracticeSet, q: Question) {
 /** The text of a lettered option (choice options or the group's box / map letters). */
 export function optionText(set: PracticeSet, q: Question, key: string) {
   if (q.kind === 'choice') return q.options.find((o) => o.key === key)?.text
-  if (q.kind === 'letter') {
+  if (q.kind === 'letter' || q.kind === 'pick') {
     const group = set.groups.find((g) => g.questions.includes(q))
     if (group?.type === 'map') return undefined
     return group?.options?.find((o) => o.key === key)?.text

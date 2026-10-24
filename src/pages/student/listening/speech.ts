@@ -10,7 +10,7 @@
  *   "transcript" driver that reveals the words at speaking pace instead.
  */
 import { useEffect, useState } from 'react'
-import { isPause, type ScriptItem, type Speaker, type SpokenLine } from './practice-data'
+import { isPause, type Recording, type ScriptItem, type Speaker, type SpokenLine } from './practice-data'
 
 // ------------------------------------------------------------- voices ---
 
@@ -130,7 +130,8 @@ export function autoCast(speakers: Speaker[], voices: SpeechSynthesisVoice[]): C
 
 // ------------------------------------------------------------- engine ---
 
-export type Driver = 'speech' | 'text'
+/** speech: browser voices · audio: a studio recording · text: the transcript at speaking pace. */
+export type Driver = 'speech' | 'text' | 'audio'
 export type Phase = 'idle' | 'reading' | 'playing' | 'paused' | 'ended'
 
 export interface BroadcastSnapshot {
@@ -172,6 +173,7 @@ interface BroadcastOptions {
   cast: Cast
   rate: number
   voices: SpeechSynthesisVoice[]
+  recording?: Recording
 }
 
 export class Broadcast {
@@ -184,7 +186,10 @@ export class Broadcast {
   private pulseAmp = 0
   private boundaryAt = 0
   private waitEndsAt = 0
+  private media: HTMLAudioElement | null = null
+  private unlocked = false
   readonly items: ScriptItem[]
+  readonly recording?: Recording
   cast: Cast
   rate: number
   voices: SpeechSynthesisVoice[]
@@ -194,6 +199,7 @@ export class Broadcast {
     this.cast = options.cast
     this.rate = options.rate
     this.voices = options.voices
+    this.recording = options.recording
     this.snap = { phase: 'idle', index: 0, word: 0, waitLeft: 0, waitTotal: 0, driver: options.driver, fellBack: false, reached: 0 }
   }
 
@@ -217,6 +223,7 @@ export class Broadcast {
   play() {
     const { phase, index, word } = this.snap
     if (phase === 'playing' || phase === 'reading') return
+    this.unlockMedia()
     if (phase === 'idle' || phase === 'ended') this.run(0, 0)
     else this.run(index, word)
   }
@@ -271,6 +278,11 @@ export class Broadcast {
   destroy() {
     this.halt()
     this.listeners.clear()
+    if (this.media) {
+      this.media.removeAttribute('src')
+      this.media.load()
+      this.media = null
+    }
   }
 
   /** 0..1 loudness for the visualiser at time `now` (performance.now()). */
@@ -278,7 +290,7 @@ export class Broadcast {
     if (this.snap.phase !== 'playing' || !this.speaking) return 0
     let e = this.pulseAmp * Math.exp(-(now - this.pulseAt) / 190)
     // Many voices never report word boundaries: fake a speech-like rhythm for them.
-    if (this.snap.driver === 'speech' && now - this.boundaryAt > 900) {
+    if (this.snap.driver !== 'text' && now - this.boundaryAt > 900) {
       e = Math.max(e, 0.32 + 0.4 * Math.abs(Math.sin(now / 97) * Math.sin(now / 251 + 1)))
     }
     return Math.min(1, e + 0.12)
@@ -292,6 +304,32 @@ export class Broadcast {
     this.timers = []
     this.speaking = false
     if (this.snap.driver === 'speech' && speechSupported()) window.speechSynthesis.cancel()
+    this.media?.pause()
+  }
+
+  private getMedia() {
+    if (!this.media && this.recording) {
+      const a = new Audio()
+      a.preload = 'auto'
+      a.src = this.recording.src
+      this.media = a
+    }
+    return this.media
+  }
+
+  /**
+   * Some browsers only let a page play sound that starts inside a tap. The first tap on
+   * Play starts the recording silently, so later lines (started by timers) are allowed to play.
+   */
+  private unlockMedia() {
+    if (this.unlocked || this.snap.driver !== 'audio') return
+    const media = this.getMedia()
+    if (!media) return
+    this.unlocked = true
+    media.muted = true
+    media.play().catch(() => {
+      // Blocked or not loaded yet: the line itself will try again.
+    })
   }
 
   private later(fn: () => void, ms: number) {
@@ -317,7 +355,8 @@ export class Broadcast {
     if (isPause(item)) {
       const left = this.snap.index === index && this.snap.phase === 'paused' && this.snap.waitLeft > 0 ? this.snap.waitLeft : item.wait
       this.runWait(index, left, item.wait)
-    } else if (this.snap.driver === 'speech') this.speakLine(index, item, fromWord)
+    } else if (this.snap.driver === 'audio') this.clipLine(index, item, fromWord)
+    else if (this.snap.driver === 'speech') this.speakLine(index, item, fromWord)
     else this.textLine(index, item, fromWord)
   }
 
@@ -428,6 +467,70 @@ export class Broadcast {
     }, 4000)
   }
 
+  /** Play one line's stretch of the studio recording. */
+  private clipLine(index: number, line: SpokenLine, fromWord: number) {
+    this.halt()
+    const gen = this.gen
+    const clip = this.recording?.clips[index]
+    const media = this.getMedia()
+    if (!clip || !media) {
+      this.fallBack(index)
+      return
+    }
+    const [from, to] = clip
+    const shown = wordsOf(line.t).length
+    const startAt = from + (shown ? (fromWord / shown) * (to - from) : 0)
+    this.set({ phase: 'playing', index, word: fromWord })
+    let lastTime = -1
+    let stalledSince = performance.now()
+
+    const tick = () => {
+      if (gen !== this.gen) return
+      const t = media.currentTime
+      if (t >= to - 0.04 || media.ended) {
+        media.pause()
+        this.next(index)
+        return
+      }
+      if (t !== lastTime) {
+        lastTime = t
+        stalledSince = performance.now()
+        this.speaking = true
+        this.pulse(0.5 + Math.random() * 0.5)
+        const word = Math.min(shown, Math.max(fromWord, Math.floor(((t - from) / (to - from)) * shown)))
+        if (word !== this.snap.word) this.set({ word })
+      } else if (performance.now() - stalledSince > 9000) {
+        // The file stopped loading: carry on with the transcript.
+        this.fallBack(index)
+        return
+      }
+      this.later(tick, 80)
+    }
+
+    const begin = () => {
+      if (gen !== this.gen) return
+      media.muted = false
+      media.playbackRate = this.rate
+      media.currentTime = startAt
+      media.play().then(
+        () => {
+          if (gen === this.gen) this.later(tick, 80)
+        },
+        () => {
+          if (gen === this.gen) this.fallBack(index)
+        },
+      )
+    }
+    if (media.readyState >= 1) begin()
+    else {
+      media.addEventListener('loadedmetadata', begin, { once: true })
+      media.addEventListener('error', () => gen === this.gen && this.fallBack(index), { once: true })
+      this.later(() => {
+        if (media.readyState < 1) this.fallBack(index)
+      }, 12000)
+    }
+  }
+
   private fallBack(index: number) {
     this.halt()
     this.set({ driver: 'text', fellBack: true })
@@ -451,4 +554,31 @@ export function speakOnce(line: SpokenLine, entry: CastEntry | undefined, voices
   u.onerror = () => onEnd?.()
   window.setTimeout(() => synth.speak(u), 40)
   return () => synth.cancel()
+}
+
+/** Play one recorded line on its own (the review's "hear it again"). Returns a stop function. */
+export function playClipOnce(recording: Recording, clip: [number, number], rate = 1, onEnd?: () => void) {
+  const a = new Audio(recording.src)
+  let timer = 0
+  const stop = () => {
+    window.clearInterval(timer)
+    a.pause()
+  }
+  a.addEventListener(
+    'loadedmetadata',
+    () => {
+      a.currentTime = clip[0]
+      a.playbackRate = rate
+      a.play().catch(() => onEnd?.())
+      timer = window.setInterval(() => {
+        if (a.currentTime >= clip[1] - 0.04 || a.ended) {
+          stop()
+          onEnd?.()
+        }
+      }, 60)
+    },
+    { once: true },
+  )
+  a.addEventListener('error', () => onEnd?.(), { once: true })
+  return stop
 }

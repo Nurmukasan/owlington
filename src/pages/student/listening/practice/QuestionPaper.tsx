@@ -3,6 +3,7 @@ import { sfx } from '../../../../learn/sfx'
 import { overLimit } from '../answers'
 import { paperRange, questionsOf, type GapQuestion, type PracticeSet, type Question, type TaskGroup, type WordLimit } from '../practice-data'
 import { ParkMap } from './ParkMap'
+import { PlanMap } from './PlanMap'
 import { focusQuestion, groupRange, inRange, rangeText, type Answers, type Mode, type Range } from './script'
 
 interface PaperProps {
@@ -65,7 +66,15 @@ export function QuestionPaper({ set, part, title, answers, onAnswer, mode, live,
         </header>
 
         {set.groups.map((g, gi) => (
-          <Group key={g.id} group={g} index={gi} answers={answers} onAnswer={onAnswer} mode={mode} live={live} />
+          <Fragment key={g.id}>
+            {g.part && g.part !== set.groups[gi - 1]?.part && (
+              <h3 className="ls-paper__part" id={`ls-part-${g.part}`}>
+                <span>PART {g.part}</span>
+                {set.parts?.find((p) => p.n === g.part)?.title}
+              </h3>
+            )}
+            <Group group={g} index={gi} answers={answers} onAnswer={onAnswer} mode={mode} live={live} />
+          </Fragment>
         ))}
 
         <footer className="ls-paper__foot">
@@ -116,8 +125,11 @@ function Group({ group, index, answers, onAnswer, mode, live }: GroupProps) {
         )}
       </header>
 
-      {(group.type === 'form' || group.type === 'notes') && <GapSheet group={group} answers={answers} onAnswer={onAnswer} mode={mode} live={live} />}
+      {(group.type === 'form' || group.type === 'notes' || group.type === 'sentences' || group.type === 'table' || group.type === 'flow') && (
+        <GapSheet group={group} answers={answers} onAnswer={onAnswer} mode={mode} live={live} />
+      )}
       {group.type === 'choice' && <ChoiceList group={group} answers={answers} onAnswer={onAnswer} live={live} />}
+      {group.type === 'choose2' && <PairPick group={group} answers={answers} onAnswer={onAnswer} live={live} />}
       {(group.type === 'map' || group.type === 'matching') && <LetterGrid group={group} answers={answers} onAnswer={onAnswer} live={live} />}
     </section>
   )
@@ -196,8 +208,49 @@ function GapSheet({ group, answers, onAnswer, mode, live }: Omit<GroupProps, 'in
     )
   }
 
+  if (group.type === 'table') {
+    return (
+      <div className="ls-table-wrap">
+        <table className="ls-table">
+          {group.title && <caption className="ls-notes__title">{group.title}</caption>}
+          <thead>
+            <tr>
+              {group.columns?.map((c, i) => (
+                <th key={i} scope="col">
+                  {c}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {group.cells?.map((row, r) => (
+              <tr key={r}>
+                {row.map((cell, c) => (c === 0 ? <th key={c} scope="row">{withGaps(cell, gap)}</th> : <td key={c}>{withGaps(cell, gap)}</td>))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )
+  }
+
+  if (group.type === 'flow') {
+    return (
+      <div className="ls-notes">
+        {group.title && <p className="ls-notes__title">{group.title}</p>}
+        <ol className="ls-flow">
+          {group.rows?.map((r, i) => (
+            <li key={i} className="ls-flow__step">
+              {withGaps(r.text, gap)}
+            </li>
+          ))}
+        </ol>
+      </div>
+    )
+  }
+
   return (
-    <div className="ls-notes">
+    <div className={`ls-notes ${group.type === 'sentences' ? 'is-sentences' : ''}`}>
       {group.title && <p className="ls-notes__title">{group.title}</p>}
       {group.rows?.map((r, i) =>
         r.kind === 'sub' ? (
@@ -261,6 +314,62 @@ function ChoiceList({ group, answers, onAnswer, live }: Omit<GroupProps, 'index'
   )
 }
 
+// ------------------------------------------------------------ choose two ---
+
+function PairPick({ group, answers, onAnswer, live }: Omit<GroupProps, 'index' | 'mode'>) {
+  const qs = group.questions
+  const first = qs[0]
+  const last = qs[qs.length - 1]
+  const chosen = qs.map((q) => (answers[q.n] ?? '').trim()).filter(Boolean)
+  const full = chosen.length >= qs.length
+  const toggle = (key: string) => {
+    const on = chosen.includes(key)
+    if (!on && full) return
+    sfx.click()
+    const next = (on ? chosen.filter((k) => k !== key) : [...chosen, key]).sort()
+    qs.forEach((q, i) => onAnswer(q.n, next[i] ?? ''))
+  }
+  const isLive = qs.some((q) => inRange(q.n, live))
+  return (
+    <div className={`ls-mcq ls-pair ${isLive ? 'is-live' : ''}`} data-q={first.n}>
+      <p className="ls-mcq__stem" id={`ls-q-${first.n}-stem`}>
+        <span className="ls-qno ls-qno--pair" aria-hidden="true">
+          {first.n}–{last.n}
+        </span>
+        <span>
+          <span className="visually-hidden">
+            Questions {first.n} and {last.n}.{' '}
+          </span>
+          {group.stem}
+        </span>
+      </p>
+      <div className="ls-mcq__opts" role="group" aria-labelledby={`ls-q-${first.n}-stem`} id={`ls-q-${first.n}`}>
+        {qs.slice(1).map((q) => (
+          <span key={q.n} id={`ls-q-${q.n}`} className="visually-hidden" tabIndex={-1}>
+            Question {q.n}
+          </span>
+        ))}
+        {(group.options ?? []).map((o) => {
+          const on = chosen.includes(o.key)
+          const blocked = !on && full
+          return (
+            <label key={o.key} className={`ls-opt ls-opt--check ${on ? 'is-on' : ''} ${blocked ? 'is-blocked' : ''}`}>
+              <input type="checkbox" value={o.key} checked={on} aria-disabled={blocked} onChange={() => toggle(o.key)} />
+              <span className="ls-opt__key" aria-hidden="true">
+                {o.key}
+              </span>
+              <span className="ls-opt__text">{o.text}</span>
+            </label>
+          )
+        })}
+      </div>
+      <p className="ls-pair__count">
+        {chosen.length} of {qs.length} chosen{full ? ' — untick one to change your mind' : ''}
+      </p>
+    </div>
+  )
+}
+
 // ------------------------------------------------- map labelling / matching ---
 
 function LetterGrid({ group, answers, onAnswer, live }: Omit<GroupProps, 'index' | 'mode'>) {
@@ -289,7 +398,11 @@ function LetterGrid({ group, answers, onAnswer, live }: Omit<GroupProps, 'index'
     <div className={`ls-lettergrid ${isMap ? 'is-map' : 'is-matching'}`}>
       {isMap ? (
         <div className="ls-lettergrid__map">
-          <ParkMap highlight={hover} placed={placed} onPick={pick} />
+          {group.map ? (
+            <PlanMap spec={group.map} highlight={hover} placed={placed} onPick={pick} />
+          ) : (
+            <ParkMap highlight={hover} placed={placed} onPick={pick} />
+          )}
           <p className="ls-lettergrid__hint">
             Tip: choose a place below, then tap its letter on the map, or fill in the grid. Now placing:{' '}
             <strong>
