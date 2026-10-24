@@ -8,11 +8,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
-      register: async (input) => {
-        const created = await api.register(input)
-        setUser(created)
-        return created
-      },
       login: async (email, password) => {
         const loggedIn = await api.login(email, password)
         setUser(loggedIn)

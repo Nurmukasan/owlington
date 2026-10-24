@@ -51,11 +51,8 @@ export default function Landing() {
             </Link>
           ) : (
             <>
-              <Link to="/login" className="landing-nav__login">
+              <Link to="/login" className="btn btn--amber notched">
                 Log in
-              </Link>
-              <Link to="/register" className="btn btn--amber notched">
-                Get started
               </Link>
             </>
           )}
@@ -80,12 +77,10 @@ export default function Landing() {
                 video lectures from real teachers and a pixel forest that makes studying feel like an adventure.
               </p>
               <div className="hero__ctas">
-                <Link to="/register?role=student" className="btn btn--amber notched">
-                  I’m a student <span aria-hidden="true">→</span>
+                <Link to="/login" className="btn btn--amber notched">
+                  Log in <span aria-hidden="true">→</span>
                 </Link>
-                <Link to="/register?role=teacher" className="btn btn--ghost notched">
-                  I’m a teacher
-                </Link>
+                <span className="hero__access">Accounts are created by your school — ask your administrator.</span>
               </div>
               <ul className="hero__skills" aria-label="Sections">
                 {SECTIONS.map((s) => (
@@ -232,8 +227,8 @@ export default function Landing() {
                   Your dashboard is a living pixel night: twinkling stars, falling stars, a huge moon and an owl
                   who always has a tip ready.
                 </p>
-                <Link to="/register?role=student" className="btn btn--amber notched">
-                  Join as a student
+                <Link to="/login" className="btn btn--amber notched">
+                  Student log in
                 </Link>
               </div>
             </article>
@@ -254,8 +249,8 @@ export default function Landing() {
                   Share video lectures, guide students through every skill and help them write better — one essay
                   at a time.
                 </p>
-                <Link to="/register?role=teacher" className="btn btn--ink notched">
-                  Join as a teacher
+                <Link to="/login" className="btn btn--ink notched">
+                  Teacher log in
                 </Link>
               </div>
             </article>
@@ -273,8 +268,8 @@ export default function Landing() {
             <br />
             <em>Time to study.</em>
           </h2>
-          <Link to="/register" className="btn btn--amber notched">
-            Create your account
+          <Link to="/login" className="btn btn--amber notched">
+            Log in
           </Link>
         </section>
       </main>

@@ -1,14 +1,14 @@
-import { lazy, useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { BrowserRouter, HashRouter, Navigate, Route, Routes, useLocation, useNavigationType } from 'react-router-dom'
 import { AuthProvider } from './auth/AuthProvider'
 import { RequireRole } from './auth/RequireRole'
 import LoginPage from './pages/auth/LoginPage'
-import RegisterPage from './pages/auth/RegisterPage'
 import Landing from './pages/landing/Landing'
 import NotFound from './pages/NotFound'
 import StudentHome from './pages/student/StudentHome'
 import StudentLayout from './pages/student/StudentLayout'
-import TeacherDashboard from './pages/teacher/TeacherDashboard'
+
+const StaffLoading = () => <p className="staff-loading">Opening the staff room…</p>
 
 const Router = import.meta.env.BASE_URL === '/owlington/' ? HashRouter : BrowserRouter
 
@@ -23,6 +23,13 @@ function ScrollToTop() {
 }
 
 const ProfilePage = lazy(() => import('./pages/student/profile/ProfilePage'))
+
+// Teacher and admin workspaces.
+const StaffLayout = lazy(() => import('./pages/staff/StaffLayout'))
+const TeacherHome = lazy(() => import('./pages/staff/TeacherHome'))
+const AdminHome = lazy(() => import('./pages/staff/AdminHome'))
+const StudentDetail = lazy(() => import('./pages/staff/StudentDetail'))
+const StaffProfile = lazy(() => import('./pages/staff/StaffProfile'))
 
 // Each section is its own world, loaded on demand.
 const ReadingHub = lazy(() => import('./pages/student/reading/ReadingHub'))
@@ -48,7 +55,7 @@ export default function App() {
         <ScrollToTop />
         <Routes>
           <Route path="/" element={<Landing />} />
-          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/register" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<LoginPage />} />
 
           <Route
@@ -87,10 +94,33 @@ export default function App() {
             path="/teacher"
             element={
               <RequireRole role="teacher">
-                <TeacherDashboard />
+                <Suspense fallback={<StaffLoading />}>
+                  <StaffLayout />
+                </Suspense>
               </RequireRole>
             }
-          />
+          >
+            <Route index element={<TeacherHome />} />
+            <Route path="student/:studentId" element={<StudentDetail />} />
+            <Route path="profile" element={<StaffProfile />} />
+            <Route path="*" element={<Navigate to="/teacher" replace />} />
+          </Route>
+
+          <Route
+            path="/admin"
+            element={
+              <RequireRole role="admin">
+                <Suspense fallback={<StaffLoading />}>
+                  <StaffLayout />
+                </Suspense>
+              </RequireRole>
+            }
+          >
+            <Route index element={<AdminHome />} />
+            <Route path="student/:studentId" element={<StudentDetail />} />
+            <Route path="profile" element={<StaffProfile />} />
+            <Route path="*" element={<Navigate to="/admin" replace />} />
+          </Route>
 
           <Route path="*" element={<NotFound />} />
         </Routes>

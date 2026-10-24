@@ -34,7 +34,7 @@ export default function LoginPage() {
       title="Welcome back"
       subtitle={
         <>
-          New to Owlington? <Link to="/register">Create an account</Link>
+          Accounts are created by your school. No login yet? Ask your administrator or <Link to="/">read more</Link>.
         </>
       }
       aside={{

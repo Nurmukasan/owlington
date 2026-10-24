@@ -11,13 +11,14 @@ makes studying feel like an adventure.
 | Area | Status |
 | --- | --- |
 | **Landing page**: night-sky hero, interactive owl mascot (eyes follow your cursor, it blinks and hoots when clicked), skill cards, how-it-works, student/teacher “doors” with a live preview of the student world | ✅ |
-| **Sign up / log in**: choose **Student** or **Teacher** at registration; each role gets its own dashboard | ✅ (temporary, browser-only auth, see below) |
+| **Log in**: there is no self sign-up. The admin creates every student and teacher account; each role (student, teacher, admin) gets its own workspace | ✅ (temporary, browser-only auth, see below) |
 | **Student dashboard**: full-screen animated pixel night (see below) with a HUD on top: `READING` · `LISTENING` · `WRITING` tabs and the student's avatar on the right | ✅ |
 | **Reading, Listening and Writing sections**: each its own animated world. The section home shows an overview and two doors, **Lectures** and **Practice**, each on its own page (see below) | ✅ (lectures play as animated notes until videos are uploaded) |
 | **Practice catalogue**: built for 20–30 tests per section, split into **Full tests** and **By question type**, with type filters, search, status/level filters and sorting | ✅ (the test content is still being written) |
 | **Student profile** (opened from the avatar): progress, every result in one shared design, avatar and account settings | ✅ |
 | **Progress & motivation**: XP, 7 ranks, 8 achievements, a daily goal, streaks, a weekly leaderboard, band history, celebrations, 8-bit sounds | ✅ (stored in the browser for now) |
-| **Teacher dashboard** | 🟡 placeholder |
+| **Teacher workspace**: the teacher sees only the students the admin assigned to them: date added, name, contacts, and per section the share of tests done, the average band and the video lessons watched; a full page per student with results | ✅ |
+| **Admin workspace**: add, edit and remove students and teachers, assign students to teachers one by one or in bulk | ✅ |
 
 ![Student dashboard](docs/screenshots/student-dashboard.png)
 
@@ -223,13 +224,13 @@ src/
 │   └── random.ts            # seeded RNG and value noise
 └── pages/
     ├── landing/             # marketing page
-    ├── auth/                # register (student/teacher) + login
+    ├── auth/                # login
     ├── student/             # layout + HUD, owl dialog
     │   ├── profile/         # progress, results and settings tabs, band chart, study calendar
     │   ├── reading/         # The Moonlit Library (content.ts, practice-data.ts, hub, lecture, practice)
     │   ├── listening/       # Owl FM (content.ts, practice-data.ts, speech.ts, hub, lecture, practice)
     │   └── writing/         # The Inkwell Study (content.ts, prompts.ts, analysis.ts, hub, lecture, studio)
-    ├── teacher/             # teacher dashboard (placeholder)
+    ├── staff/               # teacher + admin workspaces: roster table, student detail, accounts dialog, profile
     └── NotFound.tsx
 ```
 
@@ -238,7 +239,6 @@ src/
 | Path | Who | Page |
 | --- | --- | --- |
 | `/` | everyone | Landing |
-| `/register?role=student\|teacher` | everyone | Sign up |
 | `/login` | everyone | Log in |
 | `/student` | students | Dashboard (pixel night) |
 | `/student/reading`, `/listening`, `/writing` | students | Section home: overview + Lectures / Practice |
@@ -247,7 +247,26 @@ src/
 | `/student/<section>/practice` | students | Practice catalogue (`?tab=full\|focused`, filters in the URL) |
 | `/student/<section>/practice/:practiceId` | students | Practice test |
 | `/student/profile` | students | Profile (`?tab=progress\|results\|top\|settings`) |
-| `/teacher` | teachers | Teacher dashboard (placeholder) |
+| `/teacher` | teachers | My students: the roster with per-section progress |
+| `/teacher/student/:studentId` | teachers | One of their students in full |
+| `/teacher/profile` | teachers | Name, email, phone, password |
+| `/admin` | admin | Students (`?teacher=<id>\|none` filter) and Teachers (`?tab=teachers`) |
+| `/admin/student/:studentId` | admin | Any student in full |
+| `/admin/profile` | admin | Name, email, phone, password |
+
+## Demo accounts
+
+On first load in a browser, [`src/auth/seed.ts`](src/auth/seed.ts) creates an admin, 4 teachers and 50 students with
+made-up progress (46 students are split between the teachers, 4 are left unassigned). Existing accounts are never
+overwritten.
+
+| Role | Email | Password |
+| --- | --- | --- |
+| Admin | `admin@owlington.app` | `owl-admin-2026` |
+| Teachers | `aigerim.sadykova@owlington.app`, `daniyar.akhmetov@owlington.app`, `sarah.collins@owlington.app`, `madina.nurlanova@owlington.app` | `owl-teacher-2026` |
+| Students | `firstname.lastname@student.owlington.app`, e.g. `aruzhan.bekova@student.owlington.app` | `owl-student-2026` |
+
+These passwords are public (they ship in the bundle). Remove the seed once real accounts live on a backend.
 
 ## ⚠️ About authentication (temporary)
 
@@ -282,7 +301,8 @@ Pages…). Configure the host to serve `index.html` for unknown paths so routes 
 - [x] 15 full tests per section plus focused tests by question type (Reading 42, Listening 36, Writing 39)
 - [ ] Record the remaining Listening tests with ElevenLabs (Full Tests 1–2 are recorded)
 - [ ] Record and upload the real video lectures
-- [ ] Design the teacher dashboard (upload lectures, organise courses, see students, review essays)
+- [x] Teacher and admin workspaces: accounts created by the admin, students assigned to teachers, per-section reports
+- [ ] Teachers upload lectures and review essays
 - [ ] Real backend: accounts, sessions, progress, video storage
 - [ ] Writing bands checked by the DeepSeek API instead of the student's self-assessment
 - [ ] Teacher feedback on writing

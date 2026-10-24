@@ -1,9 +1,8 @@
 import { createContext, useContext } from 'react'
-import type { ProfileChanges, RegisterInput, Role, User } from './mockAuthApi'
+import type { ProfileChanges, Role, User } from './mockAuthApi'
 
 export interface AuthContextValue {
   user: User | null
-  register: (input: RegisterInput) => Promise<User>
   login: (email: string, password: string) => Promise<User>
   logout: () => void
   updateProfile: (changes: ProfileChanges) => Promise<User>
@@ -25,4 +24,4 @@ export function useUser() {
   return user
 }
 
-export const homeFor = (role: Role) => (role === 'student' ? '/student' : '/teacher')
+export const homeFor = (role: Role) => (role === 'student' ? '/student' : role === 'teacher' ? '/teacher' : '/admin')

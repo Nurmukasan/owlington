@@ -39,7 +39,7 @@ export interface SectionStats {
 
 const accuracyOf = (a: Attempt) => (a.total > 0 ? a.score / a.total : 0)
 
-function sectionStats(state: ProgressState, section: SectionId): SectionStats {
+export function sectionStats(state: ProgressState, section: SectionId): SectionStats {
   const { lectures, practiceSets } = CATALOG[section]
   const progress = lectures.map((l) => state.lectures[lectureKey(section, l.id)])
   const completed = progress.filter((p) => p?.completedAt).length
