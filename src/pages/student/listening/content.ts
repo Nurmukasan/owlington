@@ -356,4 +356,15 @@ export const practiceSets: PracticeInfo[] = [
     format: 'full',
     added: '2026-10-24',
   },
+  {
+    id: 'full-03',
+    title: 'Full Test 3',
+    summary: 'A lost bag on a train · volunteers arrive on an island reserve (map) · students plan a talk on the bicycle · a lecture on the sense of smell.',
+    minutes: 40,
+    questionCount: 40,
+    kinds: ['Note completion', 'Multiple choice', 'Map labelling', 'Multiple choice (choose two)', 'Matching'],
+    level: 'Intermediate',
+    format: 'full',
+    added: '2026-10-24',
+  },
 ]
