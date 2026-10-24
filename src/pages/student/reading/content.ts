@@ -842,6 +842,26 @@ export const practiceSets: PracticeInfo[] = [
     format: 'full',
     added: '2026-10-24',
   },
+  {
+    id: 'full-11',
+    title: 'Full Test 11',
+    summary: 'The teenager who invented braille · beavers return to British rivers · the business of capturing our attention.',
+    minutes: 60,
+    questionCount: 40,
+    kinds: [
+      'Sentence completion',
+      'True / False / Not Given',
+      'Matching headings',
+      'Summary completion',
+      'Multiple choice (choose two)',
+      'Multiple choice',
+      'Matching features',
+      'Yes / No / Not Given',
+    ],
+    level: 'Intermediate',
+    format: 'full',
+    added: '2026-10-24',
+  },
 ]
 
 /** The practice set that best rehearses each lecture's skill. */
