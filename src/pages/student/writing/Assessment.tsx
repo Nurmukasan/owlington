@@ -58,10 +58,14 @@ interface AnalysisViewProps {
   durationSec: number
   onBack: () => void
   onNext: () => void
+  /** Eyebrow and button labels, for the two-task full test. */
+  step?: string
+  nextLabel?: string
+  backLabel?: string
 }
 
 /** Step 1 after handing in: the objective analysis of the essay. */
-export function AnalysisView({ prompt, text, analysis: a, checks, durationSec, onBack, onNext }: AnalysisViewProps) {
+export function AnalysisView({ prompt, text, analysis: a, checks, durationSec, onBack, onNext, step, nextLabel, backLabel }: AnalysisViewProps) {
   const short = prompt.minWords - a.words
   const usable = a.sentences.filter((s) => s.words >= 3)
   const shortS = usable.filter((s) => s.words <= 12).length
@@ -73,7 +77,7 @@ export function AnalysisView({ prompt, text, analysis: a, checks, durationSec, o
   return (
     <div className="wr-exam">
       <header className="wr-exam__head">
-        <p className="wr-eyebrow">Step 1 of 3 · under the lamp</p>
+        <p className="wr-eyebrow">{step ?? 'Step 1 of 3 · under the lamp'}</p>
         <h1 className="wr-exam__title wr-display">
           Your {noun}, <em>examined</em>
         </h1>
@@ -192,10 +196,10 @@ export function AnalysisView({ prompt, text, analysis: a, checks, durationSec, o
 
       <div className="wr-exam__actions">
         <button type="button" className="wr-btn wr-btn--ghost" onClick={onBack}>
-          ← Keep writing
+          ← {backLabel ?? 'Keep writing'}
         </button>
         <button type="button" className="wr-btn" onClick={onNext}>
-          Next: grade yourself <span className="wr-btn__arrow" aria-hidden="true">→</span>
+          {nextLabel ?? 'Next: grade yourself'} <span className="wr-btn__arrow" aria-hidden="true">→</span>
         </button>
       </div>
     </div>
@@ -211,12 +215,14 @@ interface SelfAssessProps {
   onScore: (criterion: Criterion, band: number) => void
   onBack: () => void
   onSeal: () => void
+  step?: string
+  sealLabel?: string
 }
 
 const BANDS = [5, 6, 7, 8] as const
 
 /** Step 2: a guided self-assessment against short band-descriptor cards. */
-export function SelfAssess({ prompt, checks, scores, onScore, onBack, onSeal }: SelfAssessProps) {
+export function SelfAssess({ prompt, checks, scores, onScore, onBack, onSeal, step, sealLabel }: SelfAssessProps) {
   const rubric = rubricFor(prompt.task)
   const chosen = rubric.map((c) => scores[c.id]).filter((v): v is number => typeof v === 'number')
   const complete = chosen.length === rubric.length
@@ -248,7 +254,7 @@ export function SelfAssess({ prompt, checks, scores, onScore, onBack, onSeal }: 
   return (
     <div className="wr-assess">
       <header className="wr-exam__head">
-        <p className="wr-eyebrow">Step 2 of 3 · be your own examiner</p>
+        <p className="wr-eyebrow">{step ?? 'Step 2 of 3 · be your own examiner'}</p>
         <h1 className="wr-exam__title wr-display">
           Grade yourself, <em>honestly</em>
         </h1>
@@ -330,7 +336,7 @@ export function SelfAssess({ prompt, checks, scores, onScore, onBack, onSeal }: 
           <p className="wr-estimate__disclaimer">Self-assessed estimate, not an official score.</p>
           <p className="wr-estimate__how">The mean of your four choices, rounded to the nearest half band (a quarter rounds up).</p>
           <button type="button" className="wr-btn wr-btn--wax wr-estimate__seal" disabled={!complete} onClick={onSeal}>
-            Seal my {noun}
+            {sealLabel ?? `Seal my ${noun}`}
           </button>
           {!complete && <p className="wr-estimate__todo">Choose a band for all four criteria to seal it.</p>}
           <button type="button" className="wr-estimate__back" onClick={onBack}>

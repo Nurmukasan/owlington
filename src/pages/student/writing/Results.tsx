@@ -262,7 +262,7 @@ export function Results({ info, prompt, attempt, checks, text, analysis, history
   )
 }
 
-function ChecklistReview({ checks }: { checks: CheckResult[] }) {
+export function ChecklistReview({ checks }: { checks: CheckResult[] }) {
   return (
     <ol className="wr-review">
       {checks.map((c, i) => (
@@ -286,7 +286,7 @@ function ChecklistReview({ checks }: { checks: CheckResult[] }) {
 }
 
 /** The model answer with numbered highlights that link to margin notes. */
-function ModelAnswer({ prompt }: { prompt: WritingPrompt }) {
+export function ModelAnswer({ prompt }: { prompt: WritingPrompt }) {
   const [active, setActive] = useState<number | null>(null)
   const { text, notes } = prompt.model
 

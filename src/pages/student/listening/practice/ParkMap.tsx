@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react'
+import './map.css'
 
 /*
  * Larkhill Country Park, drawn for Part 2 (north is up). Where each letter

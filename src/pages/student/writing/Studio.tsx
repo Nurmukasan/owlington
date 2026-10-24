@@ -17,7 +17,7 @@ import { pieceNoun } from './content'
 import { FigureView } from './Figures'
 import { useMediaQuery } from './hooks'
 import { CohesionPanel, InkTimer, SentenceBars, WordMeter } from './LivePanels'
-import { taskLabel, type WritingPrompt } from './prompts'
+import { figureNoun, taskLabel, type WritingPrompt } from './prompts'
 import { formatDate, relativeTime } from './stats'
 
 interface StudioProps {
@@ -40,6 +40,10 @@ interface StudioProps {
   floor: number
   onSubmit: () => void
   wordBump: number
+  /** Full tests: one clock for both tasks (seconds), a task switcher and their own hand-in rule. */
+  limitSec?: number
+  switcher?: ReactNode
+  handIn?: { ok: boolean; note: string }
 }
 
 /** Can the textarea grow with its content in CSS alone? (Then no layout work per keystroke.) */
@@ -60,7 +64,7 @@ export function Studio(props: StudioProps) {
   const paragraphTarget = prompt.task === 'task1-academic' ? '3–4' : '4–5'
   const linkerTarget = prompt.task === 'task2' ? 5 : 4
   const noun = pieceNoun(prompt.task)
-  const canHandIn = analysis.words >= floor
+  const canHandIn = props.handIn ? props.handIn.ok : analysis.words >= floor
   const notes = plan.filter((p) => p.trim()).length
 
   // Grow the paper with the essay so the lines never scroll inside a box. Browsers with
@@ -98,9 +102,10 @@ export function Studio(props: StudioProps) {
           <span className="wr-stamp wr-bar__stamp">{prompt.task === 'task2' ? 'TASK 2' : 'TASK 1'}</span>
           <span className="wr-bar__title">{info.title}</span>
         </div>
+        {props.switcher}
         <StudioClock
           banked={props.banked}
-          limit={prompt.minutes * 60}
+          limit={props.limitSec ?? prompt.minutes * 60}
           paused={paused}
           onTogglePause={props.onTogglePause}
           totalRef={props.totalRef}
@@ -138,12 +143,12 @@ export function Studio(props: StudioProps) {
             </>
           ) : (
             <span className="wr-bar__floorwrap">
-              Hand in <span className="wr-bar__floor">at {floor} words</span>
+              Hand in <span className="wr-bar__floor">{props.handIn ? props.handIn.note : `at ${floor} words`}</span>
             </span>
           )}
         </button>
         <span id="wr-floor-note" className="visually-hidden">
-          You can hand in your {noun} once it has at least {floor} words.
+          {props.handIn ? `You can hand in once ${props.handIn.note}.` : `You can hand in your ${noun} once it has at least ${floor} words.`}
         </span>
       </div>
       <p className="visually-hidden" aria-live="polite">
@@ -344,7 +349,7 @@ export function PromptCard({ prompt, compact = false }: { prompt: WritingPrompt;
               d.querySelector<HTMLButtonElement>('.wr-dialog__close')?.focus()
             }}
           >
-            ⤢ Enlarge the {prompt.figure.kind === 'line' ? 'graph' : 'diagram'}
+            ⤢ Enlarge the {figureNoun(prompt.figure)}
           </button>
           <dialog
             ref={dialogRef}

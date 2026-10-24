@@ -12,7 +12,9 @@ import { AnalysisView, SelfAssess } from './Assessment'
 import { pieceNoun, practiceSets } from './content'
 import { clearDraft, hasContent, loadDraft, saveDraft } from './drafts'
 import { PracticeIntro } from './PracticeIntro'
-import { checkEssay, estimateBand, findPrompt, type WritingPrompt } from './prompts'
+import { FullPractice } from './FullPractice'
+import { loadFullTest, loadPrompt, type FullWritingTest } from './library'
+import { checkEssay, estimateBand, type WritingPrompt } from './prompts'
 import { Results } from './Results'
 import { CRITERIA } from './stats'
 import { Studio } from './Studio'
@@ -23,9 +25,35 @@ import './practice.css'
 export default function WritingPractice() {
   const { practiceId } = useParams()
   const info = findPractice('writing', practiceId)
-  const prompt = findPrompt(practiceId)
-  if (!info || !prompt) return <Navigate to="/student/writing" replace />
-  return <Practice key={prompt.id} info={info} prompt={prompt} />
+  if (!info) return <Navigate to="/student/writing" replace />
+  return <Loader key={info.id} info={info} />
+}
+
+/** Fetches the prompt (or both prompts of a full test) before the page opens. */
+function Loader({ info }: { info: PracticeInfo }) {
+  const full = info.format === 'full'
+  const [state, setState] = useState<{ prompt?: WritingPrompt; test?: FullWritingTest; missing?: boolean }>({})
+  useEffect(() => {
+    let live = true
+    type Loaded = { prompt?: WritingPrompt; test?: FullWritingTest }
+    const load: Promise<Loaded> = full ? loadFullTest(info.id).then((test) => ({ test })) : loadPrompt(info.id).then((prompt) => ({ prompt }))
+    load
+      .then((r) => live && setState(r.prompt || r.test ? r : { missing: true }))
+      .catch(() => live && setState({ missing: true }))
+    return () => {
+      live = false
+    }
+  }, [info.id, full])
+  if (state.missing) return <Navigate to="/student/writing" replace />
+  if (state.test) return <FullPractice info={info} test={state.test} />
+  if (state.prompt) return <Practice info={info} prompt={state.prompt} />
+  return (
+    <div className="wr-world wr-practice">
+      <p className="wr-loading" role="status">
+        Unrolling the paper…
+      </p>
+    </div>
+  )
 }
 
 type Phase = 'intro' | 'write' | 'review' | 'assess' | 'done'
@@ -227,11 +255,13 @@ function Practice({ info, prompt }: { info: PracticeInfo; prompt: WritingPrompt 
     goTop()
   }
 
-  const number = practiceSets.findIndex((p) => p.id === prompt.id) + 1
+  const focused = practiceSets.filter((p) => p.format !== 'full')
+  const number = focused.findIndex((p) => p.id === prompt.id) + 1
   const nextSet = useMemo(() => {
-    const i = practiceSets.findIndex((p) => p.id === prompt.id)
+    const i = focused.findIndex((p) => p.id === prompt.id)
     const best = progress.section('writing').best
-    return practiceSets.slice(i + 1).find((p) => !best[p.id]) ?? practiceSets[(i + 1) % practiceSets.length]
+    return focused.slice(i + 1).find((p) => !best[p.id]) ?? focused[(i + 1) % focused.length]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prompt.id, progress])
 
   return (
@@ -350,7 +380,7 @@ function Practice({ info, prompt }: { info: PracticeInfo; prompt: WritingPrompt 
   )
 }
 
-interface ConfirmDialogProps {
+export interface ConfirmDialogProps {
   words: number
   min: number
   noun: string
@@ -358,7 +388,7 @@ interface ConfirmDialogProps {
   onConfirm: () => void
 }
 
-function ConfirmDialog({ words, min, noun, onCancel, onConfirm }: ConfirmDialogProps) {
+export function ConfirmDialog({ words, min, noun, onCancel, onConfirm }: ConfirmDialogProps) {
   const ref = useRef<HTMLDialogElement>(null)
   useEffect(() => {
     const d = ref.current

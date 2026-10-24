@@ -369,7 +369,7 @@ export const practiceSets: PracticeInfo[] = [
     minutes: 20,
     questionCount: 10,
     kinds: ['Task 1 · Academic', 'Line graph'],
-    tags: ['Task 1 · Academic'],
+    tags: ['Task 1 · Line graph'],
     level: 'Foundation',
   },
   {
@@ -380,7 +380,7 @@ export const practiceSets: PracticeInfo[] = [
     minutes: 20,
     questionCount: 10,
     kinds: ['Task 1 · Academic', 'Process diagram'],
-    tags: ['Task 1 · Academic'],
+    tags: ['Task 1 · Process diagram'],
     level: 'Intermediate',
   },
   {
@@ -391,7 +391,7 @@ export const practiceSets: PracticeInfo[] = [
     minutes: 20,
     questionCount: 10,
     kinds: ['Task 1 · General Training', 'Letter'],
-    tags: ['Task 1 · General Training'],
+    tags: ['Task 1 · Letter (General Training)'],
     level: 'Foundation',
   },
   {
@@ -402,7 +402,7 @@ export const practiceSets: PracticeInfo[] = [
     minutes: 40,
     questionCount: 10,
     kinds: ['Task 2', 'Opinion essay'],
-    tags: ['Task 2'],
+    tags: ['Task 2 · Opinion'],
     level: 'Intermediate',
   },
   {
@@ -413,7 +413,7 @@ export const practiceSets: PracticeInfo[] = [
     minutes: 40,
     questionCount: 10,
     kinds: ['Task 2', 'Discussion essay'],
-    tags: ['Task 2'],
+    tags: ['Task 2 · Discussion'],
     level: 'Advanced',
   },
   {
@@ -424,8 +424,19 @@ export const practiceSets: PracticeInfo[] = [
     minutes: 40,
     questionCount: 10,
     kinds: ['Task 2', 'Problem–solution essay'],
-    tags: ['Task 2'],
+    tags: ['Task 2 · Problem–solution'],
     level: 'Intermediate',
+  },
+  {
+    id: 'wfull-01',
+    title: 'Full Test 1',
+    summary: 'Task 1: how people in one city travel to work, 2005–2025 (line graph). Task 2: should museums be free, paid for by the state? (opinion).',
+    minutes: 60,
+    questionCount: 20,
+    kinds: ['Task 1 · Academic', 'Task 2', 'Full test'],
+    level: 'Intermediate',
+    format: 'full',
+    added: '2026-10-24',
   },
 ]
 
@@ -437,6 +448,7 @@ export const PROMPT_META: Record<string, PromptMeta> = {
   't2-cooking-school': { task: 'task2', minWords: 250, stamp: 'OPINION' },
   't2-language-abroad': { task: 'task2', minWords: 250, stamp: 'DISCUSSION' },
   't2-outdoor-play': { task: 'task2', minWords: 250, stamp: 'PROBLEM–SOLUTION' },
+  'wfull-01': { task: 'task2', minWords: 400, stamp: 'FULL TEST' },
 }
 
 export const metaFor = (id: string): PromptMeta => PROMPT_META[id] ?? { task: 'task2', minWords: 250, stamp: 'ESSAY' }

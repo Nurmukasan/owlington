@@ -1,4 +1,5 @@
 import { useId, type CSSProperties } from 'react'
+import './map.css'
 import type { MapShape, MapSpec } from '../practice-data'
 
 /*

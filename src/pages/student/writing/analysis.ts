@@ -355,6 +355,11 @@ export type CheckId =
   | 'bullet-2'
   | 'bullet-3'
   | 'no-contractions'
+  | 'map-changes'
+  | 'locations'
+  | 'adv-disadv'
+  | 'part-1'
+  | 'part-2'
 
 export type Criterion = 'TA' | 'CC' | 'LR' | 'GRA'
 
@@ -436,6 +441,22 @@ const CLOSING =
   /^(?:yours (?:sincerely|faithfully|truly)|sincerely|faithfully|kind regards|best regards|warm(?:est)? regards|regards|best wishes|all the best|take care|love|cheers|many thanks|with thanks|thanks again)\b/i
 const PURPOSE = /\b(i am writing|i'm writing|i write to|i would like to|i wanted to|i want to|the purpose of this letter|i am contacting|in response to)\b/i
 
+const CHANGE_GROUPS: RegExp[] = [
+  /\b(demolish\w*|knock\w* down|pulled down|torn down)\b/i,
+  /\b(replac\w*|gave way to|made way for)\b/i,
+  /\b(convert\w*|turned into|transformed|redeveloped|became)\b/i,
+  /\b(extend\w*|expand\w*|enlarg\w*|widen\w*)\b/i,
+  /\b(construct\w*|built|erected|added|introduced|opened)\b/i,
+  /\b(relocat\w*|moved|shifted)\b/i,
+  /\b(remov\w*|disappeared|no longer|cleared|closed)\b/i,
+  /\b(planted|landscaped|paved|pedestrianised|pedestrianized)\b/i,
+  /\b(remain\w* (?:unchanged|the same|in place)|unchanged|retained|kept)\b/i,
+]
+const LOCATIONS =
+  /\b(north|south|east|west|north-east|north-west|south-east|south-west|northern|southern|eastern|western|next to|opposite|beside|adjacent to|between|in the (?:centre|center|middle|corner)|alongside|across from|on the (?:left|right))\b/gi
+const ADVANTAGES = /\b(advantages?|benefits?|positive|upside|beneficial|gains?)\b/i
+const DISADVANTAGES = /\b(disadvantages?|drawbacks?|negative|downside|harmful|risks?|costs? of)\b/i
+
 const firstSentenceMatching = (text: string, re: RegExp) => splitSentences(text).find((s) => re.test(s))
 const quote = (s: string, max = 90) => `“${s.length > max ? `${s.slice(0, max).trimEnd()}…` : s}”`
 const distinctMatches = (text: string, re: RegExp) =>
@@ -449,6 +470,39 @@ const tooShortNote = (minWords: number) =>
 type CheckFn = (ctx: CheckContext) => Omit<CheckResult, 'id'>
 
 export const CHECKS: Record<CheckId, CheckFn> = {
+  'map-changes': ({ text }) => {
+    const found = CHANGE_GROUPS.map((re) => normalise(text).match(re)?.[0]).filter((w): w is string => Boolean(w))
+    return {
+      label: 'Varied language of change (4+ kinds)',
+      criterion: 'LR',
+      met: found.length >= 4,
+      found: found.length ? `Used: ${found.map((w) => w.toLowerCase()).join(', ')}.` : 'No verbs of change found yet (demolished, replaced, converted, extended…).',
+      why: 'Map tasks reward precise verbs of change — and mostly in the passive: “was demolished”, “has been converted into”.',
+    }
+  },
+  locations: ({ text }) => {
+    const found = distinctMatches(text, LOCATIONS)
+    return {
+      label: 'Changes located precisely (4+ expressions)',
+      criterion: 'TA',
+      met: found.size >= 4,
+      found: found.size ? `Used: ${[...found].slice(0, 8).join(', ')}.` : 'No location language found (in the north-east, next to, opposite…).',
+      why: 'The reader cannot see the maps. Say where each change happened: compass points and prepositions of place.',
+    }
+  },
+  'adv-disadv': ({ text }) => {
+    const pro = firstSentenceMatching(text, ADVANTAGES)
+    const con = firstSentenceMatching(text, DISADVANTAGES)
+    return {
+      label: 'Both advantages and disadvantages discussed',
+      criterion: 'TA',
+      met: Boolean(pro && con),
+      found: pro && con ? `Advantages: ${quote(pro, 60)} · Disadvantages: ${quote(con, 60)}` : pro ? 'Advantages found, but no disadvantages yet.' : con ? 'Disadvantages found, but no advantages yet.' : 'Neither side is named yet.',
+      why: 'The question asks about both sides (and often which outweighs the other). Give each side its own paragraph.',
+    }
+  },
+  'part-1': (ctx) => partCheck(ctx, 0),
+  'part-2': (ctx) => partCheck(ctx, 1),
   'min-words': ({ analysis, minWords }) => ({
     label: `At least ${minWords} words`,
     criterion: 'TA',
@@ -512,7 +566,7 @@ export const CHECKS: Record<CheckId, CheckFn> = {
       criterion: 'TA',
       met: distinct.length >= 4,
       found: distinct.length
-        ? `${plural(distinct.length, 'value')} from the ${figureValues.length ? 'graph' : 'visual'} cited: ${distinct.slice(0, 6).join(', ')}${
+        ? `${plural(distinct.length, 'value')} from the visual cited: ${distinct.slice(0, 6).join(', ')}${
             distinct.length > 6 ? ' …' : '.'
           }`
         : 'No values from the visual cited (labels such as age ranges and years do not count).',
@@ -787,6 +841,18 @@ function bulletCheck(ctx: CheckContext, i: number): Omit<CheckResult, 'id'> {
       ? `Covered in: ${quote(hit, 80)}`
       : 'We could not find a sentence of its own (8+ words) for this bullet point in your letter.',
     why: 'Each bullet point should be clearly covered — ideally one paragraph each. A missing bullet limits Task Achievement.',
+  }
+}
+
+function partCheck(ctx: CheckContext, i: number): Omit<CheckResult, 'id'> {
+  const part = ctx.bullets?.[i]
+  const hit = part ? bulletSentences(ctx)[i] : undefined
+  return {
+    label: `Question ${i + 1} answered: ${part?.label ?? ''}`,
+    criterion: 'TA',
+    met: Boolean(hit),
+    found: hit ? `Answered in: ${quote(hit, 80)}` : 'We could not find a developed sentence (8+ words) that answers this part of the question.',
+    why: 'A two-part question needs both parts answered fully — a body paragraph each is the safest plan. Missing one caps Task Response at band 5.',
   }
 }
 

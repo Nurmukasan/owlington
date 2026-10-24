@@ -6,6 +6,7 @@
  * short paraphrases for self-assessment, not the official IELTS wording.
  */
 import { analyse, runChecks, type CheckContext, type CheckId, type Criterion } from './analysis'
+import type { MapSpec } from '../listening/practice-data'
 import { metaFor, type WritingTask } from './content'
 
 export interface LineSeries {
@@ -28,7 +29,8 @@ export interface LineFigure {
 export interface ProcessStage {
   title: string
   detail: string
-  icon: ProcessIcon
+  /** A drawn icon (the early prompts); later diagrams show the stage number alone. */
+  icon?: ProcessIcon
 }
 
 export type ProcessIcon = 'bike' | 'mix' | 'heat' | 'spawn' | 'box' | 'dark' | 'spray' | 'harvest'
@@ -41,7 +43,96 @@ export interface ProcessFigure {
   zones: [string, number, number][]
 }
 
-export type Figure = LineFigure | ProcessFigure
+/** Grouped vertical bars: one group per category, one bar per series. */
+export interface BarFigure {
+  kind: 'bar'
+  title: string
+  unit: string
+  yLabel: string
+  categories: string[]
+  yMax: number
+  yStep: number
+  series: LineSeries[]
+}
+
+/** One or more pie charts sharing the same slice labels (values in per cent). */
+export interface PieFigure {
+  kind: 'pie'
+  title: string
+  slices: string[]
+  pies: { label: string; values: number[] }[]
+}
+
+/** A data table: the first column holds row labels. */
+export interface TableFigure {
+  kind: 'table'
+  title: string
+  unit: string
+  columns: string[]
+  rows: (string | number)[][]
+}
+
+/** Two or more plans of the same place (before and after). */
+export interface MapFigure {
+  kind: 'map'
+  title: string
+  panels: { label: string; spec: MapSpec }[]
+}
+
+export type SingleFigure = LineFigure | ProcessFigure | BarFigure | PieFigure | TableFigure | MapFigure
+
+/** Two visuals in one task (e.g. a bar chart and a pie chart). */
+export interface MultiFigure {
+  kind: 'multi'
+  title: string
+  parts: SingleFigure[]
+}
+
+export type Figure = SingleFigure | MultiFigure
+
+/** Every number plotted in a visual (for the data check). */
+export function figureValues(fig: Figure | undefined): number[] {
+  if (!fig) return []
+  switch (fig.kind) {
+    case 'line':
+    case 'bar':
+      return fig.series.flatMap((s) => s.values)
+    case 'pie':
+      return fig.pies.flatMap((p) => p.values)
+    case 'table':
+      return fig.rows.flatMap((r) => r.slice(1).flatMap((c) => (typeof c === 'number' ? [c] : [...String(c).matchAll(/\d+(?:\.\d+)?/g)].map((m) => Number(m[0])))))
+    case 'multi':
+      return fig.parts.flatMap(figureValues)
+    default:
+      return []
+  }
+}
+
+/** Labels printed on a visual: numbers in them are not data. */
+function figureLabels(fig: Figure | undefined): string[] {
+  if (!fig) return []
+  switch (fig.kind) {
+    case 'line':
+      return [...fig.series.map((s) => s.label), ...fig.xs, fig.title]
+    case 'bar':
+      return [...fig.series.map((s) => s.label), ...fig.categories, fig.title]
+    case 'pie':
+      return [...fig.slices, ...fig.pies.map((p) => p.label), fig.title]
+    case 'table':
+      return [...fig.columns, ...fig.rows.map((r) => String(r[0])), fig.title]
+    case 'map':
+      return [fig.title, ...fig.panels.map((p) => p.label)]
+    case 'multi':
+      return [fig.title, ...fig.parts.flatMap(figureLabels)]
+    default:
+      return [fig.title]
+  }
+}
+
+/** What to call the visual in running text. */
+export function figureNoun(fig: Figure): string {
+  return { line: 'graph', bar: 'chart', pie: 'charts', table: 'table', map: 'maps', process: 'diagram', multi: 'visuals' }[fig.kind]
+}
 
 export interface Annotation {
   /** An exact substring of the model answer. */
@@ -73,8 +164,8 @@ export interface WritingPrompt {
 
 // ------------------------------------------------------------------ prompts ---
 
-const T1_FOOTER = ['Summarise the information by selecting and reporting the main features, and make comparisons where relevant.', 'Write at least 150 words.']
-const T2_FOOTER = ['Give reasons for your answer and include any relevant examples from your own knowledge or experience.', 'Write at least 250 words.']
+export const T1_FOOTER = ['Summarise the information by selecting and reporting the main features, and make comparisons where relevant.', 'Write at least 150 words.']
+export const T2_FOOTER = ['Give reasons for your answer and include any relevant examples from your own knowledge or experience.', 'Write at least 250 words.']
 
 export const PROMPTS: WritingPrompt[] = [
   {
@@ -572,14 +663,14 @@ if (import.meta.env?.DEV) {
 /** Everything the checklist needs to know about a prompt, so every caller judges an essay the same way. */
 export function checkContextFor(prompt: WritingPrompt, text: string, analysis = analyse(text, prompt.question)): CheckContext {
   const fig = prompt.figure
-  const labels = fig?.kind === 'line' ? [...fig.series.map((s) => s.label), ...fig.xs, fig.title] : []
+  const labels = figureLabels(fig)
   return {
     text,
     analysis,
     minWords: prompt.minWords,
     question: prompt.question,
     bullets: prompt.bulletChecks,
-    figureValues: fig?.kind === 'line' ? fig.series.flatMap((s) => s.values) : [],
+    figureValues: figureValues(fig),
     ignoreNumbers: [...[prompt.question, ...labels].join(' ').matchAll(/\d+(?:\.\d+)?/g)].map((m) => Number(m[0])),
   }
 }
