@@ -35,7 +35,7 @@ for (const info of practiceSets) {
 
   test.passages.forEach((p, pi) => {
     const sids = new Map(p.paragraphs.flatMap((para) => para.sentences.map((s) => [s.id, s.text])))
-    const full = [...sids.values()].join(' ').toLowerCase()
+    const full = normalise([...sids.values()].join(' '))
     for (const g of p.groups) {
       for (const q of g.questions) {
         const where = `${q.id} (P${pi + 1} ${g.kind})`
@@ -61,7 +61,7 @@ for (const info of practiceSets) {
             for (const a of q.answers)
               if (g.maxWords && wordCount(a) > g.maxWords) report(where, `"${a}" is over the ${g.maxWords}-word limit`)
             const main = normalise(q.answers[0])
-            const evText = q.evidence.map((e) => sids.get(e) ?? '').join(' ').toLowerCase()
+            const evText = normalise(q.evidence.map((e) => sids.get(e) ?? '').join(' '))
             if (!full.includes(main)) report(where, `"${q.answers[0]}" is not in the passage`)
             else if (!evText.includes(main)) report(where, `"${q.answers[0]}" is not in its evidence ${q.evidence}`)
           }
