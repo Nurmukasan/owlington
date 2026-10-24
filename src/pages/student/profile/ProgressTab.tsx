@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { PixelSprite } from '../../../components/PixelSprite'
 import { AchievementBadge, RankBar, StreakFlame } from '../../../learn/components/ProgressWidgets'
-import { RANKS, type Attempt } from '../../../learn/progress'
+import { ACHIEVEMENT_GROUPS, RANKS, type Attempt } from '../../../learn/progress'
 import { SECTION_META, SECTION_ORDER, formatBand, formatWhen, pct } from '../../../learn/results/results'
 import { sfx } from '../../../learn/sfx'
 import type { SectionId } from '../../../learn/types'
@@ -226,15 +226,15 @@ export function ProgressTab({ progress }: { progress: ProgressView }) {
           </p>
         </header>
         <div className="pf-ach-groups">
-          {SECTION_ORDER.map((sec) => (
-            <section key={sec} className="pf-ach-group" style={{ '--pf-color': SECTION_META[sec].color } as CSSProperties} aria-label={SECTION_META[sec].name}>
+          {ACHIEVEMENT_GROUPS.map((g) => (
+            <section key={g.id} className="pf-ach-group" style={{ '--pf-color': g.color } as CSSProperties} aria-label={g.title}>
               <h3 className="pf-ach-group__title">
-                <PixelSprite sprite={SECTION_META[sec].icon} scale={2} />
-                {SECTION_META[sec].name}
+                <AchievementBadge icon={g.icon} unlocked scale={2} className="pf-ach-group__icon" />
+                {g.title}
               </h3>
               <ul className="pf-achievements">
                 {achievements
-                  .filter((a) => a.section === sec)
+                  .filter((a) => a.group === g.id)
                   .map((a) => (
                     <li key={a.id} className={`pf-ach ${a.unlockedAt ? 'is-unlocked' : ''}`}>
                       <AchievementBadge icon={a.icon} unlocked={Boolean(a.unlockedAt)} scale={3} />

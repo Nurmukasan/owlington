@@ -112,42 +112,51 @@ All test content is original: the Cambridge IELTS Academic books were used only 
 
 [`src/learn/`](src/learn) holds the shared learning layer every section uses:
 
-- **Practice XP**: 1 XP for every correct answer in Reading and Listening (a 10-question focused test is worth up
-  to 10 XP, a 40-question full test up to 40), and the band for Writing (band 6 → 6 XP; half bands round up).
-  Only a test's **first attempt** earns XP; retakes are recorded (and count for bands and best scores) but give
-  none. Finishing a lecture gives 5 XP, once per video lesson, and each achievement pays out once. Progress
-  re-reads what other tabs saved before it awards anything, so two open tabs can't pay twice. The rules live in `XP_RULES` and `attemptXp()` in
-  [`src/learn/progress.ts`](src/learn/progress.ts).
-- **Ranks** (shown as `RANK n` in the top bar), in `RANKS` in `progress.ts`:
+- **XP** (only a test's **first attempt** counts; retakes are recorded for scores and bands but give no XP):
+  - Reading / Listening: 1 XP per correct answer (a 40-question full test is worth up to 40).
+  - Writing full test: 5 XP per half band (band 6.5 → 65 XP). Writing focused task: 1 XP per half band (6.5 → 13 XP).
+  - A video lesson: 5 XP, once. Each achievement pays its XP once.
 
-  | Rank | XP | |
-  | --- | --- | --- |
-  | 1. Fledgling | 0 | A student taking the first steps |
-  | 2. Owlet | 1,000 | A student soaking up knowledge |
-  | 3. Night Watcher | 1,200 | An adept learning what is hidden |
-  | 4. Feather Scholar | 1,400 | A master who has gathered wisdom |
-  | 5. Silver Wing | 1,600 | Keeper of the ancient scrolls |
-  | 6. Arch-Owl | 1,800 | The high mage — or the dean |
-  | 7. The Silent Glide | 2,500 | A legend who has reached perfect enlightenment |
+  The rules live in `XP_RULES` and `attemptXp()` in [`src/learn/progress.ts`](src/learn/progress.ts). Each test's
+  first attempt is kept in `firsts`, so trimming old attempts never changes XP. Progress re-reads what other tabs
+  saved before it awards anything, so two open tabs can't pay twice. Older saves are replayed under the current
+  rules (`rebuildProgress()`).
+- **Ranks** (shown as `RANK n` in the top bar), in `RANKS`:
 
-- **Tonight's goal** is 30 XP a day; anything beyond it is a bonus. **Daily streaks** show as the flame in the top bar.
-- **Achievements** (`ACHIEVEMENTS` in `progress.ts`), each unlocked once for the XP shown. "Different tests" means
-  retakes of the same test count once.
+  | Rank | XP |
+  | --- | ---: |
+  | 1. Owl Egg | 0 |
+  | 2. Tiny Owlet | 50 |
+  | 3. Curious Owlet | 150 |
+  | 4. Brave Owlet | 350 |
+  | 5. Moonwing Owl | 700 |
+  | 6. Nightwatch Owl | 1,200 |
+  | 7. Scholar Owl | 1,900 |
+  | 8. Sage Owl | 2,800 |
+  | 9. Grandmaster Owl | 3,700 |
+  | 10. Legendary Owl | 4,700 |
 
-  | Section | Achievement | How to unlock | XP |
-  | --- | --- | --- | --- |
-  | Listening | Sharp-Eared Owl | Complete 10 different full tests | 100 |
-  | Listening | The Owl Codebreaker | All answers right in 3 different spelling tasks | 20 |
-  | Listening | Echoing Owl | Band 8.5–9.0 on a full test | 200 |
-  | Reading | Skimming Owl | A skimming & scanning focused test with no mistakes | 30 |
-  | Reading | True-False-Owl | Complete a True / False / Not Given focused test | 10 |
-  | Reading | Bookworm Owl | Complete 10 different full tests | 100 |
-  | Writing | Graph-Watching Owl | Band 8.5–9.0 on a Task 1 (focused, or the Task 1 of a full test) | 50 |
-  | Writing | Essay-Weaving Owl | Band 7.5+ on a full test | 100 |
+- **Streaks**: a day counts when the student finishes a new lesson or a first test attempt (retakes and
+  half-watched lessons don't). **Tonight's goal** is 30 XP a day.
+- **Achievements** (`ACHIEVEMENTS`, 25 of them, 1,500 XP in all), each unlocked once and grouped in the profile:
 
-  A focused test counts for a question type when that type is its **only** tag (`tags`, or `kinds` when there are
-  no tags): `'Spelling'` for spelling tasks, a tag containing "skim" (e.g. `'Skimming & scanning'`),
-  `'True / False / Not Given'`, or `'Task 1 · …'` for Writing Task 1.
+  | Group | Achievement | How to unlock | XP |
+  | --- | --- | --- | ---: |
+  | Lessons & tests | First Hoot | First video lesson | 10 |
+  | | Quill / Echo / Sharp-Eyed Owl | All Writing / Listening / Reading lessons | 30 each |
+  | | Library Owl | All video lessons | 50 |
+  | | Owl’s First Flight | First full test | 10 |
+  | | Reading / Listening Explorer Owl | A first attempt at every Reading / Listening test | 40 each |
+  | | Writing Explorer Owl | A first attempt at every Writing test | 60 |
+  | Reading & Listening | Keen-Eyed / Focused / Wise Hunter / Master Hunter Owl | 100 / 400 / 800 / 1,440 correct answers on first attempts | 20 / 40 / 60 / 100 |
+  | | Precision Owl | 36/40+ on a first attempt at a full test | 30 |
+  | | Flawless Owl | 40/40 on a first attempt at a full test | 70 |
+  | | Elite Owl | 36/40+ on 5 Reading and 5 Listening full tests (first attempts) | 120 |
+  | Writing | Quill Apprentice / Scholar / Golden Quill Owl | Band 6.0 / 7.0 / 8.0+ on a first attempt at a full test | 30 / 60 / 120 |
+  | | Master Quill Owl | Band 7.5+ on 5 full tests (first attempts) | 100 |
+  | Streaks & mastery | Daily Hooter / Devoted / Unstoppable Owl | 7 / 14 / 30-day streak | 20 / 50 / 80 |
+  | | Owl Academy Graduate | Every lesson and a first attempt at every test | 100 |
+  | | The Owl Crown | Every lesson, 90% (36/40) on every Reading and Listening test, band 7.5+ on every Writing test, first attempts | 200 |
 - **Lecture progress** with resume, and best scores per practice test.
 - A **sound toggle** in the top bar for the 8-bit effects.
 

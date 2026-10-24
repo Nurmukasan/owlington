@@ -8,7 +8,7 @@
  * overwritten.
  */
 import { CATALOG } from '../learn/catalog'
-import { ACHIEVEMENTS, attemptXp, dayKey, lectureKey, practiceKey, XP_RULES, type Attempt, type ProgressState } from '../learn/progress'
+import { lectureKey, rebuildProgress, type Attempt, type ProgressState } from '../learn/progress'
 import type { SectionId } from '../learn/types'
 import { bandForAccuracy } from '../pages/student/listening/answers'
 import { bandEstimate } from '../pages/student/reading/library'
@@ -131,13 +131,9 @@ function progressFor(index: number, from: number, now: number): ProgressState {
   const rng = mulberry32(9000 + index)
   const ability = between(rng, 0.42, 0.93)
   const activity = Math.pow(rng(), 0.7)
-  const state: ProgressState = { version: 4, xp: 0, lectures: {}, attempts: [], rewarded: {}, dailyXp: {}, achievements: {} }
+  const state = { lectures: {} as ProgressState['lectures'], attempts: [] as Attempt[] }
   const days = Math.max(1, (now - from) / DAY)
   const at = () => new Date(from + rng() * days * DAY).toISOString()
-  const bump = (iso: string, xp: number) => {
-    const k = dayKey(new Date(iso))
-    state.dailyXp[k] = (state.dailyXp[k] ?? 0) + xp
-  }
 
   for (const section of ['reading', 'listening', 'writing'] as SectionId[]) {
     const { lectures, practiceSets } = CATALOG[section]
@@ -152,7 +148,6 @@ function progressFor(index: number, from: number, now: number): ProgressState {
         updatedAt: when,
         ...(done ? { completedAt: when } : {}),
       }
-      if (done) bump(when, XP_RULES.lectureComplete)
     })
 
     // Tests: a share of the section, a few retaken.
@@ -217,29 +212,8 @@ function progressFor(index: number, from: number, now: number): ProgressState {
     }
   }
 
-  // XP goes to each test's first attempt only.
-  state.attempts.sort((a, b) => (a.at < b.at ? -1 : 1))
-  for (const a of state.attempts) {
-    const key = practiceKey(a.section, a.practiceId)
-    if (state.rewarded[key]) {
-      a.repeat = true
-      continue
-    }
-    state.rewarded[key] = a.at
-    a.xp = attemptXp(a)
-    bump(a.at, a.xp)
-  }
-  state.xp = Object.values(state.dailyXp).reduce((a, b) => a + b, 0)
-  // Achievements the history has earned, with their XP.
-  for (let guard = 0; guard < ACHIEVEMENTS.length; guard++) {
-    const fresh = ACHIEVEMENTS.find((a) => !state.achievements[a.id] && a.count(state) >= a.goal)
-    if (!fresh) break
-    const when = state.attempts[state.attempts.length - 1]?.at ?? new Date(now).toISOString()
-    state.achievements[fresh.id] = when
-    state.xp += fresh.xp
-    bump(when, fresh.xp)
-  }
-  return state
+  // XP, streak days and achievements follow from the history, under the same rules as the app.
+  return rebuildProgress(state)
 }
 
 /** Adds the demo people (and their histories) if this browser hasn't had them yet. */

@@ -6,7 +6,7 @@
  * exists. Components use it through `useProgress()`; the store emits
  * `ProgressEvent`s (XP gained, rank-up, achievement) for toasts and effects.
  */
-import { findPractice } from './catalog'
+import { CATALOG, findPractice } from './catalog'
 import type { PracticeInfo, SectionId } from './types'
 
 // --- state ----------------------------------------------------------------------
@@ -61,24 +61,35 @@ export interface Attempt extends AttemptInput {
   repeat?: boolean
 }
 
+/** What a test's first attempt scored: XP and achievements only ever look at this. */
+export interface FirstAttempt {
+  at: string
+  score: number
+  total: number
+  band?: number
+}
+
 export interface ProgressState {
-  version: 4
+  version: 5
   xp: number
   lectures: Record<string, LectureProgress>
   attempts: Attempt[]
-  /** Tests that have paid out their XP (`section:practiceId` → when). Kept apart from the attempts, which are trimmed. */
-  rewarded: Record<string, string>
-  /** XP earned per local day (YYYY-MM-DD). A key with 0 still counts as an active day. */
+  /** Each test's first attempt (`section:practiceId`). Kept apart from the attempts, which are trimmed. */
+  firsts: Record<string, FirstAttempt>
+  /**
+   * XP earned per local day (YYYY-MM-DD). A day is active (it keeps the streak) when the student finished a
+   * new lesson or a first test attempt, so a key with 0 still counts. Retakes and half-watched lessons don't.
+   */
   dailyXp: Record<string, number>
   achievements: Record<string, string>
 }
 
 const emptyState = (): ProgressState => ({
-  version: 4,
+  version: 5,
   xp: 0,
   lectures: {},
   attempts: [],
-  rewarded: {},
+  firsts: {},
   dailyXp: {},
   achievements: {},
 })
@@ -99,23 +110,28 @@ export const practiceKey = (section: SectionId, practiceId: string) => `${sectio
 export const xpLabel = (a: Pick<Attempt, 'xp' | 'repeat'>) => (a.repeat ? 'retake · no XP' : `+${a.xp} XP`)
 
 /**
- * XP for a test's first attempt (retakes earn none). Reading and Listening: 1 XP per correct answer, so a
- * 10-question focused test is worth up to 10 XP and a 40-question full test up to 40.
- * Writing: the band, so a band 6 essay earns 6 XP (half bands round up: 6.5 → 7).
+ * XP for a test's first attempt (retakes earn none).
+ * - Reading and Listening: 1 XP per correct answer (a 40-question full test is worth up to 40).
+ * - Writing full test: 5 XP per half band (band 6.5 → 65 XP).
+ * - Writing focused task: 1 XP per half band (band 6.5 → 13 XP).
  */
-export function attemptXp({ section, score, band }: { section: SectionId; score: number; band?: number }) {
-  if (section === 'writing') return Math.max(0, Math.round(band ?? 0))
-  return Math.max(0, Math.round(score))
+export function attemptXp({ section, practiceId, score, band }: { section: SectionId; practiceId: string; score: number; band?: number }) {
+  if (section !== 'writing') return Math.max(0, Math.round(score))
+  const halves = Math.max(0, Math.round((band ?? 0) * 2))
+  return findPractice(section, practiceId)?.format === 'full' ? halves * 5 : halves
 }
 
 export const RANKS = [
-  { title: 'Fledgling', xp: 0, description: 'A student taking the first steps.' },
-  { title: 'Owlet', xp: 1000, description: 'A student soaking up knowledge.' },
-  { title: 'Night Watcher', xp: 1200, description: 'An adept learning what is hidden.' },
-  { title: 'Feather Scholar', xp: 1400, description: 'A master who has gathered wisdom.' },
-  { title: 'Silver Wing', xp: 1600, description: 'Keeper of the ancient scrolls.' },
-  { title: 'Arch-Owl', xp: 1800, description: 'The high mage — or the dean.' },
-  { title: 'The Silent Glide', xp: 2500, description: 'A legend who has reached perfect enlightenment.' },
+  { title: 'Owl Egg', xp: 0, description: 'Warm, round and full of promise.' },
+  { title: 'Tiny Owlet', xp: 50, description: 'Out of the shell and blinking at the page.' },
+  { title: 'Curious Owlet', xp: 150, description: 'Asks “why?” about every question.' },
+  { title: 'Brave Owlet', xp: 350, description: 'Takes on full tests without a flinch.' },
+  { title: 'Moonwing Owl', xp: 700, description: 'First real flights under the moon.' },
+  { title: 'Nightwatch Owl', xp: 1200, description: 'Steady, every night, wide awake.' },
+  { title: 'Scholar Owl', xp: 1900, description: 'Knows the exam inside out.' },
+  { title: 'Sage Owl', xp: 2800, description: 'Others come to this owl for advice.' },
+  { title: 'Grandmaster Owl', xp: 3700, description: 'Few questions left that can surprise it.' },
+  { title: 'Legendary Owl', xp: 4700, description: 'The owl the forest tells stories about.' },
 ]
 
 export interface RankInfo {
@@ -207,130 +223,103 @@ export type AchievementIcon =
   | 'graph'
   | 'scroll'
 
+export type AchievementGroup = 'lessons' | 'questions' | 'writing' | 'mastery'
+
+/** How the profile groups the achievements, in order. */
+export const ACHIEVEMENT_GROUPS: { id: AchievementGroup; title: string; icon: AchievementIcon; color: string }[] = [
+  { id: 'lessons', title: 'Lessons & tests', icon: 'book', color: 'var(--reading)' },
+  { id: 'questions', title: 'Reading & Listening', icon: 'headphones', color: 'var(--listening)' },
+  { id: 'writing', title: 'Writing', icon: 'pencil', color: 'var(--writing)' },
+  { id: 'mastery', title: 'Streaks & mastery', icon: 'trophy', color: '#b99cff' },
+]
+
 export interface Achievement {
   id: string
   title: string
   description: string
   icon: AchievementIcon
-  section: SectionId
+  group: AchievementGroup
   /** XP awarded once, when it unlocks. */
   xp: number
-  /** How many are needed: 1 for a one-off feat, 10 for "ten full tests". */
+  /** How many are needed: 1 for a one-off feat, 100 for "100 questions". */
   goal: number
   /** How many the student has so far; it unlocks when this reaches `goal`. */
   count: (state: ProgressState) => number
 }
 
-const infoOf = (a: Attempt) => findPractice(a.section, a.practiceId)
-const isFull = (a: Attempt) => infoOf(a)?.format === 'full'
-const isPerfect = (a: Attempt) => a.total > 0 && a.score >= a.total
-const hasBand = (a: Attempt, min: number) => typeof a.band === 'number' && a.band >= min
-/** The Task 1 band of a Writing attempt: a focused Task 1 prompt, or the Task 1 half of a full test. */
-function taskOneBand(a: Attempt) {
-  if (isFull(a)) {
-    const tasks = (a.detail as { tasks?: unknown } | undefined)?.tasks
-    return Array.isArray(tasks) && typeof tasks[0] === 'number' ? tasks[0] : 0
-  }
-  return (focusOf(infoOf(a)) ?? '').startsWith('Task 1') && typeof a.band === 'number' ? a.band : 0
+const SECTIONS: SectionId[] = ['reading', 'listening', 'writing']
+const LESSONS = (section: SectionId) => CATALOG[section].lectures.length
+const ALL_LESSONS = SECTIONS.reduce((n, s) => n + LESSONS(s), 0)
+const TESTS = (section: SectionId) => CATALOG[section].practiceSets.length
+const ALL_TESTS = SECTIONS.reduce((n, s) => n + TESTS(s), 0)
+
+/** Finished lessons, in one section or all. */
+const lessonsDone = (state: ProgressState, section?: SectionId) =>
+  (section ? [section] : SECTIONS).reduce(
+    (n, s) => n + CATALOG[s].lectures.filter((l) => state.lectures[lectureKey(s, l.id)]?.completedAt).length,
+    0,
+  )
+
+/** First attempts in a section that are still in the catalogue, with the test they belong to. */
+function firstsIn(state: ProgressState, section: SectionId) {
+  return CATALOG[section].practiceSets.flatMap((info) => {
+    const first = state.firsts[practiceKey(section, info.id)]
+    return first ? [{ info, first }] : []
+  })
 }
 
-/** The one question type a focused test drills: its only tag. Mixed or full tests have none. */
-export function focusOf(info: PracticeInfo | undefined) {
-  if (!info || info.format === 'full') return undefined
-  const tags = info.tags ?? info.kinds
-  return tags.length === 1 ? tags[0] : undefined
-}
-
-/** Different tests (not attempts) in a section that pass `test`, so retakes don't count twice. */
-const distinctTests = (state: ProgressState, section: SectionId, test: (a: Attempt) => boolean) =>
-  new Set(state.attempts.filter((a) => a.section === section && test(a)).map((a) => a.practiceId)).size
-
-const once = (state: ProgressState, section: SectionId, test: (a: Attempt) => boolean) =>
-  state.attempts.some((a) => a.section === section && test(a)) ? 1 : 0
+const isFullInfo = (info: PracticeInfo) => info.format === 'full'
+/** 36/40 on a full test; the same 90% on a shorter one. */
+const isStrong = (f: FirstAttempt) => f.total > 0 && f.score >= Math.ceil(f.total * 0.9)
+const strongFull = (state: ProgressState, section: SectionId) => firstsIn(state, section).filter((x) => isFullInfo(x.info) && isStrong(x.first)).length
+const correctAnswers = (state: ProgressState) =>
+  [...firstsIn(state, 'reading'), ...firstsIn(state, 'listening')].reduce((n, x) => n + x.first.score, 0)
+const fullWritingAtLeast = (state: ProgressState, band: number) =>
+  firstsIn(state, 'writing').filter((x) => isFullInfo(x.info) && (x.first.band ?? 0) >= band).length
+const bestStreak = (state: ProgressState) => streakFor(state.dailyXp).best
 
 export const ACHIEVEMENTS: Achievement[] = [
-  // Listening
-  {
-    id: 'sharp-eared-owl',
-    title: 'Sharp-Eared Owl',
-    description: 'Complete 10 different Listening full tests.',
-    icon: 'tufted-owl',
-    section: 'listening',
-    xp: 100,
-    goal: 10,
-    count: (s) => distinctTests(s, 'listening', isFull),
-  },
-  {
-    id: 'owl-codebreaker',
-    title: 'The Owl Codebreaker',
-    description: 'Get every answer right in 3 different spelling tasks.',
-    icon: 'key',
-    section: 'listening',
-    xp: 20,
-    goal: 3,
-    count: (s) => distinctTests(s, 'listening', (a) => isPerfect(a) && /spell/i.test(focusOf(infoOf(a)) ?? '')),
-  },
-  {
-    id: 'echoing-owl',
-    title: 'Echoing Owl',
-    description: 'Score band 8.5–9.0 on a Listening full test.',
-    icon: 'medal',
-    section: 'listening',
-    xp: 200,
-    goal: 1,
-    count: (s) => once(s, 'listening', (a) => isFull(a) && hasBand(a, 8.5)),
-  },
-  // Reading
-  {
-    id: 'skimming-owl',
-    title: 'Skimming Owl',
-    description: 'Finish a skimming & scanning focused test without a single mistake.',
-    icon: 'magnifier',
-    section: 'reading',
-    xp: 30,
-    goal: 1,
-    count: (s) => once(s, 'reading', (a) => isPerfect(a) && /skim/i.test(focusOf(infoOf(a)) ?? '')),
-  },
-  {
-    id: 'true-false-owl',
-    title: 'True-False-Owl',
-    description: 'Complete a True / False / Not Given focused test.',
-    icon: 'true-false',
-    section: 'reading',
-    xp: 10,
-    goal: 1,
-    count: (s) => once(s, 'reading', (a) => focusOf(infoOf(a)) === 'True / False / Not Given'),
-  },
-  {
-    id: 'bookworm-owl',
-    title: 'Bookworm Owl',
-    description: 'Complete 10 different Reading full tests.',
-    icon: 'bookworm',
-    section: 'reading',
-    xp: 100,
-    goal: 10,
-    count: (s) => distinctTests(s, 'reading', isFull),
-  },
+  // Lessons & tests
+  { id: 'first-hoot', title: 'First Hoot', description: 'Complete your first video lesson.', icon: 'owl', group: 'lessons', xp: 10, goal: 1, count: (s) => lessonsDone(s) },
+  { id: 'quill-owl', title: 'Quill Owl', description: `Complete all ${LESSONS('writing')} Writing lessons.`, icon: 'pencil', group: 'lessons', xp: 30, goal: LESSONS('writing'), count: (s) => lessonsDone(s, 'writing') },
+  { id: 'echo-owl', title: 'Echo Owl', description: `Complete all ${LESSONS('listening')} Listening lessons.`, icon: 'headphones', group: 'lessons', xp: 30, goal: LESSONS('listening'), count: (s) => lessonsDone(s, 'listening') },
+  { id: 'sharp-eyed-owl', title: 'Sharp-Eyed Owl', description: `Complete all ${LESSONS('reading')} Reading lessons.`, icon: 'magnifier', group: 'lessons', xp: 30, goal: LESSONS('reading'), count: (s) => lessonsDone(s, 'reading') },
+  { id: 'library-owl', title: 'Library Owl', description: `Complete all ${ALL_LESSONS} video lessons.`, icon: 'bookworm', group: 'lessons', xp: 50, goal: ALL_LESSONS, count: (s) => lessonsDone(s) },
+  { id: 'first-flight', title: 'Owl’s First Flight', description: 'Complete your first full test.', icon: 'star', group: 'lessons', xp: 10, goal: 1, count: (s) => SECTIONS.reduce((n, sec) => n + firstsIn(s, sec).filter((x) => isFullInfo(x.info)).length, 0) },
+  { id: 'reading-explorer', title: 'Reading Explorer Owl', description: `Complete a first attempt at all ${TESTS('reading')} Reading tests.`, icon: 'book', group: 'lessons', xp: 40, goal: TESTS('reading'), count: (s) => firstsIn(s, 'reading').length },
+  { id: 'listening-explorer', title: 'Listening Explorer Owl', description: `Complete a first attempt at all ${TESTS('listening')} Listening tests.`, icon: 'tufted-owl', group: 'lessons', xp: 40, goal: TESTS('listening'), count: (s) => firstsIn(s, 'listening').length },
+  { id: 'writing-explorer', title: 'Writing Explorer Owl', description: `Complete a first attempt at all ${TESTS('writing')} Writing tests.`, icon: 'scroll', group: 'lessons', xp: 60, goal: TESTS('writing'), count: (s) => firstsIn(s, 'writing').length },
+  // Reading & Listening
+  { id: 'keen-eyed-owl', title: 'Keen-Eyed Owl', description: 'Answer 100 unique Reading or Listening questions correctly on first test attempts.', icon: 'key', group: 'questions', xp: 20, goal: 100, count: correctAnswers },
+  { id: 'focused-owl', title: 'Focused Owl', description: 'Answer 400 unique Reading or Listening questions correctly on first test attempts.', icon: 'true-false', group: 'questions', xp: 40, goal: 400, count: correctAnswers },
+  { id: 'wise-hunter-owl', title: 'Wise Hunter Owl', description: 'Answer 800 unique Reading or Listening questions correctly on first test attempts.', icon: 'medal', group: 'questions', xp: 60, goal: 800, count: correctAnswers },
+  { id: 'master-hunter-owl', title: 'Master Hunter Owl', description: 'Answer 1,440 unique Reading or Listening questions correctly on first test attempts.', icon: 'trophy', group: 'questions', xp: 100, goal: 1440, count: correctAnswers },
+  { id: 'precision-owl', title: 'Precision Owl', description: 'Score at least 36/40 on your first attempt at a Reading or Listening full test.', icon: 'star', group: 'questions', xp: 30, goal: 1, count: (s) => strongFull(s, 'reading') + strongFull(s, 'listening') },
+  { id: 'flawless-owl', title: 'Flawless Owl', description: 'Score 40/40 on your first attempt at a Reading or Listening full test.', icon: 'medal', group: 'questions', xp: 70, goal: 1, count: (s) => [...firstsIn(s, 'reading'), ...firstsIn(s, 'listening')].filter((x) => isFullInfo(x.info) && x.first.score >= x.first.total && x.first.total > 0).length },
+  { id: 'elite-owl', title: 'Elite Owl', description: 'Score at least 36/40 on 5 different Reading and 5 different Listening full tests, first attempts only.', icon: 'trophy', group: 'questions', xp: 120, goal: 10, count: (s) => Math.min(5, strongFull(s, 'reading')) + Math.min(5, strongFull(s, 'listening')) },
   // Writing
+  { id: 'quill-apprentice-owl', title: 'Quill Apprentice Owl', description: 'Achieve band 6.0 or higher on your first attempt at a full Writing test.', icon: 'pencil', group: 'writing', xp: 30, goal: 1, count: (s) => fullWritingAtLeast(s, 6) },
+  { id: 'quill-scholar-owl', title: 'Quill Scholar Owl', description: 'Achieve band 7.0 or higher on your first attempt at a full Writing test.', icon: 'scroll', group: 'writing', xp: 60, goal: 1, count: (s) => fullWritingAtLeast(s, 7) },
+  { id: 'golden-quill-owl', title: 'Golden Quill Owl', description: 'Achieve band 8.0 or higher on your first attempt at a full Writing test.', icon: 'medal', group: 'writing', xp: 120, goal: 1, count: (s) => fullWritingAtLeast(s, 8) },
+  { id: 'master-quill-owl', title: 'Master Quill Owl', description: 'Achieve band 7.5 or higher on 5 different full Writing tests, first attempts only.', icon: 'trophy', group: 'writing', xp: 100, goal: 5, count: (s) => fullWritingAtLeast(s, 7.5) },
+  // Streaks & mastery
+  { id: 'daily-hooter', title: 'Daily Hooter', description: 'Complete a new lesson or a first test attempt every day for 7 days in a row.', icon: 'flame', group: 'mastery', xp: 20, goal: 7, count: bestStreak },
+  { id: 'devoted-owl', title: 'Devoted Owl', description: 'Complete a new lesson or a first test attempt every day for 14 days in a row.', icon: 'flame', group: 'mastery', xp: 50, goal: 14, count: bestStreak },
+  { id: 'unstoppable-owl', title: 'Unstoppable Owl', description: 'Complete a new lesson or a first test attempt every day for 30 days in a row.', icon: 'flame', group: 'mastery', xp: 80, goal: 30, count: bestStreak },
+  { id: 'academy-graduate', title: 'Owl Academy Graduate', description: `Complete all ${ALL_LESSONS} lessons and a first attempt at every test in all three sections.`, icon: 'owl', group: 'mastery', xp: 100, goal: ALL_LESSONS + ALL_TESTS, count: (s) => lessonsDone(s) + SECTIONS.reduce((n, sec) => n + firstsIn(s, sec).length, 0) },
   {
-    id: 'graph-watching-owl',
-    title: 'Graph-Watching Owl',
-    description: 'Score band 8.5–9.0 on a Writing Task 1.',
-    icon: 'graph',
-    section: 'writing',
-    xp: 50,
-    goal: 1,
-    count: (s) => once(s, 'writing', (a) => taskOneBand(a) >= 8.5),
-  },
-  {
-    id: 'essay-weaving-owl',
-    title: 'Essay-Weaving Owl',
-    description: 'Score band 7.5 or higher on a Writing full test.',
-    icon: 'scroll',
-    section: 'writing',
-    xp: 100,
-    goal: 1,
-    count: (s) => once(s, 'writing', (a) => isFull(a) && hasBand(a, 7.5)),
+    id: 'owl-crown',
+    title: 'The Owl Crown',
+    description: `Complete all ${ALL_LESSONS} lessons, score at least 36/40 (90%) on every Reading and Listening test and band 7.5+ on every Writing test, all on first attempts.`,
+    icon: 'trophy',
+    group: 'mastery',
+    xp: 200,
+    goal: ALL_LESSONS + ALL_TESTS,
+    count: (s) =>
+      lessonsDone(s) +
+      firstsIn(s, 'reading').filter((x) => isStrong(x.first)).length +
+      firstsIn(s, 'listening').filter((x) => isStrong(x.first)).length +
+      firstsIn(s, 'writing').filter((x) => (x.first.band ?? 0) >= 7.5).length,
   },
 ]
 
@@ -359,70 +348,76 @@ const MAX_DAYS = 400
 
 type Stored = Omit<Partial<ProgressState>, 'version'> & { version?: number }
 
-/** Moves XP on the total and on the day `iso` falls on; days never drop below zero. */
-function shiftXp(state: Omit<ProgressState, 'version'>, iso: string, delta: number) {
-  state.xp += delta
-  const day = dayKey(new Date(iso))
-  if (day in state.dailyXp) state.dailyXp[day] = Math.max(0, state.dailyXp[day] + delta)
+/**
+ * Credits XP for a new lesson or a first test attempt at `at`: the day becomes active (it keeps the
+ * streak, even with 0 XP) and any achievement that now qualifies unlocks, once, with its own XP.
+ */
+function credit(state: ProgressState, amount: number, at: string, reason: string, events: ProgressEvent[]): ProgressState {
+  const day = dayKey(new Date(at))
+  let next: ProgressState = {
+    ...state,
+    xp: state.xp + amount,
+    dailyXp: trimDays({ ...state.dailyXp, [day]: (state.dailyXp[day] ?? 0) + amount }),
+  }
+  if (amount > 0) events.push({ type: 'xp', amount, reason })
+  for (let guard = 0; guard < ACHIEVEMENTS.length; guard++) {
+    const fresh = ACHIEVEMENTS.find((a) => !next.achievements[a.id] && a.count(next) >= a.goal)
+    if (!fresh) break
+    next = {
+      ...next,
+      xp: next.xp + fresh.xp,
+      dailyXp: { ...next.dailyXp, [day]: (next.dailyXp[day] ?? 0) + fresh.xp },
+      achievements: { ...next.achievements, [fresh.id]: at },
+    }
+    events.push({ type: 'achievement', achievement: fresh })
+  }
+  return next
+}
+
+/** Adds a finished attempt: XP and a streak day only if it's the test's first attempt. */
+function addAttempt(state: ProgressState, input: AttemptInput & { section: SectionId; at: string }, events: ProgressEvent[]) {
+  const key = practiceKey(input.section, input.practiceId)
+  const repeat = Boolean(state.firsts[key])
+  const attempt: Attempt = { ...input, xp: repeat ? 0 : attemptXp(input), ...(repeat ? { repeat } : {}) }
+  let next: ProgressState = { ...state, attempts: [...state.attempts, attempt].slice(-MAX_ATTEMPTS) }
+  if (!repeat) {
+    const first: FirstAttempt = { at: input.at, score: input.score, total: input.total, ...(typeof input.band === 'number' ? { band: input.band } : {}) }
+    next = credit({ ...next, firsts: { ...next.firsts, [key]: first } }, attempt.xp, input.at, 'Practice complete', events)
+  }
+  return { state: next, attempt }
 }
 
 /**
- * Version 1 → 2: practice XP became "1 XP per correct answer" (Writing: the band), and
- * the first, placeholder set of achievements was retired along with its XP bonus.
- * Each day's XP is corrected too, so streaks and tonight's goal stay consistent.
+ * Builds progress from its history under today's rules: lessons and attempts are replayed in order,
+ * so XP, active days, first attempts and achievements are all recomputed. Used to move older saves
+ * onto the current rules, and by the demo seed.
  */
-function migrateFromV1(old: Stored): Stored {
-  const state = { ...emptyState(), ...old, dailyXp: { ...old.dailyXp } }
-  state.attempts = state.attempts.map((a) => {
-    const fresh = attemptXp(a)
-    shiftXp(state, a.at, fresh - a.xp)
-    return { ...a, xp: fresh }
-  })
-  // The retired achievements were worth 25 XP each.
-  for (const at of Object.values(state.achievements)) shiftXp(state, at, -25)
-  return { ...state, achievements: {}, version: 2 }
-}
-
-/** Version 2 → 3: a finished lecture is worth 5 XP instead of 50. */
-function migrateFromV2(old: Stored): Stored {
-  const state = { ...emptyState(), ...old, dailyXp: { ...old.dailyXp } }
-  for (const lecture of Object.values(state.lectures)) {
-    if (lecture.completedAt) shiftXp(state, lecture.completedAt, XP_RULES.lectureComplete - 50)
+export function rebuildProgress(history: { lectures?: Record<string, LectureProgress>; attempts?: Attempt[] }): ProgressState {
+  const lectures = history.lectures ?? {}
+  const steps = [
+    ...Object.values(lectures).flatMap((l) => (l.completedAt ? [{ at: l.completedAt, attempt: undefined }] : [])),
+    ...(history.attempts ?? []).map((a) => ({ at: a.at, attempt: a })),
+  ].sort((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : 0))
+  let state: ProgressState = { ...emptyState(), lectures }
+  for (const step of steps) {
+    if (step.attempt) {
+      const { xp: _xp, repeat: _repeat, ...input } = step.attempt
+      state = addAttempt(state, input, []).state
+    } else {
+      state = credit(state, XP_RULES.lectureComplete, step.at, 'Lecture complete', [])
+    }
   }
-  return { ...state, version: 3 }
-}
-
-/** Version 3 → 4: a test pays XP on its first attempt only; the XP retakes earned is taken back. */
-function migrateFromV3(old: Stored): Stored {
-  const state = { ...emptyState(), ...old, dailyXp: { ...old.dailyXp }, rewarded: {} as Record<string, string> }
-  state.attempts = [...state.attempts]
-    .sort((a, b) => (a.at < b.at ? -1 : 1))
-    .map((a) => {
-      const key = practiceKey(a.section, a.practiceId)
-      if (!state.rewarded[key]) {
-        state.rewarded[key] = a.at
-        return a
-      }
-      shiftXp(state, a.at, -a.xp)
-      return { ...a, xp: 0, repeat: true }
-    })
-  return { ...state, version: 4 }
+  return state
 }
 
 function load(key: string): { state: ProgressState; migrated: boolean } {
   try {
     const raw = localStorage.getItem(key)
     if (!raw) return { state: emptyState(), migrated: false }
-    let stored = JSON.parse(raw) as Stored
-    const from = stored.version
-    if (stored.version === 1) stored = migrateFromV1(stored)
-    if (stored.version === 2) stored = migrateFromV2(stored)
-    if (stored.version === 3) stored = migrateFromV3(stored)
-    if (stored.version !== 4) return { state: emptyState(), migrated: false }
-    const state: ProgressState = { ...emptyState(), ...stored, version: 4 }
-    // dailyGoal was a setting until version 2; the goal is fixed now.
-    delete (state as Partial<{ dailyGoal: number }>).dailyGoal
-    return { state: { ...state, xp: Math.max(0, state.xp) }, migrated: from !== 4 }
+    const stored = JSON.parse(raw) as Stored
+    // An older save (other XP rules, ranks or achievements): replay its history under the current rules.
+    if (stored.version !== 5) return { state: rebuildProgress(stored), migrated: true }
+    return { state: { ...emptyState(), ...stored, version: 5 }, migrated: false }
   } catch {
     return { state: emptyState(), migrated: false }
   }
@@ -480,8 +475,10 @@ export class ProgressStore {
       updatedAt: now,
     }
     const events: ProgressEvent[] = []
+    const before = rankFor(this.state.xp).rank
     let state: ProgressState = { ...this.state, lectures: { ...this.state.lectures, [key]: next } }
-    state = this.addXp(state, justCompleted ? XP_RULES.lectureComplete : 0, 'Lecture complete', events)
+    if (justCompleted) state = credit(state, XP_RULES.lectureComplete, now, 'Lecture complete', events)
+    this.rankUp(before, state, events)
     this.commit(state, events)
     return { justCompleted }
   }
@@ -489,47 +486,17 @@ export class ProgressStore {
   /** Record a finished practice attempt; returns it with the XP it earned (none for a retake). */
   recordAttempt = (section: SectionId, input: AttemptInput): Attempt => {
     this.sync()
-    const at = new Date().toISOString()
-    const key = practiceKey(section, input.practiceId)
-    const repeat = Boolean(this.state.rewarded[key])
-    const attempt: Attempt = { ...input, section, at, xp: repeat ? 0 : attemptXp({ ...input, section }), ...(repeat ? { repeat } : {}) }
     const events: ProgressEvent[] = []
-    let state: ProgressState = {
-      ...this.state,
-      attempts: [...this.state.attempts, attempt].slice(-MAX_ATTEMPTS),
-      rewarded: repeat ? this.state.rewarded : { ...this.state.rewarded, [key]: at },
-    }
-    state = this.addXp(state, attempt.xp, 'Practice complete', events)
+    const before = rankFor(this.state.xp).rank
+    const { state, attempt } = addAttempt(this.state, { ...input, section, at: new Date().toISOString() }, events)
+    this.rankUp(before, state, events)
     this.commit(state, events)
     return attempt
   }
 
-  private addXp(state: ProgressState, amount: number, reason: string, events: ProgressEvent[]): ProgressState {
-    const today = dayKey()
-    const before = rankFor(state.xp).rank
-    let next: ProgressState = {
-      ...state,
-      xp: state.xp + amount,
-      dailyXp: trimDays({ ...state.dailyXp, [today]: (state.dailyXp[today] ?? 0) + amount }),
-    }
-    if (amount > 0) events.push({ type: 'xp', amount, reason })
-
-    // Unlock achievements (each one is worth XP, which may unlock more).
-    for (let guard = 0; guard < ACHIEVEMENTS.length; guard++) {
-      const fresh = ACHIEVEMENTS.find((a) => !next.achievements[a.id] && a.count(next) >= a.goal)
-      if (!fresh) break
-      next = {
-        ...next,
-        xp: next.xp + fresh.xp,
-        dailyXp: { ...next.dailyXp, [today]: (next.dailyXp[today] ?? 0) + fresh.xp },
-        achievements: { ...next.achievements, [fresh.id]: new Date().toISOString() },
-      }
-      events.push({ type: 'achievement', achievement: fresh })
-    }
-
-    const after = rankFor(next.xp)
+  private rankUp(before: number, state: ProgressState, events: ProgressEvent[]) {
+    const after = rankFor(state.xp)
     if (after.rank > before) events.push({ type: 'rank-up', rank: after.rank, title: after.title, description: after.description })
-    return next
   }
 
   private commit(state: ProgressState, events: ProgressEvent[]) {
