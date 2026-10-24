@@ -333,6 +333,11 @@ function NotesPlayer({ section, lecture, className = '', ref, onChapterChange, o
   // Type the point out while playing; show it whole when paused (so it can be read) or with reduced motion.
   const shownText = reduced || !playing ? slide.text : slide.text.slice(0, Math.ceil(slide.text.length * typingShare))
   const isTyping = playing && slide.kind === 'point' && shownText.length < slide.text.length
+  const typedLength = shownText.length
+  // The lecturer owl babbles softly while it types each point.
+  useEffect(() => {
+    if (isTyping) sfx.talk('lecturer', 0.014)
+  }, [isTyping, typedLength])
   const elapsed = starts[pos.index] + Math.min(pos.t, duration)
   const pointSlides = slides.filter((s) => s.kind === 'point').length
   const pointNumber = slides.slice(0, pos.index + 1).filter((s) => s.kind === 'point').length

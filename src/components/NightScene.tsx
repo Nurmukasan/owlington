@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { sfx } from '../learn/sfx'
 import { NightSceneEngine, type OwlRect } from '../scene/NightSceneEngine'
 import './NightScene.css'
 
@@ -79,6 +80,7 @@ export function NightScene({
 
   const handleOwlClick = () => {
     engineRef.current?.hoot()
+    sfx.owl('forest')
     onOwlClick?.()
   }
 

@@ -1,5 +1,6 @@
 import { useRef, useState, type CSSProperties } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
+import { LectureRail } from '../../../learn/components/LectureRail'
 import { useUser } from '../../../auth/auth-context'
 import { findLecture, findPractice } from '../../../learn/catalog'
 import { LecturePlayer, type LecturePlayerHandle } from '../../../learn/components/LecturePlayer'
@@ -91,6 +92,17 @@ function LectureRoom({ lecture }: { lecture: Lecture }) {
           <span aria-hidden="true">/</span>
           <span aria-current="page">Volume {roman(index + 1)}</span>
         </nav>
+
+        <div className="lecture-layout">
+          <LectureRail
+            section="reading"
+            lectures={lectures}
+            currentId={lecture.id}
+            title="The Lecture Stacks"
+            label={(i) => `Volume ${roman(i + 1)}`}
+            className="rd-rail"
+          />
+          <div className="lecture-layout__main">
 
         <header className="rd-lecture__head">
           <span className="rd-lecture__spine" aria-hidden="true">
@@ -295,6 +307,8 @@ function LectureRoom({ lecture }: { lecture: Lecture }) {
             </Link>
           )}
         </nav>
+          </div>
+        </div>
       </div>
     </div>
   )

@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState, type CSSProperties } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
+import { LectureRail } from '../../../learn/components/LectureRail'
 import { findLecture, findPractice } from '../../../learn/catalog'
 import { LecturePlayer, type LecturePlayerHandle } from '../../../learn/components/LecturePlayer'
 import { XP_RULES } from '../../../learn/progress'
@@ -118,6 +119,17 @@ function Studio({ lecture }: { lecture: Lecture }) {
           <span aria-hidden="true">/</span>
           <span aria-current="page">Tape {tapeNo(index)}</span>
         </nav>
+
+        <div className="lecture-layout">
+          <LectureRail
+            section="listening"
+            lectures={lectures}
+            currentId={lecture.id}
+            title="The tape rack"
+            label={(i) => `Tape ${tapeNo(i)}`}
+            className="ls-rail"
+          />
+          <div className="lecture-layout__main">
 
         <header className="ls-studio__head">
           <div className="ls-studio__titles">
@@ -303,6 +315,8 @@ function Studio({ lecture }: { lecture: Lecture }) {
             </Link>
           )}
         </nav>
+          </div>
+        </div>
       </div>
     </div>
   )

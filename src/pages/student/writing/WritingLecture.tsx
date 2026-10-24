@@ -1,5 +1,6 @@
 import { useRef, useState, type CSSProperties } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
+import { LectureRail } from '../../../learn/components/LectureRail'
 import { LecturePlayer, type LecturePlayerHandle } from '../../../learn/components/LecturePlayer'
 import { TalkingOwl } from '../../../learn/components/TalkingOwl'
 import { findLecture } from '../../../learn/catalog'
@@ -82,6 +83,17 @@ function LectureDesk({ lectureId }: { lectureId: string }) {
             <span className="visually-hidden">of</span> {ROMAN[lectures.length - 1]}
           </span>
         </nav>
+
+        <div className="lecture-layout">
+          <LectureRail
+            section="writing"
+            lectures={lectures}
+            currentId={lecture.id}
+            title="Letters from the Professor"
+            label={(i) => `Letter No. ${ROMAN[i]}`}
+            className="wr-rail"
+          />
+          <div className="lecture-layout__main">
 
         <header className="wr-lec__head">
           <div className="wr-lec__meta">
@@ -254,6 +266,8 @@ function LectureDesk({ lectureId }: { lectureId: string }) {
             </Link>
           )}
         </nav>
+          </div>
+        </div>
       </div>
     </div>
   )

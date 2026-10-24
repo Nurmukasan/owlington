@@ -1,4 +1,5 @@
 import { useEffect, useImperativeHandle, useState, type Ref } from 'react'
+import { sfx } from '../../learn/sfx'
 import type { SceneSize } from '../../components/NightScene'
 import type { OwlRect } from '../../scene/NightSceneEngine'
 
@@ -30,7 +31,10 @@ export function OwlDialog({ ref, intro, tips, owlRect, sceneSize }: OwlDialogPro
 
   useEffect(() => {
     if (done) return
-    const id = window.setTimeout(() => setTyped((n) => n + 1), CHAR_DELAY_MS)
+    const id = window.setTimeout(() => {
+      setTyped((n) => n + 1)
+      sfx.talk('forest')
+    }, CHAR_DELAY_MS)
     return () => window.clearTimeout(id)
   }, [typed, done])
 

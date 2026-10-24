@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { sfx } from '../learn/sfx'
 import './OwlMascot.css'
 
 const HOOTS = ['Hoo! Ready to study?', 'Whooo’s chasing Band 7?', 'Hoo-hoo! Read, listen, write!', 'Night owls study best.']
@@ -80,11 +81,13 @@ export function OwlMascot({ className = '' }: { className?: string }) {
     return () => window.clearTimeout(timer)
   }, [hoot])
 
-  const onHoot = () =>
+  const onHoot = () => {
+    sfx.owl('forest')
     setHoot((prev) => {
       const next = (HOOTS.indexOf(prev?.text ?? '') + 1) % HOOTS.length
       return { text: HOOTS[next], id: Date.now() }
     })
+  }
 
   return (
     <div className={`owl-mascot ${className}`}>

@@ -50,6 +50,40 @@ function play(notes: Note[], type: OscillatorType = 'square', volume = 0.045) {
   }
 }
 
+/** Each owl has its own pitch: the base its hoots and speech blips are built on. */
+export type OwlVoice = 'forest' | 'librarian' | 'dj' | 'professor' | 'lecturer'
+
+const VOICES: Record<OwlVoice, number> = {
+  forest: 392,
+  librarian: 330,
+  dj: 466,
+  professor: 370,
+  lecturer: 415,
+}
+
+/** A few ways to answer a poke, so clicking the owl never sounds the same twice in a row. */
+const OWL_CALLS: ((f: number) => { notes: Note[]; type: OscillatorType; volume: number })[] = [
+  // the classic two-note hoot
+  (f) => ({ notes: [[f, 0, 0.18], [f * 0.84, 0.22, 0.3]], type: 'sine', volume: 0.08 }),
+  // hoo-hoo… hooo
+  (f) => ({ notes: [[f * 1.06, 0, 0.1], [f * 1.06, 0.14, 0.1], [f * 0.84, 0.3, 0.32]], type: 'sine', volume: 0.08 }),
+  // a curious "hoo?"
+  (f) => ({ notes: [[f * 0.84, 0, 0.14], [f * 1.12, 0.16, 0.22]], type: 'sine', volume: 0.08 }),
+  // a happy trill
+  (f) => ({
+    notes: Array.from({ length: 6 }, (_, i): Note => [f * (i % 2 ? 1.5 : 1.33), i * 0.05, 0.05]),
+    type: 'triangle',
+    volume: 0.06,
+  }),
+  // a little chirp
+  (f) => ({ notes: [[f * 2, 0, 0.05], [f * 2.67, 0.05, 0.07]], type: 'square', volume: 0.03 }),
+]
+let lastCall = -1
+
+/** Notes of a pentatonic scale, so typing sounds like babble rather than noise. */
+const BLIP_STEPS = [1, 9 / 8, 5 / 4, 3 / 2, 5 / 3]
+let lastBlip = 0
+
 export const sfx = {
   /** UI tick for buttons and selections. */
   click: () => play([[880, 0, 0.035]], 'square', 0.025),
@@ -68,6 +102,22 @@ export const sfx = {
   unlock: () => play([[1319, 0, 0.06], [1760, 0.06, 0.06], [2093, 0.12, 0.22]], 'triangle', 0.07),
   /** Owl hoot: two soft low notes. */
   hoot: () => play([[392, 0, 0.18], [330, 0.22, 0.3]], 'sine', 0.08),
+  /** The owl answers a click: a different call each time, in that owl's voice. */
+  owl: (voice: OwlVoice = 'forest') => {
+    let i = Math.floor(Math.random() * OWL_CALLS.length)
+    if (i === lastCall) i = (i + 1) % OWL_CALLS.length
+    lastCall = i
+    const call = OWL_CALLS[i](VOICES[voice])
+    play(call.notes, call.type, call.volume)
+  },
+  /** One "letter" of owl speech while text types out. Throttled, so call it as often as you like. */
+  talk: (voice: OwlVoice = 'forest', volume = 0.022) => {
+    const now = performance.now()
+    if (now - lastBlip < 60) return
+    lastBlip = now
+    const step = BLIP_STEPS[Math.floor(Math.random() * BLIP_STEPS.length)]
+    play([[VOICES[voice] * 1.5 * step, 0, 0.035]], 'square', volume)
+  },
 }
 
 export function isMuted() {

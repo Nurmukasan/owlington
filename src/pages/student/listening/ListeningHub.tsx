@@ -33,7 +33,10 @@ function useTyping(text: string, reduced: boolean) {
   const count = reduced ? text.length : state.text === text ? state.count : 0
   useEffect(() => {
     if (reduced || count >= text.length) return
-    const id = window.setTimeout(() => setState((s) => ({ text: s.text, count: s.count + 2 })), 28)
+    const id = window.setTimeout(() => {
+      setState((s) => ({ text: s.text, count: s.count + 2 }))
+      sfx.talk('dj')
+    }, 28)
     return () => window.clearTimeout(id)
   }, [reduced, count, text])
   return { text: text.slice(0, count), done: count >= text.length }
@@ -70,7 +73,7 @@ export default function ListeningHub() {
   const line = tip < 0 ? opener : TIPS[tip % TIPS.length]
   const typed = useTyping(line, reduced)
   const askDj = () => {
-    sfx.hoot()
+    sfx.owl('dj')
     setTip((t) => t + 1)
   }
 

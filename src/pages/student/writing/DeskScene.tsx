@@ -204,6 +204,7 @@ function ProfessorOwl({ tips }: { tips: string[] }) {
     const id = window.setInterval(() => {
       n += 2
       setShown(n)
+      sfx.talk('professor')
       if (n >= text.length) window.clearInterval(id)
     }, 28)
     return () => window.clearInterval(id)
@@ -213,7 +214,7 @@ function ProfessorOwl({ tips }: { tips: string[] }) {
   const talking = visible < text.length
 
   const next = () => {
-    sfx.hoot()
+    sfx.owl('professor')
     setShown(0)
     setIndex((i) => (i + 1) % tips.length)
   }

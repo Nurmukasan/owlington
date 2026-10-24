@@ -1016,3 +1016,25 @@
   opacity: 0.55;
   cursor: not-allowed;
 }
+
+/* --------------------------------------------------- lecture list rail --- */
+
+.ls-studio__inner:has(.lecture-layout) {
+  width: min(1600px, 100%);
+}
+
+.ls-rail {
+  --rail-bg: linear-gradient(180deg, rgb(18 34 74 / 0.9), rgb(6 13 38 / 0.92));
+  --rail-ink: var(--ls-ink);
+  --rail-muted: var(--ls-muted);
+  --rail-line: rgb(111 227 207 / 0.25);
+  --rail-accent: var(--ls-teal);
+  --rail-accent-ink: var(--ls-teal-ink);
+  --rail-current: rgb(111 227 207 / 0.12);
+
+  backdrop-filter: blur(6px);
+}
+
+.ls-rail .lecture-rail__title {
+  font-style: italic;
+}

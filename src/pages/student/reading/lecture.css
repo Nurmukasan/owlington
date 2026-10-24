@@ -863,3 +863,22 @@
   opacity: 0.55;
   cursor: not-allowed;
 }
+
+/* --------------------------------------------------- lecture list rail --- */
+
+.rd-lecture__wrap:has(.lecture-layout) {
+  max-width: 1600px;
+}
+
+.rd-rail {
+  --rail-bg: linear-gradient(180deg, rgb(42 20 24 / 0.94), rgb(20 10 12 / 0.94));
+  --rail-ink: var(--rd-text);
+  --rail-muted: var(--rd-text-3);
+  --rail-line: rgb(181 131 42 / 0.35);
+  --rail-accent: var(--rd-gold);
+  --rail-accent-ink: var(--rd-ink);
+  --rail-current: rgb(255 207 92 / 0.12);
+
+  border-color: var(--rd-gold-deep);
+  box-shadow: 0 20px 40px rgb(0 0 0 / 0.4);
+}
