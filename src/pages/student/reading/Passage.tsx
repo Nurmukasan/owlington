@@ -1,12 +1,14 @@
 import { Fragment, memo, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import type { PracticeInfo } from '../../../learn/types'
 import type { PracticeSet } from './practice-data'
 import { addSpan, describe, type Answers, type Graded, type Highlights, type NumberedQuestion, type Span } from './practice-logic'
 
 interface PassageProps {
   set: PracticeSet
-  info: PracticeInfo
+  /** Passage number in a full test (1–3); absent for a one-passage test. */
+  number?: number
+  /** Suggested minutes for this passage. */
+  minutes: number
   callNumber: string
   questions: NumberedQuestion[]
   answers: Answers
@@ -31,7 +33,8 @@ function offsetIn(el: Element, node: Node, offset: number) {
 /** The reading passage as a book page, with paragraph letters, highlights and evidence pulses. */
 export const Passage = memo(function Passage({
   set,
-  info,
+  number,
+  minutes,
   callNumber,
   questions,
   answers,
@@ -163,7 +166,7 @@ export const Passage = memo(function Passage({
     <article className="rd-passage" aria-labelledby="rd-passage-title">
       <header className="rd-passage__head">
         <p className="rd-passage__eyebrow">
-          <span>READING PASSAGE</span>
+          <span>READING PASSAGE{number ? ` ${number}` : ''}</span>
           <span aria-hidden="true">·</span>
           <span>{callNumber}</span>
         </p>
@@ -172,7 +175,8 @@ export const Passage = memo(function Passage({
         </h2>
         <p className="rd-passage__sub">{set.passageSubtitle}</p>
         <p className="rd-passage__brief">
-          You should spend about {info.minutes} minutes on Questions {first}–{last}, which are based on the reading passage below.
+          You should spend about {minutes} minutes on Questions {first}–{last}, which are based on
+          {number ? ` Reading Passage ${number}` : ' the reading passage'} below.
         </p>
         <span className="rd-passage__orn" aria-hidden="true">
           <i />

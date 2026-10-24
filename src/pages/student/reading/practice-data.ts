@@ -33,12 +33,40 @@ export type Question =
   | (QuestionBase & { type: 'tfng'; prompt: string; answer: 'TRUE' | 'FALSE' | 'NOT GIVEN' })
   | (QuestionBase & { type: 'ynng'; prompt: string; answer: 'YES' | 'NO' | 'NOT GIVEN' })
   | (QuestionBase & { type: 'mcq'; prompt: string; options: string[]; answer: string })
-  /** Pick one option from the group's list (headings, paragraph letters…). */
+  /** Pick one option from the group's list (headings, paragraph letters, people, sentence endings…). */
   | (QuestionBase & { type: 'choose'; prompt: string; paragraph?: string; answer: string })
-  /** A gap in a sentence or summary: typed (accepted answers) or picked from the group's word box. */
+  /** A gap in a sentence, summary, note, table or flow-chart: typed (accepted answers) or picked from the group's word box. */
   | (QuestionBase & { type: 'gap'; before: string; after: string; answers: string[] })
+  /**
+   * One of the answers to a "Choose TWO letters" question. The prompt and options live on the group,
+   * and the answers can be given in either order.
+   */
+  | (QuestionBase & { type: 'pick'; answer: string })
 
-export type GroupKind = 'tfng' | 'ynng' | 'mcq' | 'headings' | 'paragraphs' | 'sentences' | 'summary' | 'wordbox'
+export type GroupKind =
+  | 'tfng'
+  | 'ynng'
+  | 'mcq'
+  | 'choose2'
+  | 'headings'
+  | 'paragraphs'
+  | 'features'
+  | 'endings'
+  | 'sentences'
+  | 'summary'
+  | 'wordbox'
+  | 'notes'
+  | 'table'
+  | 'flow'
+  | 'short'
+
+/** Text around the gaps of a note, table or flow-chart; a number is the index of a question in the group. */
+export type Segment = string | number
+
+export type Layout =
+  | { type: 'notes'; lines: { segs: Segment[]; heading?: boolean; bullet?: boolean }[] }
+  | { type: 'table'; head: string[]; rows: Segment[][][] }
+  | { type: 'flow'; steps: Segment[][] }
 
 export interface QuestionGroup {
   kind: GroupKind
@@ -46,11 +74,15 @@ export interface QuestionGroup {
   /** Typed gaps: maximum words per answer, and the label printed in capitals. */
   maxWords?: number
   limit?: string
-  /** Shared options (list of headings, paragraph letters, word box). */
+  /** Shared options (list of headings, paragraph letters, people, endings, word box). */
   options?: Choice[]
   optionsTitle?: string
   /** Summary-style groups render their gaps inline under this title. */
   summaryTitle?: string
+  /** "Choose TWO letters": the question both answers share. */
+  prompt?: string
+  /** Note, table and flow-chart completion: where each gap sits. */
+  layout?: Layout
   questions: Question[]
 }
 
@@ -60,6 +92,12 @@ export interface PracticeSet {
   passageSubtitle: string
   paragraphs: Paragraph[]
   groups: QuestionGroup[]
+}
+
+/** A practice test: one passage for a focused test, three for a full Academic Reading paper. */
+export interface ReadingTest {
+  id: string
+  passages: PracticeSet[]
 }
 
 const para = (label: string, ...texts: string[]): Paragraph => ({
@@ -888,9 +926,9 @@ const ironGall: PracticeSet = {
   ],
 }
 
-export const PRACTICE: Record<string, PracticeSet> = {
-  [nightShift.id]: nightShift,
-  [owlsAndLarks.id]: owlsAndLarks,
-  [slowReading.id]: slowReading,
-  [ironGall.id]: ironGall,
-}
+const single = (set: PracticeSet): ReadingTest => ({ id: set.id, passages: [set] })
+
+/** The original one-passage practice sets. Newer tests live in ./tests/ and load on demand. */
+export const PRACTICE: Record<string, ReadingTest> = Object.fromEntries(
+  [nightShift, owlsAndLarks, slowReading, ironGall].map((set) => [set.id, single(set)]),
+)

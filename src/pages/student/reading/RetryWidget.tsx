@@ -1,10 +1,12 @@
 import { useRef, useState, type FormEvent } from 'react'
 import { floatText } from '../../../learn/fx'
 import { sfx } from '../../../learn/sfx'
-import { isCorrect, letter, type Graded } from './practice-logic'
+import { isCorrect, letter, type Answers, type Graded } from './practice-logic'
 
 interface RetryProps {
   g: Graded
+  /** Every submitted answer, so a "choose two" retry cannot reuse its partner's letter. */
+  answers: Answers
   /** Called once the answer is right, with how many wrong tries it took. */
   onSolved: (misses: number) => void
   onReveal: () => void
@@ -30,7 +32,7 @@ function choicesFor(g: Graded): Choice[] | null {
 }
 
 /** "Second look": answer a missed question again, with instant feedback. */
-export function RetryWidget({ g, onSolved, onReveal }: RetryProps) {
+export function RetryWidget({ g, answers, onSolved, onReveal }: RetryProps) {
   const choices = choicesFor(g)
   // The first answer is already known to be wrong, so it starts crossed out.
   const [struck, setStruck] = useState<string[]>(() => (g.answered && choices ? [g.answer] : []))
@@ -41,7 +43,7 @@ export function RetryWidget({ g, onSolved, onReveal }: RetryProps) {
 
   const check = (value: string) => {
     if (!value.trim()) return
-    if (isCorrect(g.x, value)) {
+    if (isCorrect(g.x, value, { ...answers, [g.x.q.id]: value })) {
       sfx.correct()
       if (ref.current) floatText(misses === 0 ? 'Got it!' : 'There it is!', ref.current, '#9be0a9')
       onSolved(misses)

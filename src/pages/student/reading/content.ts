@@ -391,6 +391,25 @@ export const practiceSets: PracticeInfo[] = [
     kinds: ['Matching headings', 'True / False / Not Given', 'Summary completion', 'Multiple choice'],
     level: 'Advanced',
   },
+  {
+    id: 'full-01',
+    title: 'Full Test 1',
+    summary: 'Sea otters and the kelp forests they protect · the “wood wide web” beneath our feet · why we put things off.',
+    minutes: 60,
+    questionCount: 40,
+    kinds: [
+      'Note completion',
+      'True / False / Not Given',
+      'Matching information',
+      'Matching features',
+      'Summary completion',
+      'Multiple choice',
+      'Yes / No / Not Given',
+    ],
+    level: 'Intermediate',
+    format: 'full',
+    added: '2026-10-24',
+  },
 ]
 
 /** The practice set that best rehearses each lecture's skill. */

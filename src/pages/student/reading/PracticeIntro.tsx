@@ -7,13 +7,13 @@ import { formatClock } from '../../../learn/useTimer'
 import { lectures, practiceSets } from './content'
 import { LibrarianOwl } from './LibrarianOwl'
 import { HUB_PATH, accuracyOf, bandEstimate, pct, shortDate, stampDate } from './library'
-import type { PracticeSet } from './practice-data'
-import { KIND_HINT, KIND_LECTURE, kindsOf, passageWords, type Draft } from './practice-logic'
+import type { ReadingTest } from './practice-data'
+import { KIND_HINT, KIND_LECTURE, kindsOf, testWords, type Draft } from './practice-logic'
 import { CANDLE_SPRITE, HIGHLIGHTER_SPRITE, RIBBON_SPRITE, SCROLL_SPRITE } from './sprites'
 
 interface IntroProps {
   info: PracticeInfo
-  set: PracticeSet
+  test: ReadingTest
   callNumber: string
   attempts: Attempt[]
   best?: Attempt
@@ -35,10 +35,11 @@ function owlLine(best: Attempt | undefined, attempts: Attempt[], draft: Draft | 
 }
 
 /** The borrowing desk: what the test holds, how the room works, and this card's history. */
-export function PracticeIntro({ info, set, callNumber, attempts, best, draft, questionCount, onStart, onResume }: IntroProps) {
+export function PracticeIntro({ info, test, callNumber, attempts, best, draft, questionCount, onStart, onResume }: IntroProps) {
   const index = practiceSets.findIndex((p) => p.id === info.id)
-  const kinds = kindsOf(set)
-  const words = Math.round(passageWords(set) / 10) * 10
+  const kinds = kindsOf(test)
+  const words = Math.round(testWords(test) / 10) * 10
+  const single = test.passages.length === 1 ? test.passages[0] : undefined
   const draftAnswered = draft ? Object.values(draft.answers).filter((v) => v && v.trim()).length : 0
   const line = owlLine(best, attempts, draft)
   const stampTone = !best ? 'new' : accuracyOf(best) >= 0.7 ? 'great' : accuracyOf(best) >= 0.5 ? 'good' : 'low'
@@ -88,16 +89,23 @@ export function PracticeIntro({ info, set, callNumber, attempts, best, draft, qu
               <dd>{questionCount}</dd>
             </div>
             <div>
-              <dt>Passage</dt>
+              <dt>{single ? 'Passage' : 'Reading'}</dt>
               <dd>
                 ~{words}
                 <small> words</small>
               </dd>
             </div>
-            <div>
-              <dt>Paragraphs</dt>
-              <dd>A–{set.paragraphs[set.paragraphs.length - 1].label}</dd>
-            </div>
+            {single ? (
+              <div>
+                <dt>Paragraphs</dt>
+                <dd>A–{single.paragraphs[single.paragraphs.length - 1].label}</dd>
+              </div>
+            ) : (
+              <div>
+                <dt>Passages</dt>
+                <dd>{test.passages.length}</dd>
+              </div>
+            )}
           </dl>
 
           <div className="rd-ticket__actions">

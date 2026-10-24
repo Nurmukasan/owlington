@@ -15,7 +15,7 @@ import { LibrarianOwl } from './LibrarianOwl'
 import { LibraryBackdrop } from './LibraryBackdrop'
 import { HUB_PATH, SECTION, bandEstimate, callNumber, practiceIndex } from './library'
 import { Passage } from './Passage'
-import { PRACTICE, type PracticeSet } from './practice-data'
+import type { ReadingTest } from './practice-data'
 import {
   KIND_LABEL,
   clearDraft,
@@ -24,6 +24,7 @@ import {
   grade,
   highlightCount,
   isAnswered,
+  rangeLabel,
   loadDraft,
   numberQuestions,
   saveDraft,
@@ -31,12 +32,14 @@ import {
   type Draft,
   type Graded,
   type Highlights,
+  type TestHighlights,
 } from './practice-logic'
 import { PracticeIntro } from './PracticeIntro'
 import { PracticeResults } from './PracticeResults'
 import { FlagIcon, QuestionSheet } from './QuestionSheet'
 import { ReviewSheet, type ReviewFilter } from './ReviewSheet'
 import { HIGHLIGHTER_SPRITE } from './sprites'
+import { loadTest } from './tests'
 import './reading.css'
 import './practice.css'
 
@@ -44,9 +47,29 @@ import './practice.css'
 export default function ReadingPractice() {
   const { practiceId } = useParams()
   const info = findPractice(SECTION, practiceId)
-  const set = info ? PRACTICE[info.id] : undefined
-  if (!info || !set) return <Navigate to={HUB_PATH} replace />
-  return <ReadingRoom key={info.id} info={info} set={set} />
+  const [loaded, setLoaded] = useState<{ id: string; test: ReadingTest | null } | null>(null)
+  useEffect(() => {
+    if (!info) return
+    let live = true
+    loadTest(info.id).then(
+      (test) => live && setLoaded({ id: info.id, test: test ?? null }),
+      () => live && setLoaded({ id: info.id, test: null }),
+    )
+    return () => {
+      live = false
+    }
+  }, [info])
+  if (!info || (loaded?.id === info.id && !loaded.test)) return <Navigate to={HUB_PATH} replace />
+  if (loaded?.id !== info.id || !loaded.test)
+    return (
+      <div className="rd-world rd-practice rd-practice--intro">
+        <LibraryBackdrop />
+        <p className="rd-loading" role="status">
+          Fetching the book from the shelves…
+        </p>
+      </div>
+    )
+  return <ReadingRoom key={info.id} info={info} test={loaded.test} />
 }
 
 type Phase = 'intro' | 'test' | 'results'
@@ -64,21 +87,31 @@ const hudSpace = () => {
   return Number.isFinite(v) ? v : 124
 }
 
-function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
+/** The question's card, or the card that holds it (both answers of a "choose two" share one). */
+const questionEl = (id: string) =>
+  document.getElementById(`rd-q-${id}`) ?? document.querySelector<HTMLElement>(`[data-also~="${id}"]`)
+
+const emptyHighlights = (test: ReadingTest, from?: TestHighlights): TestHighlights =>
+  test.passages.map((_, i) => from?.[i] ?? {})
+
+function ReadingRoom({ info, test }: { info: PracticeInfo; test: ReadingTest }) {
   const user = useUser()
   const progress = useProgress()
   const stats = progress.section(SECTION)
   const reduced = useReducedMotion()
-  const questions = useMemo(() => numberQuestions(set), [set])
+  const questions = useMemo(() => numberQuestions(test), [test])
+  const multi = test.passages.length > 1
   const index = practiceIndex(info.id)
   const call = callNumber(index)
   const firstName = user.name.split(' ')[0] || 'friend'
 
   const [phase, setPhase] = useState<Phase>('intro')
-  const [draft, setDraft] = useState<Draft | null>(() => loadDraft(user.id, set.id))
+  const [draft, setDraft] = useState<Draft | null>(() => loadDraft(user.id, test.id))
   const [answers, setAnswers] = useState<Answers>({})
   const [flagged, setFlagged] = useState<Set<string>>(() => new Set())
-  const [highlights, setHighlights] = useState<Highlights>({})
+  const [allHighlights, setAllHighlights] = useState<TestHighlights>(() => emptyHighlights(test))
+  /** The passage on the open book (full tests have three). */
+  const [active, setActive] = useState(0)
   const [current, setCurrent] = useState(questions[0].q.id)
   const [view, setView] = useState<View>('passage')
   const [highlighter, setHighlighter] = useState(true)
@@ -109,6 +142,12 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
     0,
     questions.findIndex((x) => x.q.id === current),
   )
+  const set = test.passages[active]
+  const passageQuestions = useMemo(() => questions.filter((x) => x.passage === active), [questions, active])
+  const highlights = allHighlights[active] ?? {}
+  const setHighlights = useStableCallback((next: Highlights) =>
+    setAllHighlights((all) => all.map((h, i) => (i === active ? next : h))),
+  )
 
   const nextPractice = useMemo(() => {
     const others = [...practiceSets.slice(index + 1), ...practiceSets.slice(0, index)]
@@ -118,6 +157,18 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
+
+  // Forty tiles do not fit every screen: keep the current one in sight.
+  useEffect(() => {
+    if (phase === 'intro') return
+    const tile = document.querySelector<HTMLElement>('.rd-tile.is-current')
+    const list = tile?.closest<HTMLElement>('.rd-tiles')
+    if (!tile || !list || list.scrollWidth <= list.clientWidth) return
+    const t = tile.getBoundingClientRect()
+    const b = list.getBoundingClientRect()
+    if (t.left < b.left + 8 || t.right > b.right - 8)
+      list.scrollBy({ left: t.left - b.left - b.width / 2 + t.width / 2, behavior: reduced ? 'auto' : 'smooth' })
+  }, [current, phase, reduced])
 
   // One alarm for the end of the candle, instead of checking the time on every tick.
   useEffect(() => {
@@ -134,12 +185,12 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
   // Keep a bookmark of the test in progress, so leaving the room never loses work.
   const saveNow = useStableCallback(() => {
     if (phase === 'test' && !submitted.current)
-      saveDraft(user.id, set.id, { answers, flagged: [...flagged], highlights, elapsed: readClock() })
+      saveDraft(user.id, test.id, { answers, flagged: [...flagged], highlights: allHighlights, elapsed: readClock() })
   })
   useEffect(() => {
     if (phase !== 'test') return
     const save = () => {
-      if (!submitted.current) saveDraft(user.id, set.id, { answers, flagged: [...flagged], highlights, elapsed: readClock() })
+      if (!submitted.current) saveDraft(user.id, test.id, { answers, flagged: [...flagged], highlights: allHighlights, elapsed: readClock() })
     }
     save()
     const id = window.setInterval(save, 4000)
@@ -149,7 +200,7 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
       window.removeEventListener('pagehide', save)
       save()
     }
-  }, [phase, answers, flagged, highlights, user.id, set.id, readClock])
+  }, [phase, answers, flagged, allHighlights, user.id, test.id, readClock])
 
   // ------------------------------------------------------------- actions ---
 
@@ -157,11 +208,12 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
     submitted.current = false
     setAnswers(from?.answers ?? {})
     setFlagged(new Set(from?.flagged ?? []))
-    setHighlights(from?.highlights ?? {})
+    setAllHighlights(emptyHighlights(test, from?.highlights))
+    setActive(0)
     resetClock(from?.elapsed ?? 0)
     setClockEpoch((e) => e + 1)
     setTimeUp(Boolean(from && from.elapsed >= limit))
-    if (!from) clearDraft(user.id, set.id)
+    if (!from) clearDraft(user.id, test.id)
     setDraft(null)
     setCurrent(questions[0].q.id)
     setView('passage')
@@ -235,17 +287,28 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
     if (singlePage()) viewScroll.current[view] = window.scrollY
   }
 
+  /** Run after the next render has reached the page (a passage switch re-renders both pages). */
+  const afterRender = (fn: () => void) => window.requestAnimationFrame(() => window.requestAnimationFrame(fn))
+
   const goTo = useStableCallback((id: string) => {
     if (view !== 'questions') rememberScroll()
+    const target = questions.find((x) => x.q.id === id)
+    const switching = target !== undefined && target.passage !== active
+    if (switching) setActive(target.passage)
     setCurrent(id)
     setView('questions')
     // In review, a filter or the second look may hide the question: show everything again.
-    if (phase === 'results' && !document.getElementById(`rd-q-${id}`)) {
-      setReviewFilter('all')
-      setSecondLook(false)
+    if (phase === 'results' && result) {
+      const g = result.graded.find((r) => r.x.q.id === id)
+      const shown =
+        secondLook || reviewFilter === 'missed' ? !g?.correct : reviewFilter === 'flagged' ? flagged.has(id) : true
+      if (!shown) {
+        setReviewFilter('all')
+        setSecondLook(false)
+      }
     }
-    window.requestAnimationFrame(() => {
-      const el = document.getElementById(`rd-q-${id}`)
+    afterRender(() => {
+      const el = questionEl(id)
       if (!el) return
       reveal(el, questionPane.current)
       if (phase === 'test') {
@@ -268,14 +331,34 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
 
   const showEvidence = useStableCallback((g: Graded) => {
     if (view !== 'passage') rememberScroll()
+    setActive(g.x.passage)
     setCurrent(g.x.q.id)
     setView('passage')
     setPulse({ ids: g.x.q.evidence, nonce: Date.now() })
-    window.requestAnimationFrame(() => {
+    afterRender(() => {
       const el = document.getElementById(`rd-s-${g.x.q.evidence[0]}`)
       if (el) reveal(el, passagePane.current)
     })
   })
+
+  /** Turn to another passage: its questions come with it. */
+  const openPassage = (i: number) => {
+    if (i === active) return
+    sfx.page()
+    setActive(i)
+    setPulse(null)
+    const first = questions.find((x) => x.passage === i)
+    if (first) setCurrent(first.q.id)
+    afterRender(() => {
+      passagePane.current?.scrollTo({ top: 0 })
+      questionPane.current?.scrollTo({ top: 0 })
+      if (singlePage()) {
+        const desk = passagePane.current?.closest<HTMLElement>('.rd-desk')
+        const top = desk ? desk.getBoundingClientRect().top + window.scrollY - hudSpace() + 4 : 0
+        if (window.scrollY > top) window.scrollTo(0, top)
+      }
+    })
+  }
 
   const setAnswerStable = useStableCallback(setAnswer)
   const toggleFlagStable = useStableCallback(toggleFlag)
@@ -312,13 +395,14 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
         wrong: graded.filter((g) => !g.correct).map((g) => g.x.q.id),
       },
     })
-    clearDraft(user.id, set.id)
+    clearDraft(user.id, test.id)
     setConfirming(false)
     setResult({ attempt, graded, previousBest })
     setPulse(null)
     setView('questions')
     viewScroll.current = { passage: null, questions: null }
     setCurrent(questions[0].q.id)
+    setActive(0)
     setPhase('results')
     window.scrollTo(0, 0)
   }
@@ -347,7 +431,7 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
         <LibraryBackdrop />
         <PracticeIntro
           info={info}
-          set={set}
+          test={test}
           callNumber={call}
           attempts={attempts}
           best={stats.best[info.id]}
@@ -365,7 +449,7 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
   const marks = highlightCount(highlights)
 
   const desk = (
-    <div className={`rd-desk rd-desk--${mode} is-view-${view}`}>
+    <div className={`rd-desk rd-desk--${mode} is-view-${view} ${multi ? 'rd-desk--multi' : ''}`}>
       <div className="rd-deskbar">
         {mode === 'test' ? (
           <Link to={`${HUB_PATH}/practice`} className="rd-deskbar__leave" title="Your answers are kept as a bookmark" onClick={saveNow}>
@@ -477,6 +561,33 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
         )}
       </div>
 
+      {multi && (
+        <div className="rd-ptabs" role="tablist" aria-label="Reading passages">
+          {test.passages.map((p, i) => {
+            const own = questions.filter((x) => x.passage === i)
+            const done = own.filter((x) => isAnswered(answers[x.q.id])).length
+            const right = result ? result.graded.filter((g) => g.x.passage === i && g.correct).length : 0
+            return (
+              <button
+                key={p.id}
+                type="button"
+                role="tab"
+                aria-selected={i === active}
+                className={`rd-ptab ${i === active ? 'is-on' : ''}`}
+                onClick={() => openPassage(i)}
+              >
+                <span className="rd-ptab__n">Passage {i + 1}</span>
+                <span className="rd-ptab__title">{p.passageTitle}</span>
+                <span className="rd-ptab__meta">
+                  {rangeLabel(own).replace('Questions ', 'Q ')} ·{' '}
+                  {mode === 'test' ? `${done}/${own.length} answered` : `${right}/${own.length} correct`}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      )}
+
       <div className="rd-openbook">
         {mode === 'test' && timeUp && !timeUpSeen && (
           <div className="rd-timeup" role="alert">
@@ -505,10 +616,12 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
 
         <div className="rd-leaf rd-leaf--passage" ref={passagePane} tabIndex={0} role="region" aria-label="Reading passage">
           <Passage
+            key={active}
             set={set}
-            info={info}
+            number={multi ? active + 1 : undefined}
+            minutes={Math.round(info.minutes / test.passages.length)}
             callNumber={call}
-            questions={questions}
+            questions={passageQuestions}
             answers={answers}
             highlights={highlights}
             onHighlights={setHighlights}
@@ -530,7 +643,7 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
           {mode === 'test' ? (
             <QuestionSheet
               set={set}
-              questions={questions}
+              questions={passageQuestions}
               answers={answers}
               onAnswer={setAnswerStable}
               flagged={flagged}
@@ -542,6 +655,7 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
             result && (
               <ReviewSheet
                 graded={result.graded}
+                passage={multi ? active : undefined}
                 flagged={flagged}
                 current={current}
                 onShowEvidence={showEvidence}
@@ -567,8 +681,13 @@ function ReadingRoom({ info, set }: { info: PracticeInfo; set: PracticeSet }) {
             const g = gradedById[id]
             const status = g ? (g.correct ? 'right' : g.answered ? 'wrong' : 'blank') : answered ? 'answered' : 'open'
             const newGroup = i > 0 && x.groupIndex !== questions[i - 1].groupIndex
+            const newPassage = i > 0 && x.passage !== questions[i - 1].passage
             return (
-              <li key={id} className={newGroup ? 'is-group-start' : ''} style={{ '--rd-i': i } as CSSProperties}>
+              <li
+                key={id}
+                className={`${newGroup ? 'is-group-start' : ''} ${newPassage ? 'is-passage-start' : ''} ${x.passage === active ? 'is-here' : ''}`}
+                style={{ '--rd-i': i } as CSSProperties}
+              >
                 <button
                   type="button"
                   className={`rd-tile rd-tile--${status} ${flagged.has(id) ? 'is-flagged' : ''} ${current === id ? 'is-current' : ''}`}

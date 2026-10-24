@@ -12,6 +12,8 @@ export type ReviewFilter = 'all' | 'missed' | 'flagged'
 
 interface ReviewProps {
   graded: Graded[]
+  /** In a full test, only this passage's questions are listed. */
+  passage?: number
   flagged: Set<string>
   current: string
   onShowEvidence: (g: Graded) => void
@@ -24,9 +26,13 @@ interface ReviewProps {
 
 function promptOf(g: Graded) {
   const { q, group } = g.x
-  if (q.type === 'gap') return `${q.before} ______ ${q.after}`
-  if (q.type === 'choose')
-    return group.kind === 'headings' ? `Choose the heading for ${q.prompt}.` : `Which paragraph contains ${q.prompt}?`
+  if (q.type === 'pick') return `${group.prompt} (one of the two answers)`
+  if (q.type === 'gap') return group.kind === 'short' ? q.before : `${q.before} ______ ${q.after}`.trim()
+  if (q.type === 'choose') {
+    if (group.kind === 'headings') return `Choose the heading for ${q.prompt}.`
+    if (group.kind === 'paragraphs') return `Which paragraph contains ${q.prompt}?`
+    if (group.kind === 'endings') return `${q.prompt} …`
+  }
   return q.prompt
 }
 
@@ -41,16 +47,27 @@ function reviewShown(graded: Graded[], flagged: Set<string>, filter: ReviewFilte
 type Fix = 'own' | 'hint'
 
 /** The marked answer sheet: every question with the student's answer, the key and the reasoning. */
-export function ReviewSheet({ graded, flagged, current, onShowEvidence, filter, onFilter, second, onSecond }: ReviewProps) {
+export function ReviewSheet({
+  graded,
+  passage,
+  flagged,
+  current,
+  onShowEvidence,
+  filter,
+  onFilter,
+  second,
+  onSecond,
+}: ReviewProps) {
   const missed = graded.filter((g) => !g.correct)
-  const flaggedList = graded.filter((g) => flagged.has(g.x.q.id))
   // Second look: retry the missed questions before seeing the key.
   const [fixed, setFixed] = useState<Map<string, Fix>>(() => new Map())
   const [revealed, setRevealed] = useState<Set<string>>(() => new Set())
   /** Questions where the student asked to be shown the evidence before answering again. */
   const [hinted, setHinted] = useState<Set<string>>(() => new Set())
   const doneRef = useRef<HTMLDivElement>(null)
-  const shown = reviewShown(graded, flagged, filter, second)
+  const answers = Object.fromEntries(graded.map((g) => [g.x.q.id, g.answer]))
+  const here = passage === undefined ? graded : graded.filter((g) => g.x.passage === passage)
+  const shown = reviewShown(here, flagged, filter, second)
   const settled = missed.filter((g) => fixed.has(g.x.q.id) || revealed.has(g.x.q.id)).length
   const allSettled = second && missed.length > 0 && settled === missed.length
   const ownFixes = [...fixed.values()].filter((f) => f === 'own').length
@@ -88,9 +105,9 @@ export function ReviewSheet({ graded, flagged, current, onShowEvidence, filter, 
   }
 
   const tabs: [ReviewFilter, string, number][] = [
-    ['all', 'All', graded.length],
-    ['missed', 'To learn from', missed.length],
-    ['flagged', 'Flagged', flaggedList.length],
+    ['all', 'All', here.length],
+    ['missed', 'To learn from', here.filter((g) => !g.correct).length],
+    ['flagged', 'Flagged', here.filter((g) => flagged.has(g.x.q.id)).length],
   ]
 
   return (
@@ -170,7 +187,11 @@ export function ReviewSheet({ graded, flagged, current, onShowEvidence, filter, 
       </header>
 
       {shown.length === 0 ? (
-        <p className="rd-rev-empty">Nothing here — every one of these is correct.</p>
+        <p className="rd-rev-empty">
+          {second && passage !== undefined && missed.length
+            ? 'Nothing left to fix in this passage — try the other passages above.'
+            : 'Nothing here — every one of these is correct.'}
+        </p>
       ) : (
         <ol className="rd-revlist">
           {shown.map((g, i) => {
@@ -214,6 +235,7 @@ export function ReviewSheet({ graded, flagged, current, onShowEvidence, filter, 
                 {second && !g.correct && !fixed.has(q.id) && !revealed.has(q.id) ? (
                   <RetryWidget
                     g={g}
+                    answers={answers}
                     onSolved={(misses) => solve(q.id, misses)}
                     onReveal={() => {
                       sfx.page()
