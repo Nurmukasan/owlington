@@ -559,6 +559,39 @@ export const practiceSets: PracticeInfo[] = [
     format: 'full',
     added: '2026-10-24',
   },
+  {
+    id: 'wfull-13',
+    title: 'Full Test 13',
+    summary: 'Task 1: how household spending changed between 1985 and 2025 (two pie charts). Task 2: tourism to remote places — do the advantages outweigh the disadvantages?',
+    minutes: 60,
+    questionCount: 20,
+    kinds: ['Task 1 · Academic', 'Task 2', 'Full test'],
+    level: 'Intermediate',
+    format: 'full',
+    added: '2026-10-24',
+  },
+  {
+    id: 'wfull-14',
+    title: 'Full Test 14',
+    summary: 'Task 1: the growth of online shopping, and which products people buy online (line graph + table). Task 2: why elderly people are lonely, and what can be done (problem–solution).',
+    minutes: 60,
+    questionCount: 20,
+    kinds: ['Task 1 · Academic', 'Task 2', 'Full test'],
+    level: 'Advanced',
+    format: 'full',
+    added: '2026-10-24',
+  },
+  {
+    id: 'wfull-15',
+    title: 'Full Test 15',
+    summary: 'Task 1: energy use by four sectors in 1990, 2005 and 2020 (bar chart). Task 2: why people change careers — and is it a good thing? (two-part question).',
+    minutes: 60,
+    questionCount: 20,
+    kinds: ['Task 1 · Academic', 'Task 2', 'Full test'],
+    level: 'Advanced',
+    format: 'full',
+    added: '2026-10-24',
+  },
 ]
 
 /** Light per-prompt facts the hub needs (the heavy material is in prompts.ts). */
@@ -581,6 +614,9 @@ export const PROMPT_META: Record<string, PromptMeta> = {
   'wfull-10': { task: 'task2', minWords: 400, stamp: 'FULL TEST' },
   'wfull-11': { task: 'task2', minWords: 400, stamp: 'FULL TEST' },
   'wfull-12': { task: 'task2', minWords: 400, stamp: 'FULL TEST' },
+  'wfull-13': { task: 'task2', minWords: 400, stamp: 'FULL TEST' },
+  'wfull-14': { task: 'task2', minWords: 400, stamp: 'FULL TEST' },
+  'wfull-15': { task: 'task2', minWords: 400, stamp: 'FULL TEST' },
 }
 
 export const metaFor = (id: string): PromptMeta => PROMPT_META[id] ?? { task: 'task2', minWords: 250, stamp: 'ESSAY' }
