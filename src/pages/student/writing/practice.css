@@ -3379,3 +3379,20 @@
 .wr-full .wr-sheetpaper--essay + .wr-sheetpaper--essay {
   margin-top: 22px;
 }
+
+@media (max-width: 860px) {
+  .wr-full .wr-bar {
+    flex-wrap: wrap;
+  }
+
+  .wr-switch {
+    flex: 1 0 100%;
+  }
+
+  .wr-switch__tab {
+    flex: 1;
+    grid-template-columns: auto auto;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+}
