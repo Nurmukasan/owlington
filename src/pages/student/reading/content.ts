@@ -901,6 +901,26 @@ export const practiceSets: PracticeInfo[] = [
     format: 'full',
     added: '2026-10-24',
   },
+  {
+    id: 'full-14',
+    title: 'Full Test 14',
+    summary: 'The stepwells of western India · why birdsong has regional dialects · what intelligence tests really measure.',
+    minutes: 60,
+    questionCount: 40,
+    kinds: [
+      'Note completion',
+      'True / False / Not Given',
+      'Matching information',
+      'Summary completion',
+      'Matching sentence endings',
+      'Multiple choice',
+      'Matching features',
+      'Yes / No / Not Given',
+    ],
+    level: 'Advanced',
+    format: 'full',
+    added: '2026-10-24',
+  },
 ]
 
 /** The practice set that best rehearses each lecture's skill. */
