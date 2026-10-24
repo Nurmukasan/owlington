@@ -881,6 +881,26 @@ export const practiceSets: PracticeInfo[] = [
     format: 'full',
     added: '2026-10-24',
   },
+  {
+    id: 'full-13',
+    title: 'Full Test 13',
+    summary: 'The Boston merchant who sold ice to the tropics · seed banks as insurance against disaster · why cities grow taller.',
+    minutes: 60,
+    questionCount: 40,
+    kinds: [
+      'Table completion',
+      'True / False / Not Given',
+      'Matching headings',
+      'Matching features',
+      'Short-answer questions',
+      'Multiple choice',
+      'Multiple choice (choose two)',
+      'Yes / No / Not Given',
+    ],
+    level: 'Advanced',
+    format: 'full',
+    added: '2026-10-24',
+  },
 ]
 
 /** The practice set that best rehearses each lecture's skill. */
