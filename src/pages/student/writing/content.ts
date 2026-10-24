@@ -515,6 +515,50 @@ export const practiceSets: PracticeInfo[] = [
     format: 'full',
     added: '2026-10-24',
   },
+  {
+    id: 'wfull-09',
+    title: 'Full Test 9',
+    summary: 'Task 1: who exercises enough, by age group, in 2005 and 2025 (bar chart). Task 2: why school leavers lack life skills, and how to fix it (problem–solution).',
+    minutes: 60,
+    questionCount: 20,
+    kinds: ['Task 1 · Academic', 'Task 2', 'Full test'],
+    level: 'Intermediate',
+    format: 'full',
+    added: '2026-10-24',
+  },
+  {
+    id: 'wfull-10',
+    title: 'Full Test 10',
+    summary: 'Task 1: how four countries use water each day (table). Task 2: why fewer people read newspapers — and will print disappear? (two-part question).',
+    minutes: 60,
+    questionCount: 20,
+    kinds: ['Task 1 · Academic', 'Task 2', 'Full test'],
+    level: 'Advanced',
+    format: 'full',
+    added: '2026-10-24',
+  },
+  {
+    id: 'wfull-11',
+    title: 'Full Test 11',
+    summary: 'Task 1: a fishing port turned into a leisure waterfront (two maps). Task 2: should advertising aimed at children be banned? (opinion).',
+    minutes: 60,
+    questionCount: 20,
+    kinds: ['Task 1 · Academic', 'Task 2', 'Full test'],
+    level: 'Advanced',
+    format: 'full',
+    added: '2026-10-24',
+  },
+  {
+    id: 'wfull-12',
+    title: 'Full Test 12',
+    summary: 'Task 1: how a house collects and reuses rainwater (process). Task 2: is space exploration a waste of money? (discussion).',
+    minutes: 60,
+    questionCount: 20,
+    kinds: ['Task 1 · Academic', 'Task 2', 'Full test'],
+    level: 'Intermediate',
+    format: 'full',
+    added: '2026-10-24',
+  },
 ]
 
 /** Light per-prompt facts the hub needs (the heavy material is in prompts.ts). */
@@ -533,6 +577,10 @@ export const PROMPT_META: Record<string, PromptMeta> = {
   'wfull-06': { task: 'task2', minWords: 400, stamp: 'FULL TEST' },
   'wfull-07': { task: 'task2', minWords: 400, stamp: 'FULL TEST' },
   'wfull-08': { task: 'task2', minWords: 400, stamp: 'FULL TEST' },
+  'wfull-09': { task: 'task2', minWords: 400, stamp: 'FULL TEST' },
+  'wfull-10': { task: 'task2', minWords: 400, stamp: 'FULL TEST' },
+  'wfull-11': { task: 'task2', minWords: 400, stamp: 'FULL TEST' },
+  'wfull-12': { task: 'task2', minWords: 400, stamp: 'FULL TEST' },
 }
 
 export const metaFor = (id: string): PromptMeta => PROMPT_META[id] ?? { task: 'task2', minWords: 250, stamp: 'ESSAY' }
