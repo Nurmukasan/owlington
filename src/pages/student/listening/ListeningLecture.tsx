@@ -174,7 +174,9 @@ function Studio({ lecture }: { lecture: Lecture }) {
               <span className="ls-minivu ls-minivu--r">
                 <i />
               </span>
-              <span className="ls-monitor__onair">ON AIR</span>
+              <span className="ls-monitor__onair" aria-hidden="true">
+                ON AIR
+              </span>
             </div>
             <div className="ls-monitor__bezel" ref={screen}>
               <LecturePlayer

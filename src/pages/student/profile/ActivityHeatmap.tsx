@@ -38,14 +38,14 @@ export function ActivityHeatmap({ dailyXp }: { dailyXp: Record<string, number> }
             <li key={i}>{d}</li>
           ))}
         </ol>
-        <ol
+        <div
           className="pf-heat__grid"
           role="img"
           aria-label={`Active on ${activeDays} of the last ${past.length} days, ${total} XP in total.`}
           style={{ '--weeks': WEEKS } as CSSProperties}
         >
           {cells.map((c) => (
-            <li
+            <span
               key={c.key}
               className={`pf-heat__cell is-l${c.level} ${c.future ? 'is-future' : ''} ${c.key === todayKey ? 'is-today' : ''}`}
               title={
@@ -55,7 +55,7 @@ export function ActivityHeatmap({ dailyXp }: { dailyXp: Record<string, number> }
               }
             />
           ))}
-        </ol>
+        </div>
       </div>
       <figcaption className="pf-heat__foot">
         <span>
