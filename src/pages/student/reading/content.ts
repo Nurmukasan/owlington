@@ -862,6 +862,25 @@ export const practiceSets: PracticeInfo[] = [
     format: 'full',
     added: '2026-10-24',
   },
+  {
+    id: 'full-12',
+    title: 'Full Test 12',
+    summary: 'Clipper ships racing home with the new season’s tea · how animals navigate across the globe · in defence of small talk.',
+    minutes: 60,
+    questionCount: 40,
+    kinds: [
+      'Note completion',
+      'True / False / Not Given',
+      'Matching information',
+      'Matching sentence endings',
+      'Summary completion',
+      'Multiple choice',
+      'Yes / No / Not Given',
+    ],
+    level: 'Intermediate',
+    format: 'full',
+    added: '2026-10-24',
+  },
 ]
 
 /** The practice set that best rehearses each lecture's skill. */
