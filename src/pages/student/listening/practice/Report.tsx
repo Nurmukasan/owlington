@@ -227,8 +227,8 @@ export function Report({ info, set, station, result, answers, voices, cast, rate
             </dd>
           </div>
           <div>
-            <dt>XP earned</dt>
-            <dd className="ls-board__xp">+{attempt.xp}</dd>
+            <dt>{attempt.repeat ? 'XP · retake' : 'XP earned'}</dt>
+            <dd className="ls-board__xp">{attempt.repeat ? '0' : `+${attempt.xp}`}</dd>
           </div>
           <div>
             <dt>Band estimate</dt>
@@ -245,6 +245,7 @@ export function Report({ info, set, station, result, answers, voices, cast, rate
         </dl>
         <p className="ls-board__fine">
           The band is a rough guide: it assumes you kept this accuracy across all 40 questions of a full test.
+          {attempt.repeat && ' This was a retake: XP is earned on the first attempt only.'}
         </p>
 
         <div className="ls-board__actions">

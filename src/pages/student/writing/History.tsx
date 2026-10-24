@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { Attempt } from '../../../learn/progress'
+import { xpLabel, type Attempt } from '../../../learn/progress'
 import { detailOf, formatBand, formatDate, hasJudgedBand } from './stats'
 
 /** Past submissions for one prompt, newest first; each one can be opened and read. */
@@ -39,7 +39,7 @@ export function History({ attempts, title = 'Past submissions', light = false, n
                     {Noun} {attempts.length - i} · {formatDate(a.at, true)}
                   </span>
                   <span className="wr-history__meta">
-                    {d.words} words · checklist {a.score}/{a.total} · {Math.round(a.durationSec / 60)} min · +{a.xp} XP
+                    {d.words} words · checklist {a.score}/{a.total} · {Math.round(a.durationSec / 60)} min · {xpLabel(a)}
                     {!judged && a.band ? ' · too short for a band' : ''}
                   </span>
                 </span>

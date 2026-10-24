@@ -136,7 +136,7 @@ export function PracticeResults({ info, attempt, graded, previousBest, firstName
     } else {
       sfx.page()
     }
-    timers.push(window.setTimeout(() => xpRef.current && floatText(`+${attempt.xp} XP`, xpRef.current, '#ffcf5c'), 900))
+    if (attempt.xp > 0) timers.push(window.setTimeout(() => xpRef.current && floatText(`+${attempt.xp} XP`, xpRef.current, '#ffcf5c'), 900))
     return () => timers.forEach((t) => window.clearTimeout(t))
   }, [great, attempt.xp])
 
@@ -183,14 +183,17 @@ export function PracticeResults({ info, attempt, graded, previousBest, firstName
                 Personal best still {previousBest.score}/{previousBest.total}
               </p>
             )}
+            {attempt.repeat && (
+              <p className="rd-verdict__pb rd-verdict__pb--muted">Retake: XP is earned on the first attempt only.</p>
+            )}
           </div>
 
           <AccuracyRing value={accuracy} shown={ring} />
 
           <dl className="rd-verdict__facts">
             <div ref={xpRef}>
-              <dt>XP earned</dt>
-              <dd>+{Math.round(xp)}</dd>
+              <dt>{attempt.repeat ? 'XP · retake' : 'XP earned'}</dt>
+              <dd>{attempt.repeat ? '0' : `+${Math.round(xp)}`}</dd>
             </div>
             <div>
               <dt>Band estimate</dt>

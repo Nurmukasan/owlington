@@ -114,7 +114,9 @@ All test content is original: the Cambridge IELTS Academic books were used only 
 
 - **Practice XP**: 1 XP for every correct answer in Reading and Listening (a 10-question focused test is worth up
   to 10 XP, a 40-question full test up to 40), and the band for Writing (band 6 → 6 XP; half bands round up).
-  Finishing a lecture gives 5 XP. The rules live in `XP_RULES` and `attemptXp()` in
+  Only a test's **first attempt** earns XP; retakes are recorded (and count for bands and best scores) but give
+  none. Finishing a lecture gives 5 XP, once per video lesson, and each achievement pays out once. Progress
+  re-reads what other tabs saved before it awards anything, so two open tabs can't pay twice. The rules live in `XP_RULES` and `attemptXp()` in
   [`src/learn/progress.ts`](src/learn/progress.ts).
 - **Ranks** (shown as `RANK n` in the top bar), in `RANKS` in `progress.ts`:
 

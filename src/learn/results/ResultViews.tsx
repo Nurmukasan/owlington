@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { PixelSprite } from '../../components/PixelSprite'
 import { findPractice } from '../catalog'
-import type { Attempt, AttemptItem } from '../progress'
+import { xpLabel, type Attempt, type AttemptItem } from '../progress'
 import {
   SECTION_META,
   accuracyOf,
@@ -142,7 +142,7 @@ export function ResultDetail({ attempt: a, all, backTo }: { attempt: Attempt; al
             {titleOf(a)}
           </h2>
           <p className="rs-detail__when">
-            {formatWhen(a.at)} · +{a.xp} XP
+            {formatWhen(a.at)} · {xpLabel(a)}
           </p>
         </div>
       </header>

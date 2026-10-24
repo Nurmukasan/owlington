@@ -99,7 +99,7 @@ export function Results({ info, prompt, attempt, checks, text, analysis, history
       sfx.complete()
       const el = sealRef.current
       if (accuracy >= 0.7) pixelConfetti(el ?? undefined, { count: 80, colors: ['#ff9a85', '#b3262e', '#d9b464', '#fbf4e4', '#2a78d6'] })
-      if (el) floatText(`+${attempt.xp} XP`, el, '#ff9a85')
+      if (el && attempt.xp > 0) floatText(`+${attempt.xp} XP`, el, '#ff9a85')
     }, 520)
     return () => window.clearTimeout(timer)
   }, [accuracy, attempt.xp])
@@ -182,9 +182,11 @@ export function Results({ info, prompt, attempt, checks, text, analysis, history
               </span>
             </ProgressRing>
             <div className="wr-sealed__xp">
-              <span className="wr-sealed__xp-n">+{Math.round(shownXp)}</span>
-              <span className="wr-sealed__xp-l">XP earned</span>
-              <span className="wr-sealed__xp-s">{analysis.words} words added to your total</span>
+              <span className="wr-sealed__xp-n">{attempt.repeat ? '0' : `+${Math.round(shownXp)}`}</span>
+              <span className="wr-sealed__xp-l">{attempt.repeat ? 'XP · retake' : 'XP earned'}</span>
+              <span className="wr-sealed__xp-s">
+                {attempt.repeat ? 'XP is earned on the first attempt only' : `${analysis.words} words added to your total`}
+              </span>
             </div>
             <div className="wr-sealed__owl">
               <TalkingOwl happy={accuracy >= 0.5} scale={4} />

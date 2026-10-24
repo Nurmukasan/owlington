@@ -57,23 +57,28 @@ export interface Attempt extends AttemptInput {
   section: SectionId
   at: string
   xp: number
+  /** A retake of a test already done: XP is earned on the first attempt only. */
+  repeat?: boolean
 }
 
 export interface ProgressState {
-  version: 3
+  version: 4
   xp: number
   lectures: Record<string, LectureProgress>
   attempts: Attempt[]
+  /** Tests that have paid out their XP (`section:practiceId` → when). Kept apart from the attempts, which are trimmed. */
+  rewarded: Record<string, string>
   /** XP earned per local day (YYYY-MM-DD). A key with 0 still counts as an active day. */
   dailyXp: Record<string, number>
   achievements: Record<string, string>
 }
 
 const emptyState = (): ProgressState => ({
-  version: 3,
+  version: 4,
   xp: 0,
   lectures: {},
   attempts: [],
+  rewarded: {},
   dailyXp: {},
   achievements: {},
 })
@@ -88,9 +93,13 @@ export const XP_RULES = {
 export const DAILY_GOAL = 30
 
 export const lectureKey = (section: SectionId, lectureId: string) => `${section}:${lectureId}`
+export const practiceKey = (section: SectionId, practiceId: string) => `${section}:${practiceId}`
+
+/** How an attempt's XP reads in lists and results: "+12 XP", or that a retake earns none. */
+export const xpLabel = (a: Pick<Attempt, 'xp' | 'repeat'>) => (a.repeat ? 'retake · no XP' : `+${a.xp} XP`)
 
 /**
- * XP for one practice attempt. Reading and Listening: 1 XP per correct answer, so a
+ * XP for a test's first attempt (retakes earn none). Reading and Listening: 1 XP per correct answer, so a
  * 10-question focused test is worth up to 10 XP and a 40-question full test up to 40.
  * Writing: the band, so a band 6 essay earns 6 XP (half bands round up: 6.5 → 7).
  */
@@ -383,6 +392,23 @@ function migrateFromV2(old: Stored): Stored {
   return { ...state, version: 3 }
 }
 
+/** Version 3 → 4: a test pays XP on its first attempt only; the XP retakes earned is taken back. */
+function migrateFromV3(old: Stored): Stored {
+  const state = { ...emptyState(), ...old, dailyXp: { ...old.dailyXp }, rewarded: {} as Record<string, string> }
+  state.attempts = [...state.attempts]
+    .sort((a, b) => (a.at < b.at ? -1 : 1))
+    .map((a) => {
+      const key = practiceKey(a.section, a.practiceId)
+      if (!state.rewarded[key]) {
+        state.rewarded[key] = a.at
+        return a
+      }
+      shiftXp(state, a.at, -a.xp)
+      return { ...a, xp: 0, repeat: true }
+    })
+  return { ...state, version: 4 }
+}
+
 function load(key: string): { state: ProgressState; migrated: boolean } {
   try {
     const raw = localStorage.getItem(key)
@@ -391,11 +417,12 @@ function load(key: string): { state: ProgressState; migrated: boolean } {
     const from = stored.version
     if (stored.version === 1) stored = migrateFromV1(stored)
     if (stored.version === 2) stored = migrateFromV2(stored)
-    if (stored.version !== 3) return { state: emptyState(), migrated: false }
-    const state: ProgressState = { ...emptyState(), ...stored, version: 3 }
+    if (stored.version === 3) stored = migrateFromV3(stored)
+    if (stored.version !== 4) return { state: emptyState(), migrated: false }
+    const state: ProgressState = { ...emptyState(), ...stored, version: 4 }
     // dailyGoal was a setting until version 2; the goal is fixed now.
     delete (state as Partial<{ dailyGoal: number }>).dailyGoal
-    return { state: { ...state, xp: Math.max(0, state.xp) }, migrated: from !== 3 }
+    return { state: { ...state, xp: Math.max(0, state.xp) }, migrated: from !== 4 }
   } catch {
     return { state: emptyState(), migrated: false }
   }
@@ -405,12 +432,28 @@ export class ProgressStore {
   private state: ProgressState
   private readonly key: string
   private readonly listeners = new Set<() => void>()
+  /** The saved JSON this store last read or wrote, to notice when another tab has saved since. */
+  private raw: string | null = null
 
   constructor(userId: string) {
     this.key = `owlington:progress:${userId}`
     const { state, migrated } = load(this.key)
     this.state = state
+    this.raw = readRaw(this.key)
     if (migrated) this.commit(state, [])
+    // Another tab saved: pick it up so this one never pays out the same XP twice.
+    window.addEventListener('storage', (e) => {
+      if (e.key === this.key && this.sync()) this.listeners.forEach((l) => l())
+    })
+  }
+
+  /** Reload when the saved progress changed under us. Returns whether it did. */
+  private sync() {
+    const raw = readRaw(this.key)
+    if (raw === this.raw) return false
+    this.raw = raw
+    this.state = load(this.key).state
+    return true
   }
 
   subscribe = (listener: () => void) => {
@@ -424,6 +467,7 @@ export class ProgressStore {
 
   /** Save lecture progress. Crossing 95% completes the lecture once (+XP_RULES.lectureComplete). */
   updateLecture = (section: SectionId, lectureId: string, update: { watched: number; position: number }) => {
+    this.sync()
     const key = lectureKey(section, lectureId)
     const prev = this.state.lectures[key]
     const watched = Math.max(prev?.watched ?? 0, Math.min(1, update.watched))
@@ -442,11 +486,19 @@ export class ProgressStore {
     return { justCompleted }
   }
 
-  /** Record a finished practice attempt; returns it with the XP it earned. */
+  /** Record a finished practice attempt; returns it with the XP it earned (none for a retake). */
   recordAttempt = (section: SectionId, input: AttemptInput): Attempt => {
-    const attempt: Attempt = { ...input, section, at: new Date().toISOString(), xp: attemptXp({ ...input, section }) }
+    this.sync()
+    const at = new Date().toISOString()
+    const key = practiceKey(section, input.practiceId)
+    const repeat = Boolean(this.state.rewarded[key])
+    const attempt: Attempt = { ...input, section, at, xp: repeat ? 0 : attemptXp({ ...input, section }), ...(repeat ? { repeat } : {}) }
     const events: ProgressEvent[] = []
-    let state: ProgressState = { ...this.state, attempts: [...this.state.attempts, attempt].slice(-MAX_ATTEMPTS) }
+    let state: ProgressState = {
+      ...this.state,
+      attempts: [...this.state.attempts, attempt].slice(-MAX_ATTEMPTS),
+      rewarded: repeat ? this.state.rewarded : { ...this.state.rewarded, [key]: at },
+    }
     state = this.addXp(state, attempt.xp, 'Practice complete', events)
     this.commit(state, events)
     return attempt
@@ -483,12 +535,22 @@ export class ProgressStore {
   private commit(state: ProgressState, events: ProgressEvent[]) {
     this.state = state
     try {
-      localStorage.setItem(this.key, JSON.stringify(state))
+      const raw = JSON.stringify(state)
+      localStorage.setItem(this.key, raw)
+      this.raw = raw
     } catch {
       // Storage full or blocked — progress still works for this session.
     }
     this.listeners.forEach((l) => l())
     events.forEach((e) => eventListeners.forEach((l) => l(e)))
+  }
+}
+
+function readRaw(key: string) {
+  try {
+    return localStorage.getItem(key)
+  } catch {
+    return null
   }
 }
 
