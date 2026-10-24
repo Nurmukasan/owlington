@@ -47,13 +47,6 @@ export function LibraryHero({ firstName, stats, progress, step }: LibraryHeroPro
     return () => window.clearTimeout(id)
   }, [line])
 
-  // Owl babble while the librarian speaks.
-  useEffect(() => {
-    if (!talking) return
-    const id = window.setInterval(() => sfx.talk('librarian'), 70)
-    return () => window.clearInterval(id)
-  }, [talking])
-
   useEffect(() => {
     if (reduced) return
     const looks: (-1 | 0 | 1)[] = [-1, 0, -1, 1, 0]
