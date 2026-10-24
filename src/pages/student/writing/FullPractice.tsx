@@ -240,9 +240,9 @@ export function FullPractice({ info, test }: { info: PracticeInfo; test: FullWri
   const handInNote = ready
     ? ''
     : words
-        .map((w, i) => (w < floors[i] ? `${TASK_NAMES[i]} needs ${floors[i] - w} more` : ''))
+        .map((w, i) => (w < floors[i] ? `${TASK_NAMES[i]} needs ${floors[i] - w} more words` : ''))
         .filter(Boolean)
-        .join(' · ')
+        .join(', ')
 
   return (
     <div className={`wr-world wr-practice wr-practice--${phase} wr-full`}>
@@ -279,7 +279,7 @@ export function FullPractice({ info, test }: { info: PracticeInfo; test: FullWri
           onSubmit={() => submit()}
           wordBump={0}
           limitSec={LIMIT}
-          handIn={{ ok: ready, note: handInNote }}
+          handIn={{ ok: ready, note: `· ${handInNote}` }}
           switcher={
             <div className="wr-switch" role="group" aria-label="Choose a task">
               {prompts.map((p, i) => (

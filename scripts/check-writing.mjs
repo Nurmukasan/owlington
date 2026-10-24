@@ -1,5 +1,5 @@
 // Checks every writing prompt: visuals consistent, notes quote the model answer, and
-// the model answer passes its own checklist (at least 9 of 10 points).
+// the model answer passes its whole checklist.
 // Run: node scripts/check-writing.mjs [id ...]
 import { createServer } from 'vite'
 
@@ -47,6 +47,7 @@ function checkPrompt(id, p, minScore) {
   const met = results.filter((r) => r.met).length
   const missed = results.filter((r) => !r.met).map((r) => r.id)
   if (met < minScore) report(id, `model meets ${met}/${results.length} (missed: ${missed.join(', ')})`)
+  if (process.env.WHY) for (const r of results.filter((r) => !r.met)) console.log(`    · ${id} ${r.id}: ${r.found}`)
   return `${words}w ${met}/${results.length}${missed.length ? ` (−${missed.join(',')})` : ''}`
 }
 
@@ -59,14 +60,14 @@ for (const info of practiceSets) {
       continue
     }
     if (t.task1.task === 'task2' || t.task2.task !== 'task2') report(info.id, 'tasks in the wrong order')
-    console.log(`${info.id}: T1 ${checkPrompt(t.task1.id, t.task1, 9)} · T2 ${checkPrompt(t.task2.id, t.task2, 9)}`)
+    console.log(`${info.id}: T1 ${checkPrompt(t.task1.id, t.task1, 10)} · T2 ${checkPrompt(t.task2.id, t.task2, 10)}`)
   } else {
     const p = await loadPrompt(info.id)
     if (!p) {
       report(info.id, 'no data')
       continue
     }
-    console.log(`${info.id}: ${checkPrompt(info.id, p, 9)}`)
+    console.log(`${info.id}: ${checkPrompt(info.id, p, 10)}`)
   }
 }
 console.log(problems ? `\n${problems} problem(s)` : '\nAll writing prompts look consistent.')
