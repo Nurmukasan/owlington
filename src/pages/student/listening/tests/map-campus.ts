@@ -19,7 +19,7 @@ const CAMPUS: MapSpec = {
     { kind: 'building', x: 270, y: 30, w: 100, h: 50, label: 'Library' },
     { kind: 'building', x: 350, y: 360, w: 110, h: 60, label: 'Great Hall' },
   ],
-  points: { A: [285, 400], B: [130, 290], C: [50, 230], D: [285, 210], E: [230, 55], F: [400, 55], G: [520, 120], H: [590, 270], I: [400, 315] },
+  points: { A: [285, 400], B: [130, 290], C: [50, 230], D: [285, 210], E: [230, 55], F: [400, 55], G: [560, 178], H: [590, 270], I: [400, 315] },
   here: [320, 430],
   hereLabel: 'MAIN GATE',
 }

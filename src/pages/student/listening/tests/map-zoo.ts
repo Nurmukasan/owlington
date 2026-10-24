@@ -17,7 +17,7 @@ const ZOO: MapSpec = {
     { kind: 'water', x: 190, y: 140, w: 250, h: 190, round: true, label: 'Lake' },
     { kind: 'building', x: 270, y: 345, w: 90, h: 40, label: 'Café' },
   ],
-  points: { A: [585, 370], B: [565, 250], C: [530, 100], D: [320, 80], E: [315, 235], F: [120, 110], G: [95, 260], H: [150, 390] },
+  points: { A: [585, 370], B: [565, 250], C: [500, 145], D: [320, 80], E: [315, 290], F: [120, 110], G: [95, 260], H: [150, 390] },
   here: [590, 430],
   hereLabel: 'ENTRANCE',
 }

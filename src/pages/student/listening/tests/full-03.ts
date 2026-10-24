@@ -18,7 +18,7 @@ const ISLAND: MapSpec = {
     { kind: 'building', x: 560, y: 40, w: 40, h: 50, label: 'Light-\nhouse' },
     { kind: 'label', x: 320, y: 455, text: 'Jetty', small: true },
   ],
-  points: { A: [205, 410], B: [280, 120], C: [320, 125], D: [520, 80], E: [575, 300], F: [400, 425], G: [255, 225], H: [140, 335] },
+  points: { A: [205, 410], B: [280, 120], C: [320, 125], D: [505, 105], E: [575, 300], F: [400, 425], G: [255, 225], H: [100, 385] },
   here: [320, 400],
   hereLabel: 'JETTY',
 }

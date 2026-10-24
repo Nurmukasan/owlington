@@ -21,7 +21,7 @@ const MUSEUM: MapSpec = {
     { kind: 'stage', x: 130, y: 160, w: 320, h: 200, label: 'Gallery' },
     { kind: 'building', x: 40, y: 330, w: 70, h: 40, label: 'Desk' },
   ],
-  points: { A: [115, 85], B: [305, 85], C: [510, 85], D: [540, 215], E: [540, 320], F: [290, 260], G: [300, 410], H: [75, 300] },
+  points: { A: [115, 85], B: [305, 85], C: [510, 85], D: [540, 215], E: [540, 320], F: [290, 305], G: [300, 410], H: [75, 300] },
   here: [60, 420],
   hereLabel: 'ENTRANCE',
 }

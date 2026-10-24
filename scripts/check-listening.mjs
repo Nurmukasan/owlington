@@ -43,6 +43,13 @@ for (const info of practiceSets) {
   for (const sp of new Set(lines.map((l) => l.s))) if (!set.speakers.some((s) => s.id === sp)) report(info.id, `unknown speaker ${sp}`)
 
   for (const g of set.groups) {
+    // a letter pin sitting on a shape's centred label hides the label
+    for (const sh of g.map?.shapes ?? []) {
+      if (!('w' in sh) || !sh.label) continue
+      const [cx, cy] = [sh.x + sh.w / 2, sh.y + sh.h / 2]
+      for (const [k, [x, y]] of Object.entries(g.map.points))
+        if (Math.abs(x - cx) < 18 + sh.label.length * 4 && Math.abs(y - cy) < 22) report(info.id, `map letter ${k} covers the label "${sh.label}"`)
+    }
     const said = g.instruction?.match(/Questions (\d+)–(\d+)/)
     if (said) {
       const [a, b] = [g.questions[0].n, g.questions[g.questions.length - 1].n]

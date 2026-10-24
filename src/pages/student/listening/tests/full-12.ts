@@ -19,7 +19,7 @@ const TOWN: MapSpec = {
     { kind: 'green', x: 500, y: 300, w: 120, h: 130, label: 'Park' },
     { kind: 'label', x: 560, y: 140, text: 'High Street', small: true },
   ],
-  points: { A: [50, 150], B: [400, 40], C: [330, 275], D: [365, 120], E: [600, 175], F: [560, 380], G: [75, 300], H: [200, 210] },
+  points: { A: [50, 150], B: [400, 40], C: [330, 322], D: [365, 120], E: [600, 175], F: [585, 412], G: [75, 300], H: [200, 210] },
   here: [330, 435],
   hereLabel: 'TOWN HALL',
 }
