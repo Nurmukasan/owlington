@@ -53,9 +53,9 @@ with its own metaphor, layout and motion. Every section has the same three pages
 
 | | Concept | Lectures | Practice |
 | --- | --- | --- | --- |
-| **Reading** | *The Moonlit Library*: a candlelit library tower with moonbeams and drifting dust | 8 lectures as books on a shelf; a bookmark ribbon shows how far you've read | 4 original passages with 48 questions in the real exam layout (passage beside questions): True/False/Not Given, matching headings, completion tasks with word limits, highlighting, a candle timer, a question navigator, review with "show in passage" and a "second look" retry mode |
-| **Listening** | *Owl FM*: a rooftop radio station under the aurora | 7 lectures as cassette tapes; the tape winds from reel to reel as you watch | 4 broadcasts (Parts 1–4, 39 questions) read aloud by the browser's speech voices with different accents (exam mode: plays once; practice mode: pause and replay), form/note completion, multiple choice and map labelling, with a transcript review that highlights answers and distractors |
-| **Writing** | *The Inkwell Study*: a lantern-lit desk by a rainy window | 8 lectures as sealed letters pinned to a board | 6 prompts — Academic Task 1 (an original chart and a process), a General Training letter and three Task 2 essays — in a writing studio: ink-clock timer, live word goal, linking-word and sentence-rhythm panels, autosave, an automatic 10-point checklist, self-assessment on the four official criteria and annotated model answers |
+| **Reading** | *The Moonlit Library*: a candlelit library tower with moonbeams and drifting dust | 8 lectures as books on a shelf; a bookmark ribbon shows how far you've read | **15 full tests** (three passages, 40 questions, 60 minutes, passage tabs) and **27 focused tests** by question type — every IELTS Reading task: T/F/NG, Y/N/NG, headings, matching information / features / sentence endings, multiple choice (one and two answers), summary, note, table and flow-chart completion, short answers. Passage beside questions, highlighting, a candle timer, a question navigator, review with "show in passage" and a "second look" retry mode |
+| **Listening** | *Owl FM*: a rooftop radio station under the aurora | 7 lectures as cassette tapes; the tape winds from reel to reel as you watch | **15 full tests** (four parts, 40 questions) and **21 focused tests** by question type: form, note, table, flow-chart and sentence completion, spelling & numbers, multiple choice (one and two answers), matching and map/plan labelling. Studio recordings (ElevenLabs, real British and Australian voices) where recorded, otherwise the browser's speech voices; exam mode plays once; a transcript review highlights answers and distractors |
+| **Writing** | *The Inkwell Study*: a lantern-lit desk by a rainy window | 8 lectures as sealed letters pinned to a board | **15 full tests** (Task 1 + Task 2 against one 60-minute clock, switching freely between the papers; Task 2 counts double in the band) and **24 focused prompts** by type: line, bar, pie, table, mixed charts, process, maps, a GT letter; opinion, discussion, advantages–disadvantages, problem–solution and two-part essays. Writing studio: ink-clock timer, live word goal, linking-word and sentence-rhythm panels, autosave, an automatic 10-point checklist, self-assessment on the four official criteria and annotated model answers |
 
 <p>
   <img src="docs/screenshots/reading.png" alt="Reading — The Moonlit Library" width="32%" />
@@ -86,6 +86,26 @@ Each section's `content.ts` lists its practice tests (`practiceSets`). Two field
 format: 'full' | 'focused' // which tab the test sits in (default: 'focused')
 tags: ['Yes / No / Not Given'] // question types for the filter chips (default: `kinds`)
 ```
+
+The questions themselves live in one module per test, loaded only when the test is opened, and are written with small
+builders that number questions and keep evidence next to every answer:
+
+| Section | Test modules | Builders | Check everything |
+| --- | --- | --- | --- |
+| Reading | `reading/tests/<id>.ts` | `reading/build.ts` (`tfng`, `headings`, `summary`, `table`, `passage`, `test`…) | `node scripts/check-reading.mjs [ids]` |
+| Listening | `listening/tests/<id>.ts` (+ `<id>.audio.json` when recorded) | `listening/build.ts` (`form`, `notes`, `mcq`, `choose2`, `matching`, `map`, `part`, `test`) | `node scripts/check-listening.mjs [ids]` |
+| Writing | `writing/tasks/<id>.ts`, full tests in `writing/tests/<id>.ts` | `writing/build.ts` (`task1`, `task2`, `fullTest`) | `node scripts/check-writing.mjs [ids]` |
+
+The checkers verify that every answer is supported by quoted evidence in the passage or script, word limits, question
+numbering, map labels and chart data, and (Writing) that each model answer passes its own 10-point checklist.
+
+**Recording Listening tests.** Scripts are voiced with ElevenLabs (one voice per speaker; the announcer is the same
+throughout). `scripts/audio-plan.mjs <id> <dir>` splits a test into one chunk per speaker, `scripts/audio-fetch.mjs`
+downloads the finished takes and `scripts/audio-build.mjs <id> <dir>` cuts them at the pauses, assembles
+`public/audio/listening/<id>.mp3` and writes the line timings to `tests/<id>.audio.json`. A test without a recording
+falls back to the browser's voices. A full test needs about 15–17k ElevenLabs credits.
+
+All test content is original: the Cambridge IELTS Academic books were used only as a guide to format and question types.
 
 ### Progress & motivation
 
@@ -259,9 +279,10 @@ Pages…). Configure the host to serve `index.html` for unknown paths so routes 
 
 - [x] Reading, Listening and Writing sections with lectures, practice tests and progress tracking
 - [x] Student profile: progress, unified results, avatar and account settings
-- [ ] Write 20–30 practice tests per section (half full tests, half by question type)
+- [x] 15 full tests per section plus focused tests by question type (Reading 42, Listening 36, Writing 39)
+- [ ] Record the remaining Listening tests with ElevenLabs (Full Tests 1–2 are recorded)
 - [ ] Record and upload the real video lectures
 - [ ] Design the teacher dashboard (upload lectures, organise courses, see students, review essays)
 - [ ] Real backend: accounts, sessions, progress, video storage
 - [ ] Writing bands checked by the DeepSeek API instead of the student's self-assessment
-- [ ] Teacher feedback on writing; recorded audio for Listening (today it uses the browser's voices)
+- [ ] Teacher feedback on writing
