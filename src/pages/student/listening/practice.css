@@ -1630,8 +1630,10 @@
 
 .ls-tape {
   flex: 1;
+  min-width: 0;
   display: flex;
-  gap: 2px;
+  /* a full test has 100+ segments: they must still fit a phone */
+  gap: 1px;
   height: 20px;
   padding: 3px;
   border-radius: 4px;
@@ -1647,7 +1649,7 @@
 .ls-tape__seg {
   --ls-fill: 0;
   flex-basis: 0;
-  min-width: 2px;
+  min-width: 1px;
   border-radius: 1px;
   background: linear-gradient(90deg, var(--ls-teal) calc(var(--ls-fill) * 100%), rgb(111 227 207 / 0.15) 0);
   transition: filter 120ms ease;
@@ -4115,7 +4117,7 @@
   }
 
   .ls-live__grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .ls-live__deck {

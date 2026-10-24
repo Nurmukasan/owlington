@@ -148,7 +148,7 @@ export function Studio(props: StudioProps) {
           )}
         </button>
         <span id="wr-floor-note" className="visually-hidden">
-          {props.handIn ? `You can hand in once ${props.handIn.note}.` : `You can hand in your ${noun} once it has at least ${floor} words.`}
+          {props.handIn ? `Not ready to hand in yet: ${props.handIn.note}.` : `You can hand in your ${noun} once it has at least ${floor} words.`}
         </span>
       </div>
       <p className="visually-hidden" aria-live="polite">
