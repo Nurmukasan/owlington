@@ -822,6 +822,26 @@ export const practiceSets: PracticeInfo[] = [
     format: 'full',
     added: '2026-10-24',
   },
+  {
+    id: 'full-10',
+    title: 'Full Test 10',
+    summary: 'Villages that drink from the clouds · the microplastics found almost everywhere · the strange power of the sugar pill.',
+    minutes: 60,
+    questionCount: 40,
+    kinds: [
+      'Note completion',
+      'True / False / Not Given',
+      'Matching information',
+      'Matching features',
+      'Short-answer questions',
+      'Multiple choice',
+      'Matching sentence endings',
+      'Yes / No / Not Given',
+    ],
+    level: 'Intermediate',
+    format: 'full',
+    added: '2026-10-24',
+  },
 ]
 
 /** The practice set that best rehearses each lecture's skill. */
