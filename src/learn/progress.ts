@@ -216,6 +216,14 @@ const infoOf = (a: Attempt) => findPractice(a.section, a.practiceId)
 const isFull = (a: Attempt) => infoOf(a)?.format === 'full'
 const isPerfect = (a: Attempt) => a.total > 0 && a.score >= a.total
 const hasBand = (a: Attempt, min: number) => typeof a.band === 'number' && a.band >= min
+/** The Task 1 band of a Writing attempt: a focused Task 1 prompt, or the Task 1 half of a full test. */
+function taskOneBand(a: Attempt) {
+  if (isFull(a)) {
+    const tasks = (a.detail as { tasks?: unknown } | undefined)?.tasks
+    return Array.isArray(tasks) && typeof tasks[0] === 'number' ? tasks[0] : 0
+  }
+  return (focusOf(infoOf(a)) ?? '').startsWith('Task 1') && typeof a.band === 'number' ? a.band : 0
+}
 
 /** The one question type a focused test drills: its only tag. Mixed or full tests have none. */
 export function focusOf(info: PracticeInfo | undefined) {
@@ -303,8 +311,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     section: 'writing',
     xp: 50,
     goal: 1,
-    count: (s) =>
-      once(s, 'writing', (a) => hasBand(a, 8.5) && (focusOf(infoOf(a)) ?? '').startsWith('Task 1')),
+    count: (s) => once(s, 'writing', (a) => taskOneBand(a) >= 8.5),
   },
   {
     id: 'essay-weaving-owl',

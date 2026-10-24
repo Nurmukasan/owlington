@@ -139,7 +139,7 @@ All test content is original: the Cambridge IELTS Academic books were used only 
   | Reading | Skimming Owl | A skimming & scanning focused test with no mistakes | 30 |
   | Reading | True-False-Owl | Complete a True / False / Not Given focused test | 10 |
   | Reading | Bookworm Owl | Complete 10 different full tests | 100 |
-  | Writing | Graph-Watching Owl | Band 8.5–9.0 on a Task 1 | 50 |
+  | Writing | Graph-Watching Owl | Band 8.5–9.0 on a Task 1 (focused, or the Task 1 of a full test) | 50 |
   | Writing | Essay-Weaving Owl | Band 7.5+ on a full test | 100 |
 
   A focused test counts for a question type when that type is its **only** tag (`tags`, or `kinds` when there are
