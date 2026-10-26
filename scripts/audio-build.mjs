@@ -1,6 +1,6 @@
 // Cuts each generation into lines at its longest pauses and assembles one recording per broadcast.
 // Usage: node scripts/audio-build.mjs <id> <workdir> [--check]
-//   <workdir>/<id>/plan.json + <name>.mp3 per chunk  →  public/audio/listening/<id>.mp3
+//   <workdir>/<id>/plan.json + <name>.mp3 (or <id>__<name>.wav from AI Studio) per chunk  →  public/audio/listening/<id>.mp3
 //                                                        src/pages/student/listening/tests/<id>.audio.json
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs'
@@ -41,7 +41,8 @@ function silences(pcm, db = -40, minMs = 300) {
 const segments = {}
 let bad = 0
 for (const chunk of plan) {
-  const file = `${dir}/${chunk.name}.mp3`
+  // ElevenLabs takes are <chunk>.mp3; Google AI Studio takes come back as <id>__<chunk>.wav
+  const file = [`${dir}/${chunk.name}.mp3`, `${dir}/${id}__${chunk.name}.wav`, `${work}/${id}__${chunk.name}.wav`].find((f) => existsSync(f)) ?? `${dir}/${chunk.name}.mp3`
   if (!existsSync(file)) {
     console.log(`missing ${file}`)
     bad++
