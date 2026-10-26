@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState, type CSSProperties } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { LectureRail } from '../../../learn/components/LectureRail'
-import { findLecture, findPractice } from '../../../learn/catalog'
+import { findLecture, findVisiblePractice } from '../../../learn/catalog'
 import { LecturePlayer, type LecturePlayerHandle } from '../../../learn/components/LecturePlayer'
 import { XP_RULES } from '../../../learn/progress'
 import { sfx } from '../../../learn/sfx'
@@ -57,7 +57,7 @@ function Studio({ lecture }: { lecture: Lecture }) {
   const points = lecture.chapters.reduce((s, c) => s + c.points.length, 0)
 
   const practiceId = LECTURE_PRACTICE[lecture.id]
-  const practice = practiceId ? findPractice('listening', practiceId) : undefined
+  const practice = practiceId ? findVisiblePractice('listening', practiceId) : undefined
   const practiceStation = practice ? stationFor(practice.id) : undefined
   const remaining = lectures.filter((l) => l.id !== lecture.id && !progress.lecture('listening', l.id)?.completedAt)
   const nextUp = next && !progress.lecture('listening', next.id)?.completedAt ? next : (remaining[0] ?? next)

@@ -3,7 +3,7 @@
 import { createServer } from 'vite'
 
 const server = await createServer({ server: { middlewareMode: true }, appType: 'custom', logLevel: 'error' })
-const { practiceSets } = await server.ssrLoadModule('/src/pages/student/listening/content.ts')
+const { allPracticeSets: practiceSets } = await server.ssrLoadModule('/src/pages/student/listening/content.ts')
 const { loadSet } = await server.ssrLoadModule('/src/pages/student/listening/tests.ts')
 const { countAnswer, overLimit } = await server.ssrLoadModule('/src/pages/student/listening/answers.ts')
 const { liveRanges, GROUP_LABEL } = await server.ssrLoadModule('/src/pages/student/listening/practice/script.ts')

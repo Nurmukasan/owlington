@@ -60,7 +60,7 @@ export function PracticeCatalog({ section, worldName, fullFormat, inProgress = {
 
   const fullTests = all.filter((p) => p.format === 'full')
   const focusedTests = all.filter((p) => p.format !== 'full')
-  const tab: Tab = params.get('tab') === 'full' || (params.get('tab') !== 'focused' && !focusedTests.length) ? 'full' : 'focused'
+  const tab: Tab = params.get('tab') === 'full' || !focusedTests.length ? 'full' : 'focused'
   const type = params.get('type') ?? ''
   const status = (params.get('status') as Status | null) ?? 'all'
   const sort = (params.get('sort') as Sort | null) ?? 'recommended'
@@ -169,7 +169,10 @@ export function PracticeCatalog({ section, worldName, fullFormat, inProgress = {
               ['full', 'Full tests', fullTests.length],
               ['focused', 'By question type', focusedTests.length],
             ] as const
-          ).map(([id, label, count]) => (
+          )
+            // a kind with no tests yet (e.g. Listening broadcasts still unrecorded) gets no tab
+            .filter(([id, , count]) => id === 'full' || count > 0)
+            .map(([id, label, count]) => (
             <button
               key={id}
               type="button"

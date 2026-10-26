@@ -81,7 +81,7 @@ export function SectionGateway({ section, icon, lectureNoun = 'lecture', classNa
         <span className="gateway__body">
           <span className="gateway__tags">
             <span>{plural(full, 'full test')}</span>
-            <span>{focused} by question type</span>
+            {focused > 0 && <span>{focused} by question type</span>}
           </span>
           <span className="gateway__line">{practiceLine}</span>
         </span>

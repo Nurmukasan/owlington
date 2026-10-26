@@ -13,5 +13,13 @@ export const CATALOG: Record<SectionId, SectionCourse> = {
 export const findLecture = (section: SectionId, id: string | undefined) =>
   CATALOG[section].lectures.find((l) => l.id === id)
 
+/** Every test written, including Listening broadcasts not yet recorded (hidden from the site). */
+const ALL_PRACTICE = { reading: reading.practiceSets, listening: listening.allPracticeSets, writing: writing.practiceSets }
+
+/** Any test by id — on the site or not, so older attempts keep their titles and XP rules. */
 export const findPractice = (section: SectionId, id: string | undefined) =>
+  ALL_PRACTICE[section].find((p) => p.id === id)
+
+/** A test that is on the site. */
+export const findVisiblePractice = (section: SectionId, id: string | undefined) =>
   CATALOG[section].practiceSets.find((p) => p.id === id)

@@ -18,7 +18,7 @@ const ANNOUNCER = 'Charon'
 
 const server = await createServer({ server: { middlewareMode: true }, appType: 'custom', logLevel: 'error' })
 const { loadSet } = await server.ssrLoadModule('/src/pages/student/listening/tests.ts')
-const { practiceSets } = await server.ssrLoadModule('/src/pages/student/listening/content.ts')
+const { allPracticeSets: practiceSets } = await server.ssrLoadModule('/src/pages/student/listening/content.ts')
 const manifest = ['test,title,file,voice,accent,speaker,lines,chars']
 let jobs = 0
 let total = 0

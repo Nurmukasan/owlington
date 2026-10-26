@@ -297,7 +297,8 @@ export const lectures: Lecture[] = [
   },
 ]
 
-export const practiceSets: PracticeInfo[] = [
+/** Every broadcast written so far, recorded or not. */
+export const allPracticeSets: PracticeInfo[] = [
   {
     id: 'part1-enrolment',
     title: 'Part 1 · Evening course enrolment',
@@ -687,3 +688,11 @@ export const practiceSets: PracticeInfo[] = [
     added: '2026-10-24',
   },
 ]
+
+/*
+ * Only broadcasts with a studio recording (tests/<id>.audio.json) are on the
+ * site. The rest stay in the repo and appear on their own once recorded.
+ */
+const RECORDED = new Set(Object.keys(import.meta.glob('./tests/*.audio.json')).map((path) => path.slice(8, -11)))
+
+export const practiceSets: PracticeInfo[] = allPracticeSets.filter((p) => RECORDED.has(p.id))

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { useUser } from '../../../auth/auth-context'
-import { findPractice } from '../../../learn/catalog'
+import { findVisiblePractice } from '../../../learn/catalog'
 import { sfx } from '../../../learn/sfx'
 import type { PracticeInfo } from '../../../learn/types'
 import { useProgress } from '../../../learn/useProgress'
@@ -62,7 +62,7 @@ const scrollTop = () => window.scrollTo({ top: 0, behavior: 'auto' })
 
 export default function ListeningPractice() {
   const id = useParams().practiceId
-  const info = findPractice('listening', id)
+  const info = findVisiblePractice('listening', id)
   const [loaded, setLoaded] = useState<{ id: string; set: PracticeSet | null } | null>(null)
   useEffect(() => {
     if (!info) return

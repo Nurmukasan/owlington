@@ -4,7 +4,7 @@
  * read from this browser's storage, like everything else.
  */
 import type { User } from '../auth/mockAuthApi'
-import { CATALOG } from './catalog'
+import { CATALOG, findPractice } from './catalog'
 import { getProgressStore, rankFor, streakFor, type Attempt, type ProgressState } from './progress'
 import type { SectionId } from './types'
 import { sectionStats } from './useProgress'
@@ -79,5 +79,5 @@ export function studentReport(user: User): StudentReport {
 }
 
 /** Title of a test, for result lists. */
-export const testTitle = (section: SectionId, id: string) => CATALOG[section].practiceSets.find((p) => p.id === id)?.title ?? id
-export const testFormat = (section: SectionId, id: string) => CATALOG[section].practiceSets.find((p) => p.id === id)?.format ?? 'focused'
+export const testTitle = (section: SectionId, id: string) => findPractice(section, id)?.title ?? id
+export const testFormat = (section: SectionId, id: string) => findPractice(section, id)?.format ?? 'focused'
