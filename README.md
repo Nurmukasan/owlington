@@ -1,7 +1,7 @@
-# Owlington video delivery
+# Owlington promotional video
 
-Owlington.mp4 — revised 45-second promotional video, 1080×1920, 30 fps, H.264 with stereo sound effects. No narration.
+Revision3:45seconds,1080x1920,30fps,H.264 with stereo effects and no narration.
 
-Use Download raw file on GitHub to save the MP4.
+The approved first22seconds are preserved. The rest has new animated score reveals, moving illustrations and faster typography. The previous campus scene and named-university mention have been removed. Speaking/Overall7.5, Listening8.5, Reading8.5; OneSkillRetake, foreign-study opportunities, UNT English conversion and contacts remain.
 
-This branch contains delivery media only.
+Download Owlington.mp4 using Download raw file.
