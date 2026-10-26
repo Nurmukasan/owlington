@@ -1,7 +1,13 @@
 # Owlington promotional video
 
-Revision3:45seconds,1080x1920,30fps,H.264 with stereo effects and no narration.
+Current version:45-second revision3, with background music added. The encoded video stream is byte-identical to revision3; no images,text,animation or edit timing changed. Existing sound effects are retained.
 
-The approved first22seconds are preserved. The rest has new animated score reveals, moving illustrations and faster typography. The previous campus scene and named-university mention have been removed. Speaking/Overall7.5, Listening8.5, Reading8.5; OneSkillRetake, foreign-study opportunities, UNT English conversion and contacts remain.
+## Music credit
+
+“Outfoxing the Fox” — Kevin MacLeod (https://incompetech.com).
+Licensed under Creative Commons Attribution3.0: https://creativecommons.org/licenses/by/3.0/
+
+Source copy: https://github.com/mdn/webaudio-examples/tree/main/audio-basics
+This edit uses a45-second excerpt, with volume automation and fades, mixed with the existing effects. Please retain the music credit when publishing.
 
 Download Owlington.mp4 using Download raw file.
