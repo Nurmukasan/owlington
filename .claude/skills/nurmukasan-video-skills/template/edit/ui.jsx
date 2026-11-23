@@ -60,15 +60,15 @@ export function Hud({ at, dur, day, left, mock, hot = false }) {
     </Layer>
   )
 }
-// ---- captions: karaoke words, speaker tab, x 60-600 / y 872 (safe zone) ----
+// ---- captions: karaoke words, speaker tab, centred row x 90-630 / y 872 ----
 const WHO = { n: [C.white, null], k: ['#ffc2e6', 'КАТЯ'], m: ['#b8f5d4', 'МАМА'], f: ['#ffe08a', 'АНЯ · ГОЛОСОВОЕ'], e: ['#bfe3ff', null] }
 export function Caption({ at, dur, words, who = 'n' }) {
   const [col, label] = WHO[who]
   const lab = who === 'e' ? (words[0][0] === 'My' || (words[0][0] === 'Good' && at > 116) ? 'КАТЯ' : 'EXAMINER') : label
   return (
     <Layer at={at} dur={dur}>
-      {lab ? tab(330 - (lab.length * 12 + 26) / 2, 822, lab, who === 'k' || lab === 'КАТЯ' ? C.pink : who === 'm' ? C.mint : who === 'f' ? C.yellow : C.sky, C.ink, 12) : null}
-      <row x={60} y={872} width={540} gap={16} rowGap={14} wrap={true} justify="center">
+      {lab ? tab(360 - (lab.length * 12 + 26) / 2, 822, lab, who === 'k' || lab === 'КАТЯ' ? C.pink : who === 'm' ? C.mint : who === 'f' ? C.yellow : C.sky, C.ink, 12) : null}
+      <row x={90} y={872} width={540} gap={16} rowGap={14} wrap={true} justify="center">
         {words.map(([w, t, hi]) => (
           <text fontFamily={FONT} fontWeight={400} fontSize={27} color={hi ? C.yellow : col} lineHeight={1.3}
             shadow={{ x: 3, y: 4, blur: 0, color: C.ink }} strokeColor={C.ink} strokeWidth={7}

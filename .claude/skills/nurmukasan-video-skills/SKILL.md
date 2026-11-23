@@ -105,11 +105,12 @@ Moves that worked: fast dramatic push-in (hook); slow dolly forward with slight 
   - Undefined `T[key]` → «duration must be a finite number» (add the anchor to times.py).
 - UI kit (`ui.jsx`): lilac/pink palette, rounded panels with shadow + highlight line, tabs, chips, **HUD** (day N/7 pips + hours left + mock), Title, DayCard, RuleCard, karaoke `Caption` with speaker tab (КАТЯ pink, МАМА mint, АНЯ · ГОЛОСОВОЕ yellow, EXAMINER sky). Episode cards in `sc.example.jsx`: CEFR bar, chat with voice-message waveform, struck planner, IELTS structure board, growth chart, paraphrase cards, essay template, schedule, brain labels, progress bars, results report, OVERALL slam, CTA + logo.
 - Hide the HUD in emotional/full-screen moments (crying, mum, brain, speaking test).
-- Never cover the heroine's face with a card — place cards top (y 236-470) or low (y 540-800) depending on where the face is.
+- **NEVER cover the heroine's face or the key action (the user's #1 complaint).** Don't shrink the panels — move them. Before placing any card, look at the still/clip frames and find where the face is, then put the card on a free area: wall/window above the head (y 124-360 when the HUD is hidden or the head is low), or desk/legs/floor below the chin (y 560-860). Clips move (orbit/jump) — check frames across the whole clip. Example fixes in Katya v2: hook timer → chest (y 640); level bar → book/legs (y 600); «168 ЧАСОВ» in the bun shot → legs/floor (y 580, chip y 756); «100 слов» → wall (y 236); rule №2, growth chart, paraphrase, schedule, mock 6.0, progress bars → desk zone (y 560-860); park chips → right of her (x 420); results card → top (y 124); OVERALL 7.5 → legs (y 650); ending cards → above her head (y 130/246). If a card must sit where the face is, reframe the still so the face leaves the shot (essay: zoom 2.0 on the notebook).
+- A card must not hide the action it describes (plans card ends at the drawer cut so the phone-into-drawer is visible).
 
 ## 7. Safe zones (TikTok + Instagram) — mandatory
 
-720×1280: text/panels inside **x 56-664**; nothing important above **y 120** (HUD starts at 128); captions at **y 872** in a 540-px row (x 60-600); keep the **right column (x > 610, middle to bottom)** free of text; IG grid shows the centre 3:4 — the cover's title must fit it.
+720×1280: text/panels inside **x 56-664**; nothing important above **y 120** (HUD starts at 128); captions **centred** at **y 872** in a 540-px row (x 90-630, centre 360 — the user wants them exactly centred, not shifted left); keep the right column (x > 610) free of text from y ≈ 600 down (TikTok buttons); IG grid shows the centre 3:4 — the cover's title must fit it.
 
 ## 8. Render, verify, deliver
 

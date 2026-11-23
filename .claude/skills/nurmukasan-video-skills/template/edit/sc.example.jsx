@@ -1,4 +1,4 @@
-// EXAMPLE from episode "Катя: что если до IELTS осталась неделя" (2:21). Copy as sc.jsx and rewrite SHOTS + OVERLAYS for the new script.
+// EXAMPLE (v2, faces never covered) from episode "Катя: что если до IELTS осталась неделя" (2:21). Copy as sc.jsx and rewrite SHOTS + OVERLAYS for the new script.
 // Rules: every nested <Layer> must end inside its parent (dur = parentDur - at); never put pixel sprites (boxes/sprite/ICON/owlHead)
 // inside a layer that scales (popScale/slam) or moves up/left - use popSlide (moves down) for those; one opacity track per layer.
 import { W, H, C, T, IMG, Layer, Scene, Clip, popScale, popSlide, slam, fadeIn, fadeOut, boxes } from './lib.jsx'
@@ -41,7 +41,7 @@ export const SHOTS = () => [
   S(t.day2, t.listen, 'write', { zoom: [1.04, 1.12] }),
   S(t.listen, t.read, 'listen', { zoom: [1.12, 1.04], pan: [30, -10] }),
   S(t.read, t.essay, 'readtop', { zoom: [1.04, 1.16], panY: [0, -40] }),
-  S(t.essay, t.mirror, 'planner', { zoom: [1.3, 1.4], panY: [-150, -180] }),
+  S(t.essay, t.mirror, 'planner', { zoom: [2.0, 2.06], panY: [-560, -590] }),
   S(t.mirror, t.sched, 'mirror', { zoom: [1.04, 1.12], pan: [-20, 10] }),
   S(t.sched, t.sun, 'alarm', { zoom: [1.04, 1.14] }),
   V(t.sun, t.sleep, 'v_sun'),
@@ -75,11 +75,11 @@ const rel = (k, base) => K[k] - base
 const Level = () => {
   const a = c0('eng'), d = t.mock - a, lv = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'], col = ['#6d6290', '#7d6aa8', '#9a7ccc', C.lilac, C.pink, '#ffd6ec']
   return L(a, d, [
-    ...panel(70, 236, 580, 132),
-    ...tab(92, 218, 'УРОВЕНЬ КАТИ', C.lilac),
-    ...lv.map((s, i) => [<rect x={92 + i * 92} y={262} width={84} height={34} radius={6} fill={col[i]} opacity={i < 3 ? 0.55 : 1} />, T(92 + i * 92, 271, 84, 15, C.ink, s, 'center', { shadow: false })]).flat(),
-    <Layer at={K.b2 - a} dur={d - (K.b2 - a)} animate={popSlide(0.25, -20)}>{[<rect x={92 + 3 * 92 + 30} y={304} width={24} height={14} fill={C.yellow} radius={3} />, T(70, 326, 580, 14, C.yellow, 'B2 · ПОЧТИ C1', 'center')]}</Layer>,
-    <Layer at={K.c1 - a} dur={d - (K.c1 - a)} animate={[{ property: 'opacity', keyframes: [{ at: 0, value: 0 }, { at: 0.15, value: 0.9 }, { at: 0.5, value: 0.35 }, { at: 0.8, value: 0.8 }] }]}><rect x={92 + 4 * 92 - 4} y={258} width={92} height={42} radius={8} fill="#00000000" strokeColor={C.yellow} strokeWidth={4} /></Layer>,
+    ...panel(70, 600, 580, 132),
+    ...tab(92, 582, 'УРОВЕНЬ КАТИ', C.lilac),
+    ...lv.map((s, i) => [<rect x={92 + i * 92} y={626} width={84} height={34} radius={6} fill={col[i]} opacity={i < 3 ? 0.55 : 1} />, T(92 + i * 92, 635, 84, 15, C.ink, s, 'center', { shadow: false })]).flat(),
+    <Layer at={K.b2 - a} dur={d - (K.b2 - a)} animate={popSlide(0.25, -20)}>{[<rect x={92 + 3 * 92 + 30} y={668} width={24} height={14} fill={C.yellow} radius={3} />, T(70, 690, 580, 14, C.yellow, 'B2 · ПОЧТИ C1', 'center')]}</Layer>,
+    <Layer at={K.c1 - a} dur={d - (K.c1 - a)} animate={[{ property: 'opacity', keyframes: [{ at: 0, value: 0 }, { at: 0.15, value: 0.9 }, { at: 0.5, value: 0.35 }, { at: 0.8, value: 0.8 }] }]}><rect x={92 + 4 * 92 - 4} y={622} width={92} height={42} radius={8} fill="#00000000" strokeColor={C.yellow} strokeWidth={4} /></Layer>,
   ], fadeIn(0.25))
 }
 // friend voice message (waveform lights up while the clip plays)
@@ -104,12 +104,12 @@ const Chat = () => {
 }
 // cancelled plans (items struck through on the words)
 const Plans = () => {
-  const a = c0('cancel'), d = t.drawer + 0.45 - a, items = [['Смена в кофейне', 'smeny'], ['Кино с Аней', 'kino'], ['Встречи и др', 'vstr'], ['Телефон', 'phone']]
+  const a = c0('cancel'), d = t.drawer - a, items = [['Смена в кофейне', 'smeny'], ['Кино с Аней', 'kino'], ['Встречи и др', 'vstr']]
   return L(a, d, [
     ...paper(130, 540, 460, 300),
     T(190, 564, 380, 18, C.pinkD, 'ПЛАНЫ НА НЕДЕЛЮ', 'left', { shadow: false }),
     ...items.map(([s, k], i) => [T(190, 624 + i * 50, 360, 17, C.ink, s, 'left', { shadow: false }), strike(190, 630 + i * 50, s.length * 17, K[k] - a + 0.1, C.red, d)]).flat(),
-    <Layer at={K.vstr - a + 0.55} dur={d - (K.vstr - a + 0.55)} animate={slam(0.25)} centre>{[<rect x={400} y={770} width={170} height={52} radius={8} fill="#00000000" strokeColor={C.red} strokeWidth={5} />, T(400, 786, 170, 16, C.red, 'ОТМЕНЕНО', 'center', { shadow: false })]}</Layer>,
+    <Layer at={K.vstr - a + 0.1} dur={d - (K.vstr - a + 0.1)} animate={slam(0.2)} centre>{[<rect x={400} y={770} width={170} height={52} radius={8} fill="#00000000" strokeColor={C.red} strokeWidth={5} />, T(400, 786, 170, 16, C.red, 'ОТМЕНЕНО', 'center', { shadow: false })]}</Layer>,
   ], popScale(0.3))
 }
 // IELTS structure board (tiles hold pixel icons -> popSlide, not popScale)
@@ -129,22 +129,22 @@ const Board = () => {
 // growth-speed chart
 const Growth = () => {
   const a = c0('slow'), d = K.fast + 0.9 - a
-  const row = (i, name, w, col, lab, at0) => <Layer at={at0} dur={d - (at0)} animate={popSlide(0.25, 16)}>{[T(96, 316 + i * 56, 170, 15, C.cream, name), <rect x={270} y={308 + i * 56} width={300} height={30} radius={6} fill="#3a2f66" />, <rect x={270} y={308 + i * 56} width={w} height={30} radius={6} fill={col} />, T(270, 350 + i * 56 - 2, 300, 10, col, lab, 'right')]}</Layer>
+  const row = (i, name, w, col, lab, at0) => <Layer at={at0} dur={d - (at0)} animate={popSlide(0.25, 16)}>{[T(96, 606 + i * 56, 170, 15, C.cream, name), <rect x={270} y={598 + i * 56} width={300} height={30} radius={6} fill="#3a2f66" />, <rect x={270} y={598 + i * 56} width={w} height={30} radius={6} fill={col} />, T(270, 640 + i * 56 - 2, 300, 10, col, lab, 'right')]}</Layer>
   return L(a, d, [
-    ...panel(70, 270, 580, 270),
-    ...tab(92, 252, 'ЧТО РАСТЁТ БЫСТРЕЕ ЗА НЕДЕЛЮ', C.lilac),
+    ...panel(70, 560, 580, 270),
+    ...tab(92, 542, 'ЧТО РАСТЁТ БЫСТРЕЕ ЗА НЕДЕЛЮ', C.lilac),
     row(0, 'Listening', 280, C.mint, 'БЫСТРО', 0.15), row(1, 'Reading', 262, C.mint, 'БЫСТРО', 0.3),
     row(2, 'Speaking', 170, C.yellow, 'СРЕДНЕ', 0.45), row(3, 'Writing', 70, C.red, 'МЕДЛЕННО', 0.6),
-    <Layer at={K.fast - a} dur={d - (K.fast - a)} animate={[{ property: 'opacity', keyframes: [{ at: 0, value: 0 }, { at: 0.12, value: 1 }, { at: 0.45, value: 0.4 }, { at: 0.75, value: 1 }] }]}>{[<rect x={84} y={298} width={552} height={110} radius={10} fill="#00000000" strokeColor={C.yellow} strokeWidth={4} />]}</Layer>,
+    <Layer at={K.fast - a} dur={d - (K.fast - a)} animate={[{ property: 'opacity', keyframes: [{ at: 0, value: 0 }, { at: 0.12, value: 1 }, { at: 0.45, value: 0.4 }, { at: 0.75, value: 1 }] }]}>{[<rect x={84} y={588} width={552} height={110} radius={10} fill="#00000000" strokeColor={C.yellow} strokeWidth={4} />]}</Layer>,
   ], popScale(0.3))
 }
 // paraphrase cards (placed low so the heroine's face stays visible)
 const Para = () => {
   const a = c0('closed'), d = t.essay - a
   return L(a, d, [
-    <Layer at={0} dur={d - (0)} animate={popScale(0.28)} centre>{[...panel(70, 440, 580, 120, C.sky), ...tab(92, 422, 'ВОПРОС', C.sky), T(96, 470, 530, 17, C.cream, 'The museum is'), T(96, 504, 530, 20, C.yellow, 'closed on Mondays.')]}</Layer>,
-    <Layer at={K.turns - a} dur={d - (K.turns - a)} animate={popSlide(0.25, 20)}>{[T(70, 572, 580, 24, C.pink, '=', 'center', { stroke: true }), T(70, 604, 580, 11, C.pink, 'ПЕРЕФРАЗ', 'center')]}</Layer>,
-    <Layer at={K.turns - a + 0.25} dur={d - (K.turns - a + 0.25)} animate={popScale(0.28)} centre>{[...panel(70, 646, 580, 124, C.mint), ...tab(92, 628, 'В ТЕКСТЕ', C.mint), T(96, 676, 530, 17, C.cream, 'It does not open its doors'), T(96, 712, 530, 17, C.yellow, 'at the start of the week.')]}</Layer>,
+    <Layer at={0} dur={d - (0)} animate={popScale(0.28)} centre>{[...panel(70, 568, 580, 112, C.sky), ...tab(92, 550, 'ВОПРОС', C.sky), T(96, 594, 530, 17, C.cream, 'The museum is'), T(96, 628, 530, 20, C.yellow, 'closed on Mondays.')]}</Layer>,
+    <Layer at={K.turns - a} dur={d - (K.turns - a)} animate={popSlide(0.25, 20)}>{[T(386, 690, 120, 24, C.pink, '=', 'left', { stroke: true }), T(430, 698, 200, 11, C.pink, 'ПЕРЕФРАЗ', 'left')]}</Layer>,
+    <Layer at={K.turns - a + 0.25} dur={d - (K.turns - a + 0.25)} animate={popScale(0.28)} centre>{[...panel(70, 738, 580, 112, C.mint), ...tab(92, 720, 'В ТЕКСТЕ', C.mint), T(96, 764, 530, 17, C.cream, 'It does not open its doors'), T(96, 798, 530, 17, C.yellow, 'at the start of the week.')]}</Layer>,
   ])
 }
 // essay template
@@ -164,10 +164,10 @@ const Essay = () => {
 // daily schedule (rows hold icons -> popSlide)
 const Sched = () => {
   const a = c0('sched'), d = t.sleep - a
-  const row = (i, time, s, icon, k) => <Layer at={K[k] - a} dur={d - (K[k] - a)} animate={popSlide(0.25, 18)}>{[<rect x={92} y={318 + i * 74} width={536} height={60} radius={10} fill="#3a2f66" />, ICON[icon](104, 324 + i * 74, 4), T(166, 338 + i * 74, 130, 18, C.yellow, time), T(300, 340 + i * 74, 320, 13, C.cream, s)]}</Layer>
+  const row = (i, time, s, icon, k) => <Layer at={K[k] - a} dur={d - (K[k] - a)} animate={popSlide(0.25, 18)}>{[<rect x={92} y={572 + i * 72} width={536} height={60} radius={10} fill="#3a2f66" />, ICON[icon](104, 578 + i * 72, 4), T(166, 592 + i * 72, 130, 18, C.yellow, time), T(300, 594 + i * 72, 320, 13, C.cream, s)]}</Layer>
   return L(a, d, [
-    ...panel(70, 266, 580, 360),
-    ...tab(92, 248, 'РАСПИСАНИЕ КАТИ', C.lilac),
+    ...panel(70, 530, 580, 330),
+    ...tab(92, 512, 'РАСПИСАНИЕ КАТИ', C.lilac),
     row(0, '07:00', 'ПОДЪЁМ', 'sun', 'up7'), row(1, '09:00', 'MOCK, КАК НА ЭКЗАМЕНЕ', 'pen', 'mock9'),
     row(2, '50/10', 'РАБОТА / ОТДЫХ', 'clock', 'w50'), row(3, '23:00', 'ОТБОЙ · 8 ЧАСОВ СНА', 'moon', 'off11'),
   ], popSlide(0.3, 40))
@@ -185,11 +185,11 @@ const Brain = () => {
 const Progress = () => {
   const a = c0('day5'), d = t.day7 - a, pts = [['ДО', 5.5, 0], ['Д4', 6.0, 0], ['Д5', 6.5, rel('m65', a)], ['Д6', 7.0, rel('m7', a)]]
   return L(a, d, [
-    ...panel(110, 250, 500, 200, C.mint),
-    ...tab(132, 232, 'MOCK ПО ДНЯМ', C.mint),
+    ...panel(110, 580, 500, 200, C.mint),
+    ...tab(132, 562, 'MOCK ПО ДНЯМ', C.mint),
     ...pts.map(([lab, v, at0], i) => {
-      const h = Math.round((v - 5) * 62), x = 160 + i * 110, y = 418 - h
-      return <Layer at={at0} dur={d - (at0)} animate={popSlide(0.25, 20)}>{[<rect x={x} y={y} width={70} height={h} radius={6} fill={i === 3 ? C.yellow : i === 2 ? C.mint : C.grey2} />, T(x - 10, y - 30, 90, 15, i >= 2 ? C.cream : C.grey, v.toFixed(1), 'center'), T(x - 10, 424, 90, 10, C.grey, lab, 'center')]}</Layer>
+      const h = Math.round((v - 5) * 62), x = 160 + i * 110, y = 748 - h
+      return <Layer at={at0} dur={d - (at0)} animate={popSlide(0.25, 20)}>{[<rect x={x} y={y} width={70} height={h} radius={6} fill={i === 3 ? C.yellow : i === 2 ? C.mint : C.grey2} />, T(x - 10, y - 30, 90, 15, i >= 2 ? C.cream : C.grey, v.toFixed(1), 'center'), T(x - 10, 754, 90, 10, C.grey, lab, 'center')]}</Layer>
     }),
   ], popScale(0.3))
 }
@@ -197,16 +197,16 @@ const Progress = () => {
 const Results = () => {
   const a = t.res, d = t.jump - a, rows = [['LISTENING', '8.0', 'rL', C.mint], ['READING', '8.0', 'rR', C.sky], ['WRITING', '6.5', 'rW', C.yellow], ['SPEAKING', '7.0', 'rS', C.pink]]
   return L(a, d, [
-    ...panel(100, 200, 520, 318, C.yellow),
-    T(100, 220, 520, 12, C.grey, 'IELTS · TEST REPORT FORM', 'center'),
-    T(100, 246, 520, 20, C.cream, 'КАТЯ', 'center'),
-    ...rows.map(([s, v, k, col], i) => <Layer at={K[k] - a} dur={d - (K[k] - a)} animate={popSlide(0.22, 16)}>{[<rect x={124} y={286 + i * 56} width={472} height={48} radius={10} fill="#3a2f66" />, T(146, 302 + i * 56, 300, 16, C.cream, s), <rect x={494} y={292 + i * 56} width={88} height={36} radius={8} fill={col} />, T(494, 300 + i * 56, 88, 19, C.ink, v, 'center', { shadow: false })]}</Layer>),
+    ...panel(100, 124, 520, 318, C.yellow),
+    T(100, 144, 520, 12, C.grey, 'IELTS · TEST REPORT FORM', 'center'),
+    T(100, 170, 520, 20, C.cream, 'КАТЯ', 'center'),
+    ...rows.map(([s, v, k, col], i) => <Layer at={K[k] - a} dur={d - (K[k] - a)} animate={popSlide(0.22, 16)}>{[<rect x={124} y={210 + i * 56} width={472} height={48} radius={10} fill="#3a2f66" />, T(146, 226 + i * 56, 300, 16, C.cream, s), <rect x={494} y={216 + i * 56} width={88} height={36} radius={8} fill={col} />, T(494, 224 + i * 56, 88, 19, C.ink, v, 'center', { shadow: false })]}</Layer>),
   ], popScale(0.3))
 }
 export const OVERLAYS = () => [
   // hook
   <Title at={0.05} dur={t.room - 0.05} l1="ЧТО ЕСЛИ ДО IELTS" l2="ВСЕГО 7 ДНЕЙ?" y={170} s1={26} s2={40} />,
-  <Layer at={0.6} dur={t.room - 0.6} animate={popScale(0.25)} centre>{[...panel(210, 300, 300, 70, C.red), T(210, 322, 300, 26, C.red, '168:00:00', 'center')]}</Layer>,
+  <Layer at={0.6} dur={t.room - 0.6} animate={popScale(0.25)} centre>{[...panel(210, 640, 300, 70, C.red), T(210, 662, 300, 26, C.red, '168:00:00', 'center')]}</Layer>,
   flash(t.room - 0.04, 0.16),
   // intro
   <Layer at={K.kat} dur={t.level - K.kat} animate={popSlide(0.3, 20)}>{[...panel(70, 400, 230, 70, C.pink), T(70, 422, 230, 24, C.cream, 'КАТЯ', 'center')]}</Layer>,
@@ -220,9 +220,9 @@ export const OVERLAYS = () => [
   Chat(),
   <Chip at={K.holid + 0.1} dur={t.plan - K.holid - 0.1} x={70} y={236} text="КАНИКУЛЫ!" bg={C.yellow} size={22} anim={slam(0.25)} />,
   Plans(),
-  <Title at={K.d7} dur={t.eyes - K.d7} l1="7 ДНЕЙ =" l2="168 ЧАСОВ" y={220} s1={30} s2={56} />,
+  <Title at={K.d7} dur={t.eyes - K.d7} l1="7 ДНЕЙ =" l2="168 ЧАСОВ" y={580} s1={30} s2={56} />,
   flash(K.h168, 0.14, C.yellow),
-  <Chip at={K.each + 0.1} dur={t.eyes - K.each - 0.1} x={190} y={410} text="КАЖДЫЙ НА СЧЕТУ" bg={C.pink} />,
+  <Chip at={K.each + 0.1} dur={t.eyes - K.each - 0.1} x={190} y={756} text="КАЖДЫЙ НА СЧЕТУ" bg={C.pink} />,
   // HUD through the week (hidden in emotional / full-screen scenes)
   <Hud {...span(K.katya1_end - 0.9, t.day2)} day={1} left="168 Ч" mock="5.5" />,
   <Hud {...span(t.day2, t.sched)} day={2} left="144 Ч" mock="5.5" />,
@@ -236,15 +236,15 @@ export const OVERLAYS = () => [
   // day 1
   <DayCard at={K.day1} dur={1.5} n={1} sub="ПОНЕДЕЛЬНИК" />,
   <RuleCard at={K.rule1 + 0.2} dur={t.trash - K.rule1 - 0.2} n={1} lines={['СТАРЫЕ МЕТОДЫ', 'УЖЕ НЕ РАБОТАЮТ']} />,
-  <Layer at={K.w100} dur={t.board - K.w100} animate={popScale(0.28)} centre>{[...panel(130, 360, 460, 120, C.red), T(130, 386, 460, 18, C.cream, '100 СЛОВ В ДЕНЬ', 'center'), T(130, 424, 460, 34, C.red, '×  ПОЗДНО', 'center')]}</Layer>,
+  <Layer at={K.w100} dur={t.board - K.w100} animate={popScale(0.28)} centre>{[...panel(130, 236, 460, 120, C.red), T(130, 262, 460, 18, C.cream, '100 СЛОВ В ДЕНЬ', 'center'), T(130, 300, 460, 34, C.red, '×  ПОЗДНО', 'center')]}</Layer>,
   <Layer at={K.week} dur={c0('L') - K.week} animate={popScale(0.28)} centre>{[T(40, 330, 640, 30, C.grey, 'АНГЛИЙСКИЙ', 'center', { stroke: true }), strike(170, 346, 380, 1.2, C.red, c0('L') - K.week), <Layer at={K.exam1 - K.week} dur={c0('L') - K.exam1} animate={slam(0.25)} centre>{T(40, 400, 640, 46, C.yellow, 'ЭКЗАМЕН', 'center', { stroke: true })}</Layer>]}</Layer>,
   dim(c0('L') - 0.1, t.day2, 0.5),
   Board(),
   // day 2
   <DayCard at={K.day2} dur={1.4} n={2} />,
-  <RuleCard at={K.rule2 + 0.1} dur={c0('slow') - K.rule2 - 0.1} n={2} lines={['НЕ ТРАТЬ НЕДЕЛЮ', 'НА WRITING']} col={C.yellow} />,
+  <RuleCard at={K.rule2 + 0.1} dur={c0('slow') - K.rule2 - 0.1} n={2} lines={['НЕ ТРАТЬ НЕДЕЛЮ', 'НА WRITING']} col={C.yellow} y={620} />,
   Growth(),
-  <Chip at={K.ans + 0.2} dur={c0('closed') - K.ans - 0.2} x={110} y={470} text="ОТВЕТ - НЕ КОПИЯ ВОПРОСА" bg={C.sky} size={16} />,
+  <Chip at={K.ans + 0.2} dur={c0('closed') - K.ans - 0.2} x={110} y={590} text="ОТВЕТ - НЕ КОПИЯ ВОПРОСА" bg={C.sky} size={16} />,
   Para(),
   Essay(),
   <Layer at={t.mirror + 0.1} dur={t.sched - t.mirror - 0.1} animate={popSlide(0.25, 16)}>{[...panel(70, 236, 300, 70, C.red), <rect x={92} y={258} width={24} height={24} radius={12} fill={C.red} animate={[{ property: 'opacity', keyframes: [{ at: 0, value: 1 }, { at: 0.5, value: 0.2 }, { at: 1.0, value: 1 }, { at: 1.5, value: 0.2 }, { at: 2.0, value: 1 }] }]} />, T(130, 260, 220, 20, C.cream, 'REC 20:00')]}</Layer>,
@@ -253,13 +253,13 @@ export const OVERLAYS = () => [
   Brain(),
   // day 4 drama
   <DayCard at={K.day4} dur={1.2} n={4} />,
-  <Layer at={K.m6 + 0.1} dur={t.cry - K.m6 - 0.1} animate={slam(0.25)} centre>{[...panel(230, 400, 260, 130, C.grey), T(230, 420, 260, 13, C.grey, 'MOCK', 'center'), T(230, 452, 260, 40, C.cream, '6.0', 'center'), T(230, 506, 260, 11, C.grey, '+0.5 ЗА 4 ДНЯ', 'center')]}</Layer>,
+  <Layer at={K.m6 + 0.1} dur={t.cry - K.m6 - 0.1} animate={slam(0.25)} centre>{[...panel(230, 620, 260, 130, C.grey), T(230, 640, 260, 13, C.grey, 'MOCK', 'center'), T(230, 672, 260, 40, C.cream, '6.0', 'center'), T(230, 726, 260, 11, C.grey, '+0.5 ЗА 4 ДНЯ', 'center')]}</Layer>,
   // days 5-7
   Progress(),
   <DayCard at={K.day7} dur={1.3} n={7} sub="ОТДЫХ" />,
-  <Chip at={K.nomocks} dur={t.hall - K.nomocks} x={70} y={400} text="НИКАКИХ МОКОВ" bg={C.pink} />,
-  <Chip at={K.walk + 0.6} dur={t.hall - K.walk - 0.6} x={70} y={466} text="ПРОГУЛКА" bg={C.mint} />,
-  <Chip at={K.walk + 1.4} dur={t.hall - K.walk - 1.4} x={70} y={532} text="СОН В 22:00" bg={C.sky} />,
+  <Chip at={K.nomocks} dur={t.hall - K.nomocks} x={420} y={380} text="НИКАКИХ МОКОВ" bg={C.pink} />,
+  <Chip at={K.walk + 0.6} dur={t.hall - K.walk - 0.6} x={420} y={446} text="ПРОГУЛКА" bg={C.mint} />,
+  <Chip at={K.walk + 1.4} dur={t.hall - K.walk - 1.4} x={420} y={512} text="СОН В 22:00" bg={C.sky} />,
   // exam
   <Title at={K.examday} dur={1.6} l1="" l2="ДЕНЬ ЭКЗАМЕНА" y={250} s2={38} />,
   flash(K.examday, 0.14),
@@ -268,10 +268,10 @@ export const OVERLAYS = () => [
   <Layer at={t.speak + 0.1} dur={t.res - t.speak - 0.1} animate={popSlide(0.25, 16)}>{[...tab(70, 236, 'SPEAKING · PART 1', C.sky, C.ink, 15)]}</Layer>,
   Results(),
   flash(t.jump, 0.2, C.yellow),
-  <Layer at={t.jump + 0.05} dur={t.win - t.jump - 0.05} animate={slam(0.3)} centre>{[...panel(200, 200, 320, 190, C.yellow), T(200, 224, 320, 14, C.cream, 'OVERALL BAND', 'center'), T(200, 262, 320, 72, C.yellow, '7.5', 'center', { stroke: true })]}</Layer>,
+  <Layer at={t.jump + 0.05} dur={t.win - t.jump - 0.05} animate={slam(0.3)} centre>{[...panel(200, 650, 320, 190, C.yellow), T(200, 674, 320, 14, C.cream, 'OVERALL BAND', 'center'), T(200, 712, 320, 72, C.yellow, '7.5', 'center', { stroke: true })]}</Layer>,
   // ending + CTA + logo
-  <Layer at={K.end1} dur={t.cta - K.end1} animate={popScale(0.3)} centre>{[...panel(70, 220, 580, 96, C.pink), T(70, 254, 580, 20, C.cream, 'НЕДЕЛЯ — ЭТО НЕ КОНЕЦ', 'center')]}</Layer>,
-  <Layer at={K.end3} dur={t.cta - K.end3} animate={popSlide(0.3, 20)}>{[...panel(70, 340, 580, 110, C.yellow), T(70, 364, 580, 16, C.cream, 'ПОЙМИ СТРУКТУРУ', 'center'), T(70, 402, 580, 20, C.yellow, '→ ВЫСОКИЙ БАЛЛ', 'center')]}</Layer>,
+  <Layer at={K.end1} dur={t.cta - K.end1} animate={popScale(0.3)} centre>{[...panel(70, 130, 580, 96, C.pink), T(70, 164, 580, 20, C.cream, 'НЕДЕЛЯ — ЭТО НЕ КОНЕЦ', 'center')]}</Layer>,
+  <Layer at={K.end3} dur={t.cta - K.end3} animate={popSlide(0.3, 20)}>{[...panel(70, 246, 580, 110, C.yellow), T(70, 270, 580, 16, C.cream, 'ПОЙМИ СТРУКТУРУ', 'center'), T(70, 308, 580, 20, C.yellow, '→ ВЫСОКИЙ БАЛЛ', 'center')]}</Layer>,
   <Layer at={t.cta + 0.1} dur={t.END - t.cta - 0.1} animate={popScale(0.3)} centre>{[...panel(70, 190, 580, 150, C.lilac), T(70, 214, 580, 18, C.cream, 'СКОЛЬКО ДНЕЙ', 'center'), T(70, 248, 580, 18, C.cream, 'ДО IELTS У ТЕБЯ?', 'center'), T(70, 292, 580, 15, C.yellow, 'ПИШИ В КОММЕНТЫ ↓', 'center')]}</Layer>,
   <Layer at={t.cta + 0.6} dur={t.END - t.cta - 0.6} animate={popSlide(0.3, 20)}><media file={IMG.logo} x={215} y={364} width={290} height={63} fit="contain" /></Layer>,
 ]
