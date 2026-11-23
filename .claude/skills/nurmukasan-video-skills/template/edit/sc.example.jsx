@@ -1,4 +1,4 @@
-// EXAMPLE (v2, faces never covered) from episode "Катя: что если до IELTS осталась неделя" (2:21). Copy as sc.jsx and rewrite SHOTS + OVERLAYS for the new script.
+// EXAMPLE (v4, faces measured and never covered) from episode "Катя: что если до IELTS осталась неделя" (2:21). Copy as sc.jsx and rewrite SHOTS + OVERLAYS for the new script.
 // Rules: every nested <Layer> must end inside its parent (dur = parentDur - at); never put pixel sprites (boxes/sprite/ICON/owlHead)
 // inside a layer that scales (popScale/slam) or moves up/left - use popSlide (moves down) for those; one opacity track per layer.
 import { W, H, C, T, IMG, Layer, Scene, Clip, popScale, popSlide, slam, fadeIn, fadeOut, boxes } from './lib.jsx'
@@ -30,11 +30,11 @@ export const SHOTS = () => [
   S(t.kitchen, t.phone, 'kitchen', { zoom: [1.14, 1.06], pan: [-20, 20] }),
   S(t.phone, t.bed, 'phone', { zoom: [1.04, 1.1] }),
   S(t.bed, t.cal, 'bedsad', { zoom: [1.14, 1.04] }),
-  S(t.cal, t.plan, 'calendar', { zoom: [1.8, 1.9], panY: [500, 530], pan: [-230, -250] }),
+  S(t.cal, t.plan, 'calendar', { zoom: [1.8, 1.86], panY: [268, 282], pan: [-155, -160] }),
   S(t.plan, t.drawer, 'planner', { zoom: [1.06, 1.12] }),
   S(t.drawer, t.bun, 'drawer', { zoom: [1.08, 1.2], pan: [0, -30] }),
   V(t.bun, t.eyes, 'v_bun'),
-  S(t.eyes, t.day1, 'eyes', { zoom: [1.0, 1.16] }),
+  S(t.eyes, t.day1, 'eyes2', { zoom: [1.0, 1.08] }),
   S(t.day1, t.trash, 'deskback', { zoom: [1.02, 1.1] }),
   S(t.trash, t.board, 'trash', { zoom: [1.06, 1.14], panY: [-20, 0] }),
   S(t.board, t.day2, 'deskback', { zoom: [1.3, 1.45], panY: [180, 220] }),
@@ -106,10 +106,10 @@ const Chat = () => {
 const Plans = () => {
   const a = c0('cancel'), d = t.drawer - a, items = [['Смена в кофейне', 'smeny'], ['Кино с Аней', 'kino'], ['Встречи и др', 'vstr']]
   return L(a, d, [
-    ...paper(130, 540, 460, 300),
-    T(190, 564, 380, 18, C.pinkD, 'ПЛАНЫ НА НЕДЕЛЮ', 'left', { shadow: false }),
-    ...items.map(([s, k], i) => [T(190, 624 + i * 50, 360, 17, C.ink, s, 'left', { shadow: false }), strike(190, 630 + i * 50, s.length * 17, K[k] - a + 0.1, C.red, d)]).flat(),
-    <Layer at={K.vstr - a + 0.1} dur={d - (K.vstr - a + 0.1)} animate={slam(0.2)} centre>{[<rect x={400} y={770} width={170} height={52} radius={8} fill="#00000000" strokeColor={C.red} strokeWidth={5} />, T(400, 786, 170, 16, C.red, 'ОТМЕНЕНО', 'center', { shadow: false })]}</Layer>,
+    ...paper(140, 124, 440, 176),
+    T(196, 140, 360, 14, C.pinkD, 'ПЛАНЫ НА НЕДЕЛЮ', 'left', { shadow: false }),
+    ...items.map(([s, k], i) => [T(196, 180 + i * 34, 300, 15, C.ink, s, 'left', { shadow: false }), strike(196, 185 + i * 34, s.length * 15, K[k] - a + 0.1, C.red, d)]).flat(),
+    <Layer at={K.vstr - a + 0.1} dur={d - (K.vstr - a + 0.1)} animate={slam(0.2)} centre>{[<rect x={430} y={238} width={136} height={40} radius={8} fill="#00000000" strokeColor={C.red} strokeWidth={4} />, T(430, 251, 136, 13, C.red, 'ОТМЕНЕНО', 'center', { shadow: false })]}</Layer>,
   ], popScale(0.3))
 }
 // IELTS structure board (tiles hold pixel icons -> popSlide, not popScale)
@@ -129,13 +129,13 @@ const Board = () => {
 // growth-speed chart
 const Growth = () => {
   const a = c0('slow'), d = K.fast + 0.9 - a
-  const row = (i, name, w, col, lab, at0) => <Layer at={at0} dur={d - (at0)} animate={popSlide(0.25, 16)}>{[T(96, 196 + i * 56, 170, 15, C.cream, name), <rect x={270} y={188 + i * 56} width={300} height={30} radius={6} fill="#3a2f66" />, <rect x={270} y={188 + i * 56} width={w} height={30} radius={6} fill={col} />, T(270, 230 + i * 56 - 2, 300, 10, col, lab, 'right')]}</Layer>
+  const row = (i, name, w, col, lab, at0) => <Layer at={at0} dur={d - (at0)} animate={popSlide(0.25, 16)}>{[T(92, 180 + i * 40, 160, 13, C.cream, name), <rect x={250} y={174 + i * 40} width={240} height={26} radius={6} fill="#3a2f66" />, <rect x={250} y={174 + i * 40} width={Math.round(w * 0.8)} height={26} radius={6} fill={col} />, T(500, 182 + i * 40, 140, 10, col, lab, 'left')]}</Layer>
   return L(a, d, [
-    ...panel(70, 150, 580, 270),
+    ...panel(70, 150, 580, 190),
     ...tab(92, 132, 'ЧТО РАСТЁТ БЫСТРЕЕ ЗА НЕДЕЛЮ', C.lilac),
     row(0, 'Listening', 280, C.mint, 'БЫСТРО', 0.15), row(1, 'Reading', 262, C.mint, 'БЫСТРО', 0.3),
     row(2, 'Speaking', 170, C.yellow, 'СРЕДНЕ', 0.45), row(3, 'Writing', 70, C.red, 'МЕДЛЕННО', 0.6),
-    <Layer at={K.fast - a} dur={d - (K.fast - a)} animate={[{ property: 'opacity', keyframes: [{ at: 0, value: 0 }, { at: 0.12, value: 1 }, { at: 0.45, value: 0.4 }, { at: 0.75, value: 1 }] }]}>{[<rect x={84} y={178} width={552} height={110} radius={10} fill="#00000000" strokeColor={C.yellow} strokeWidth={4} />]}</Layer>,
+    <Layer at={K.fast - a} dur={d - (K.fast - a)} animate={[{ property: 'opacity', keyframes: [{ at: 0, value: 0 }, { at: 0.12, value: 1 }, { at: 0.45, value: 0.4 }, { at: 0.75, value: 1 }] }]}>{[<rect x={82} y={168} width={556} height={78} radius={10} fill="#00000000" strokeColor={C.yellow} strokeWidth={4} />]}</Layer>,
   ], popScale(0.3))
 }
 // paraphrase cards (placed low so the heroine's face stays visible)
@@ -164,10 +164,10 @@ const Essay = () => {
 // daily schedule (rows hold icons -> popSlide)
 const Sched = () => {
   const a = c0('sched'), d = t.sleep - a
-  const row = (i, time, s, icon, k) => <Layer at={K[k] - a} dur={d - (K[k] - a)} animate={popSlide(0.25, 18)}>{[<rect x={92} y={572 + i * 72} width={536} height={60} radius={10} fill="#3a2f66" />, ICON[icon](104, 578 + i * 72, 4), T(166, 592 + i * 72, 130, 18, C.yellow, time), T(300, 594 + i * 72, 320, 13, C.cream, s)]}</Layer>
+  const row = (i, time, s, icon, k) => <Layer at={K[k] - a} dur={d - (K[k] - a)} animate={popSlide(0.25, 18)}>{[<rect x={92} y={650 + i * 50} width={536} height={44} radius={8} fill="#3a2f66" />, ICON[icon](102, 655 + i * 50, 3), T(150, 664 + i * 50, 130, 15, C.yellow, time), T(272, 666 + i * 50, 350, 12, C.cream, s)]}</Layer>
   return L(a, d, [
-    ...panel(70, 530, 580, 330),
-    ...tab(92, 512, 'РАСПИСАНИЕ КАТИ', C.lilac),
+    ...panel(70, 622, 580, 236),
+    ...tab(92, 604, 'РАСПИСАНИЕ КАТИ', C.lilac),
     row(0, '07:00', 'ПОДЪЁМ', 'sun', 'up7'), row(1, '09:00', 'MOCK, КАК НА ЭКЗАМЕНЕ', 'pen', 'mock9'),
     row(2, '50/10', 'РАБОТА / ОТДЫХ', 'clock', 'w50'), row(3, '23:00', 'ОТБОЙ · 8 ЧАСОВ СНА', 'moon', 'off11'),
   ], popSlide(0.3, 40))
@@ -185,11 +185,11 @@ const Brain = () => {
 const Progress = () => {
   const a = c0('day5'), d = t.day7 - a, pts = [['ДО', 5.5, 0], ['Д4', 6.0, 0], ['Д5', 6.5, rel('m65', a)], ['Д6', 7.0, rel('m7', a)]]
   return L(a, d, [
-    ...panel(110, 580, 500, 200, C.mint),
-    ...tab(132, 562, 'MOCK ПО ДНЯМ', C.mint),
+    ...panel(130, 656, 460, 190, C.mint),
+    ...tab(152, 638, 'MOCK ПО ДНЯМ', C.mint),
     ...pts.map(([lab, v, at0], i) => {
-      const h = Math.round((v - 5) * 62), x = 160 + i * 110, y = 748 - h
-      return <Layer at={at0} dur={d - (at0)} animate={popSlide(0.25, 20)}>{[<rect x={x} y={y} width={70} height={h} radius={6} fill={i === 3 ? C.yellow : i === 2 ? C.mint : C.grey2} />, T(x - 10, y - 30, 90, 15, i >= 2 ? C.cream : C.grey, v.toFixed(1), 'center'), T(x - 10, 754, 90, 10, C.grey, lab, 'center')]}</Layer>
+      const h = Math.round((v - 5) * 50), x = 172 + i * 104, y = 814 - h
+      return <Layer at={at0} dur={d - (at0)} animate={popSlide(0.25, 20)}>{[<rect x={x} y={y} width={64} height={h} radius={6} fill={i === 3 ? C.yellow : i === 2 ? C.mint : C.grey2} />, T(x - 10, y - 30, 90, 15, i >= 2 ? C.cream : C.grey, v.toFixed(1), 'center'), T(x - 10, 820, 90, 10, C.grey, lab, 'center')]}</Layer>
     }),
   ], popScale(0.3))
 }
@@ -197,16 +197,16 @@ const Progress = () => {
 const Results = () => {
   const a = t.res, d = t.jump - a, rows = [['LISTENING', '8.0', 'rL', C.mint], ['READING', '8.0', 'rR', C.sky], ['WRITING', '6.5', 'rW', C.yellow], ['SPEAKING', '7.0', 'rS', C.pink]]
   return L(a, d, [
-    ...panel(100, 124, 520, 318, C.yellow),
-    T(100, 144, 520, 12, C.grey, 'IELTS · TEST REPORT FORM', 'center'),
-    T(100, 170, 520, 20, C.cream, 'КАТЯ', 'center'),
-    ...rows.map(([s, v, k, col], i) => <Layer at={K[k] - a} dur={d - (K[k] - a)} animate={popSlide(0.22, 16)}>{[<rect x={124} y={210 + i * 56} width={472} height={48} radius={10} fill="#3a2f66" />, T(146, 226 + i * 56, 300, 16, C.cream, s), <rect x={494} y={216 + i * 56} width={88} height={36} radius={8} fill={col} />, T(494, 224 + i * 56, 88, 19, C.ink, v, 'center', { shadow: false })]}</Layer>),
+    ...panel(110, 124, 500, 250, C.yellow),
+    T(110, 138, 500, 11, C.grey, 'IELTS · TEST REPORT FORM', 'center'),
+    T(110, 158, 500, 17, C.cream, 'КАТЯ', 'center'),
+    ...rows.map(([s, v, k, col], i) => <Layer at={K[k] - a} dur={d - (K[k] - a)} animate={popSlide(0.22, 16)}>{[<rect x={130} y={190 + i * 44} width={460} height={38} radius={8} fill="#3a2f66" />, T(150, 202 + i * 44, 300, 14, C.cream, s), <rect x={504} y={194 + i * 44} width={78} height={30} radius={6} fill={col} />, T(504, 200 + i * 44, 78, 16, C.ink, v, 'center', { shadow: false })]}</Layer>),
   ], popScale(0.3))
 }
 export const OVERLAYS = () => [
   // hook
   <Title at={0.05} dur={t.room - 0.05} l1="ЧТО ЕСЛИ ДО IELTS" l2="ВСЕГО 7 ДНЕЙ?" y={170} s1={26} s2={40} />,
-  <Layer at={0.6} dur={t.room - 0.6} animate={popScale(0.25)} centre>{[...panel(210, 640, 300, 70, C.red), T(210, 662, 300, 26, C.red, '168:00:00', 'center')]}</Layer>,
+  <Layer at={0.6} dur={t.room - 0.6} animate={popScale(0.25)} centre>{[...panel(230, 282, 260, 62, C.red), T(230, 300, 260, 24, C.red, '168:00:00', 'center')]}</Layer>,
   flash(t.room - 0.04, 0.16),
   // intro
   <Layer at={K.kat} dur={t.level - K.kat} animate={popSlide(0.3, 20)}>{[...panel(70, 400, 230, 70, C.pink), T(70, 422, 230, 24, C.cream, 'КАТЯ', 'center')]}</Layer>,
@@ -218,7 +218,7 @@ export const OVERLAYS = () => [
   <Chip at={K.cafe + 0.3} dur={t.kitchen - K.cafe - 0.3} x={70} y={236} text="СМЕНА ДО 23:00" bg={C.lilac} />,
   <Chip at={K.help + 0.2} dur={t.phone - K.help - 0.2} x={70} y={236} text="+ ДОМАШКА БРАТЬЕВ" bg={C.lilac} />,
   Chat(),
-  <Chip at={K.holid + 0.1} dur={t.plan - K.holid - 0.1} x={70} y={236} text="КАНИКУЛЫ!" bg={C.yellow} size={22} anim={slam(0.25)} />,
+  <Chip at={K.holid + 0.1} dur={t.plan - K.holid - 0.1} x={262} y={490} text="КАНИКУЛЫ!" bg={C.yellow} size={22} anim={slam(0.25)} />,
   Plans(),
   <Title at={K.d7} dur={t.eyes - K.d7} l1="7 ДНЕЙ =" l2="168 ЧАСОВ" y={580} s1={30} s2={56} />,
   flash(K.h168, 0.14, C.yellow),
@@ -237,7 +237,7 @@ export const OVERLAYS = () => [
   // day 1
   <DayCard at={K.day1} dur={1.5} n={1} sub="ПОНЕДЕЛЬНИК" />,
   <RuleCard at={K.rule1 + 0.2} dur={t.trash - K.rule1 - 0.2} n={1} lines={['СТАРЫЕ МЕТОДЫ', 'УЖЕ НЕ РАБОТАЮТ']} />,
-  <Layer at={K.w100} dur={t.board - K.w100} animate={popScale(0.28)} centre>{[...panel(130, 236, 460, 120, C.red), T(130, 262, 460, 18, C.cream, '100 СЛОВ В ДЕНЬ', 'center'), T(130, 300, 460, 34, C.red, '×  ПОЗДНО', 'center')]}</Layer>,
+  <Layer at={K.w100} dur={t.board - K.w100} animate={popScale(0.28)} centre>{[...panel(150, 222, 420, 100, C.red), T(150, 240, 420, 16, C.cream, '100 СЛОВ В ДЕНЬ', 'center'), T(150, 270, 420, 28, C.red, '×  ПОЗДНО', 'center')]}</Layer>,
   <Layer at={K.week} dur={c0('L') - K.week} animate={popScale(0.28)} centre>{[T(40, 330, 640, 30, C.grey, 'АНГЛИЙСКИЙ', 'center', { stroke: true }), strike(170, 346, 380, 1.2, C.red, c0('L') - K.week), <Layer at={K.exam1 - K.week} dur={c0('L') - K.exam1} animate={slam(0.25)} centre>{T(40, 400, 640, 46, C.yellow, 'ЭКЗАМЕН', 'center', { stroke: true })}</Layer>]}</Layer>,
   dim(c0('L') - 0.1, t.day2, 0.5),
   Board(),
@@ -245,22 +245,22 @@ export const OVERLAYS = () => [
   <DayCard at={K.day2} dur={1.4} n={2} />,
   <RuleCard at={K.rule2 + 0.1} dur={c0('slow') - K.rule2 - 0.1} n={2} lines={['НЕ ТРАТЬ НЕДЕЛЮ', 'НА WRITING']} col={C.yellow} y={660} />,
   Growth(),
-  <Chip at={K.ans + 0.2} dur={c0('closed') - K.ans - 0.2} x={110} y={590} text="ОТВЕТ - НЕ КОПИЯ ВОПРОСА" bg={C.sky} size={16} />,
+  <Chip at={K.ans + 0.2} dur={c0('closed') - K.ans - 0.2} x={110} y={612} text="ОТВЕТ - НЕ КОПИЯ ВОПРОСА" bg={C.sky} size={16} />,
   Para(),
   Essay(),
   <Layer at={t.mirror + 0.1} dur={t.sched - t.mirror - 0.1} animate={popSlide(0.25, 16)}>{[...panel(70, 236, 300, 70, C.red), <rect x={92} y={258} width={24} height={24} radius={12} fill={C.red} animate={[{ property: 'opacity', keyframes: [{ at: 0, value: 1 }, { at: 0.5, value: 0.2 }, { at: 1.0, value: 1 }, { at: 1.5, value: 0.2 }, { at: 2.0, value: 1 }] }]} />, T(130, 260, 220, 20, C.cream, 'REC 20:00')]}</Layer>,
   Sched(),
-  <Chip at={t.sleep + 0.2} dur={t.brain - t.sleep - 0.2} x={180} y={236} text="СОН = ТОЖЕ УЧЁБА" bg={C.sky} size={18} />,
+  <Chip at={t.sleep + 0.2} dur={t.brain - t.sleep - 0.2} x={180} y={720} text="СОН = ТОЖЕ УЧЁБА" bg={C.sky} size={18} />,
   Brain(),
   // day 4 drama
   <DayCard at={K.day4} dur={1.2} n={4} />,
-  <Layer at={K.m6 + 0.1} dur={t.cry - K.m6 - 0.1} animate={slam(0.25)} centre>{[...panel(230, 620, 260, 130, C.grey), T(230, 640, 260, 13, C.grey, 'MOCK', 'center'), T(230, 672, 260, 40, C.cream, '6.0', 'center'), T(230, 726, 260, 11, C.grey, '+0.5 ЗА 4 ДНЯ', 'center')]}</Layer>,
+  <Layer at={K.m6 + 0.1} dur={t.cry - K.m6 - 0.1} animate={slam(0.25)} centre>{[...panel(240, 660, 240, 120, C.grey), T(240, 676, 240, 12, C.grey, 'MOCK', 'center'), T(240, 704, 240, 36, C.cream, '6.0', 'center'), T(240, 754, 260, 11, C.grey, '+0.5 ЗА 4 ДНЯ', 'center')]}</Layer>,
   // days 5-7
   Progress(),
   <DayCard at={K.day7} dur={1.3} n={7} sub="ОТДЫХ" />,
-  <Chip at={K.nomocks} dur={t.hall - K.nomocks} x={420} y={380} text="НИКАКИХ МОКОВ" bg={C.pink} />,
-  <Chip at={K.walk + 0.6} dur={t.hall - K.walk - 0.6} x={420} y={446} text="ПРОГУЛКА" bg={C.mint} />,
-  <Chip at={K.walk + 1.4} dur={t.hall - K.walk - 1.4} x={420} y={512} text="СОН В 22:00" bg={C.sky} />,
+  <Chip at={K.nomocks} dur={t.hall - K.nomocks} x={60} y={400} text="НИКАКИХ МОКОВ" bg={C.pink} size={13} />,
+  <Chip at={K.walk + 0.6} dur={t.hall - K.walk - 0.6} x={60} y={452} text="ПРОГУЛКА" bg={C.mint} size={13} />,
+  <Chip at={K.walk + 1.4} dur={t.hall - K.walk - 1.4} x={60} y={504} text="СОН В 22:00" bg={C.sky} size={13} />,
   // exam
   <Title at={K.examday} dur={1.6} l1="" l2="ДЕНЬ ЭКЗАМЕНА" y={250} s2={38} />,
   flash(K.examday, 0.14),

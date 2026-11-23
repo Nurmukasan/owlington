@@ -4,7 +4,7 @@ import { Caption } from './ui.jsx'
 import { CAPTIONS } from './captions.jsx'
 import { T } from './times.jsx'
 // every still in plates/ and every clip in clips/ must be listed here
-const PL = 'room hook level mock55 pile friends cafe kitchen phone bedsad planner drawer eyes deskback trash listen readtop write mirror alarm sleep ressad cry hug sunrise happy park qclose speak reslap window calendar logo'.split(' ')
+const PL = 'eyes2 room hook level mock55 pile friends cafe kitchen phone bedsad planner drawer eyes deskback trash listen readtop write mirror alarm sleep ressad cry hug sunrise happy park qclose speak reslap window calendar logo'.split(' ')
 const CL = 'v_hook v_room v_bun v_brain v_cry v_cry2 v_owl v_sun v_hall v_jump v_cta'.split(' ')
 export default async ({ project }) => {
   const p = await project({ dir: '.', size: '720x1280', fps: 24, background: C.ink })
