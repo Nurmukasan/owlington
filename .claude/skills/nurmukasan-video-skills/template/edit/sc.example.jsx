@@ -75,11 +75,11 @@ const rel = (k, base) => K[k] - base
 const Level = () => {
   const a = c0('eng'), d = t.mock - a, lv = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'], col = ['#6d6290', '#7d6aa8', '#9a7ccc', C.lilac, C.pink, '#ffd6ec']
   return L(a, d, [
-    ...panel(70, 600, 580, 132),
-    ...tab(92, 582, 'УРОВЕНЬ КАТИ', C.lilac),
-    ...lv.map((s, i) => [<rect x={92 + i * 92} y={626} width={84} height={34} radius={6} fill={col[i]} opacity={i < 3 ? 0.55 : 1} />, T(92 + i * 92, 635, 84, 15, C.ink, s, 'center', { shadow: false })]).flat(),
-    <Layer at={K.b2 - a} dur={d - (K.b2 - a)} animate={popSlide(0.25, -20)}>{[<rect x={92 + 3 * 92 + 30} y={668} width={24} height={14} fill={C.yellow} radius={3} />, T(70, 690, 580, 14, C.yellow, 'B2 · ПОЧТИ C1', 'center')]}</Layer>,
-    <Layer at={K.c1 - a} dur={d - (K.c1 - a)} animate={[{ property: 'opacity', keyframes: [{ at: 0, value: 0 }, { at: 0.15, value: 0.9 }, { at: 0.5, value: 0.35 }, { at: 0.8, value: 0.8 }] }]}><rect x={92 + 4 * 92 - 4} y={622} width={92} height={42} radius={8} fill="#00000000" strokeColor={C.yellow} strokeWidth={4} /></Layer>,
+    ...panel(70, 236, 580, 132),
+    ...tab(92, 218, 'УРОВЕНЬ КАТИ', C.lilac),
+    ...lv.map((s, i) => [<rect x={92 + i * 92} y={262} width={84} height={34} radius={6} fill={col[i]} opacity={i < 3 ? 0.55 : 1} />, T(92 + i * 92, 271, 84, 15, C.ink, s, 'center', { shadow: false })]).flat(),
+    <Layer at={K.b2 - a} dur={d - (K.b2 - a)} animate={popSlide(0.25, -20)}>{[<rect x={92 + 3 * 92 + 30} y={304} width={24} height={14} fill={C.yellow} radius={3} />, T(70, 326, 580, 14, C.yellow, 'B2 · ПОЧТИ C1', 'center')]}</Layer>,
+    <Layer at={K.c1 - a} dur={d - (K.c1 - a)} animate={[{ property: 'opacity', keyframes: [{ at: 0, value: 0 }, { at: 0.15, value: 0.9 }, { at: 0.5, value: 0.35 }, { at: 0.8, value: 0.8 }] }]}><rect x={92 + 4 * 92 - 4} y={258} width={92} height={42} radius={8} fill="#00000000" strokeColor={C.yellow} strokeWidth={4} /></Layer>,
   ], fadeIn(0.25))
 }
 // friend voice message (waveform lights up while the clip plays)
@@ -129,13 +129,13 @@ const Board = () => {
 // growth-speed chart
 const Growth = () => {
   const a = c0('slow'), d = K.fast + 0.9 - a
-  const row = (i, name, w, col, lab, at0) => <Layer at={at0} dur={d - (at0)} animate={popSlide(0.25, 16)}>{[T(96, 606 + i * 56, 170, 15, C.cream, name), <rect x={270} y={598 + i * 56} width={300} height={30} radius={6} fill="#3a2f66" />, <rect x={270} y={598 + i * 56} width={w} height={30} radius={6} fill={col} />, T(270, 640 + i * 56 - 2, 300, 10, col, lab, 'right')]}</Layer>
+  const row = (i, name, w, col, lab, at0) => <Layer at={at0} dur={d - (at0)} animate={popSlide(0.25, 16)}>{[T(96, 196 + i * 56, 170, 15, C.cream, name), <rect x={270} y={188 + i * 56} width={300} height={30} radius={6} fill="#3a2f66" />, <rect x={270} y={188 + i * 56} width={w} height={30} radius={6} fill={col} />, T(270, 230 + i * 56 - 2, 300, 10, col, lab, 'right')]}</Layer>
   return L(a, d, [
-    ...panel(70, 560, 580, 270),
-    ...tab(92, 542, 'ЧТО РАСТЁТ БЫСТРЕЕ ЗА НЕДЕЛЮ', C.lilac),
+    ...panel(70, 150, 580, 270),
+    ...tab(92, 132, 'ЧТО РАСТЁТ БЫСТРЕЕ ЗА НЕДЕЛЮ', C.lilac),
     row(0, 'Listening', 280, C.mint, 'БЫСТРО', 0.15), row(1, 'Reading', 262, C.mint, 'БЫСТРО', 0.3),
     row(2, 'Speaking', 170, C.yellow, 'СРЕДНЕ', 0.45), row(3, 'Writing', 70, C.red, 'МЕДЛЕННО', 0.6),
-    <Layer at={K.fast - a} dur={d - (K.fast - a)} animate={[{ property: 'opacity', keyframes: [{ at: 0, value: 0 }, { at: 0.12, value: 1 }, { at: 0.45, value: 0.4 }, { at: 0.75, value: 1 }] }]}>{[<rect x={84} y={588} width={552} height={110} radius={10} fill="#00000000" strokeColor={C.yellow} strokeWidth={4} />]}</Layer>,
+    <Layer at={K.fast - a} dur={d - (K.fast - a)} animate={[{ property: 'opacity', keyframes: [{ at: 0, value: 0 }, { at: 0.12, value: 1 }, { at: 0.45, value: 0.4 }, { at: 0.75, value: 1 }] }]}>{[<rect x={84} y={178} width={552} height={110} radius={10} fill="#00000000" strokeColor={C.yellow} strokeWidth={4} />]}</Layer>,
   ], popScale(0.3))
 }
 // paraphrase cards (placed low so the heroine's face stays visible)
@@ -225,7 +225,8 @@ export const OVERLAYS = () => [
   <Chip at={K.each + 0.1} dur={t.eyes - K.each - 0.1} x={190} y={756} text="КАЖДЫЙ НА СЧЕТУ" bg={C.pink} />,
   // HUD through the week (hidden in emotional / full-screen scenes)
   <Hud {...span(K.katya1_end - 0.9, t.day2)} day={1} left="168 Ч" mock="5.5" />,
-  <Hud {...span(t.day2, t.sched)} day={2} left="144 Ч" mock="5.5" />,
+  <Hud {...span(t.day2, c0('slow'))} day={2} left="144 Ч" mock="5.5" />,
+  <Hud {...span(K.fast + 0.9, t.sched)} day={2} left="144 Ч" mock="5.5" />,
   <Hud {...span(t.sched, t.brain)} day={3} left="120 Ч" mock="5.5" />,
   <Hud {...span(t.day4, t.cry)} day={4} left="96 Ч" mock="6.0" />,
   <Hud {...span(t.owl, t.day5)} day={4} left="96 Ч" mock="6.0" />,
@@ -242,7 +243,7 @@ export const OVERLAYS = () => [
   Board(),
   // day 2
   <DayCard at={K.day2} dur={1.4} n={2} />,
-  <RuleCard at={K.rule2 + 0.1} dur={c0('slow') - K.rule2 - 0.1} n={2} lines={['НЕ ТРАТЬ НЕДЕЛЮ', 'НА WRITING']} col={C.yellow} y={620} />,
+  <RuleCard at={K.rule2 + 0.1} dur={c0('slow') - K.rule2 - 0.1} n={2} lines={['НЕ ТРАТЬ НЕДЕЛЮ', 'НА WRITING']} col={C.yellow} y={660} />,
   Growth(),
   <Chip at={K.ans + 0.2} dur={c0('closed') - K.ans - 0.2} x={110} y={590} text="ОТВЕТ - НЕ КОПИЯ ВОПРОСА" bg={C.sky} size={16} />,
   Para(),
