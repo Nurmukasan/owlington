@@ -41,7 +41,7 @@ Don't animate every shot ("не все кадры должны двигать к
 
 ## 2. Story & directing (what made it work)
 
-Length **1:30-1:45** from episode 6 on (Katya ran 2:20 and lost viewers; never under 1:00). Keep the structure below but cut the weakest teaching beats; ~260 words of narration. Structure (Katya episode, times in brackets):
+Length **1:30-1:45** from episode 6 on (Katya ran 2:20 and lost viewers; never under 1:00). Prefer a **series of complete episodes** (like Timur's 4 universes: each one has its own hook and its own score reveal) over cutting one story into «часть 1 / часть 2». If a story really needs two parts: each 1:10-1:30, part 1 ends on a cliffhanger right before the result, part 2 opens with a 3-s recap, post it within 24 h, add both to a TikTok playlist and pin a comment with the link. Keep the structure below but cut the weakest teaching beats; ~260 words of narration. Structure (Katya episode, times in brackets):
 1. **Hook ≤ 3 s** — the question as a big title + a ticking number (`168:00:00`), heroine in shock, camera push-in clip, heartbeat SFX.
 2. **Who + stakes** (3-17 s) — name tag, level bar (B2→C1), the bad mock as a red stamp, «moks решено 40+», friends prepared for months vs she worked in a café and helped mum with brothers → empathy.
 3. **Twist of pain** — friend's voice message (waveform UI), heroine doesn't answer («Прочитано · 23:48»).
