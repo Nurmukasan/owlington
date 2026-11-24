@@ -1,0 +1,32 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face{font-family:PS;src:url(../edit/fonts/ps-lat.woff2)}
+@font-face{font-family:PS;src:url(../edit/fonts/ps-cyr.woff2);unicode-range:U+0400-04FF}
+body{margin:0;font-family:PS}
+.s{position:relative;overflow:hidden}
+.t{position:absolute;white-space:nowrap}
+.bar{position:absolute;height:12px;background:#3a2f66;border:2px solid #160f24}
+.bar i{position:absolute;left:0;top:0;bottom:0}
+</style></head><body><div id="root"></div>
+<script>
+const OWL=['..o..........o..','..oo........oo..','..obo......obo..','.obbboooooobbbo.','.obbbbbbbbbbbbo.','obbwwwwbbwwwwbbo','obwyyyywwyyyywbo','obwyhkywwyhkywbo','obwykkynnykkywbo','obwyyyynnyyyywbo','obbbwwwnnwwwbbbo','.obbbbbbbbbbbbo.','..oooooooooooo..']
+const P={o:'#1e120c',b:'#7f5236',w:'#f3e3c3',y:'#ffb627',k:'#120c08',h:'#ffffff',n:'#f08a24'}
+const owl=(p)=>{let r='';OWL.forEach((row,y)=>[...row].forEach((c,x)=>{if(P[c])r+=`<rect x="${x}" y="${y}" width="1.02" height="1.02" fill="${P[c]}"/>`}));return `<svg width="${16*p}" height="${13*p}" viewBox="0 0 16 13" shape-rendering="crispEdges">${r}</svg>`}
+const T=(x,y,size,col,txt,extra='')=>`<div class="t" style="left:${x}px;top:${y}px;font-size:${size}px;color:${col};${extra}">${txt}</div>`
+window.mail=(W,H)=>`<div class="s" style="width:${W}px;height:${H}px;background:#f3eefc">
+ <div style="position:absolute;left:0;right:0;top:0;height:${H*.17}px;background:#8a62d6"></div>
+ ${T(W*.08,H*.05,H*.07,'#fff','1 НОВОЕ ПИСЬМО')}
+ ${T(W*.08,H*.25,H*.05,'#7d6fa6','UNIVERSITY · MANCHESTER')}
+ ${T(W*.08,H*.37,H*.1,'#160f24','OFFER: <span style="color:#c8304a">7.0</span>')}
+ ${T(W*.08,H*.56,H*.065,'#160f24','НИ ОДНОЙ ЧАСТИ')}${T(W*.08,H*.66,H*.065,'#160f24','НИЖЕ <span style="color:#c8304a">6.5</span>')}
+ <div style="position:absolute;left:${W*.08}px;top:${H*.84}px;width:${W*.84}px;height:${H*.035}px;background:#ffd23f"></div></div>`
+const SK=[['L','#a8d8ff'],['R','#ffd23f'],['W','#ff8fc7'],['S','#7fe0a8']]
+window.mock=(W,H)=>`<div class="s" style="width:${W}px;height:${H}px;background:#1e1736">
+ ${T(W*.08,H*.07,H*.065,'#ff5a6e','MOCK TEST · ДЕНЬ 0')}`+SK.map(([k,c],i)=>{const v=[5,5,5,6][i],y=H*(.22+i*.15);return T(W*.08,y,H*.07,c,k)+`<div class="bar" style="left:${W*.16}px;top:${y}px;width:${W*.58}px;height:${H*.075}px"><i style="width:${v/9*100}%;background:${c}"></i></div>`+T(W*.8,y,H*.07,'#f7f3ff',v.toFixed(1))}).join('')+
+ T(W*.08,H*.83,H*.06,'#a89cc8','OVERALL')+T(W*.72,H*.79,H*.11,'#ff5a6e','5.5','text-shadow:3px 3px 0 #160f24')+`</div>`
+const RW=[['LISTENING','#a8d8ff',8],['READING','#ffd23f',8],['SPEAKING','#7fe0a8',7.5],['WRITING','#ff8fc7',6.5]]
+window.phone=(W,H,n)=>`<div class="s" style="width:${W}px;height:${H}px;background:linear-gradient(#2f2556,#160f24)">
+ <div style="position:absolute;left:0;right:0;top:${H*.05}px;display:flex;justify-content:center">${owl(W/90)}</div>
+ ${T(0,H*.135,W*.05,'#ffd23f','IELTS · РЕЗУЛЬТАТ','width:100%;text-align:center')}`+RW.map(([k,c,v],i)=>{const y=H*(.24+i*.16),on=i<n;
+ let h=T(W*.08,y,W*.05,c,k)+T(W*.72,y-W*.015,W*.08,on?'#fff1c9':'#6d6290',on?v.toFixed(1):'?')+`<div class="bar" style="left:${W*.08}px;top:${y+W*.09}px;width:${W*.84}px;height:${W*.06}px"><i style="width:${on?v/9*100:0}%;background:${c}"></i></div>`
+ if(i===3)h+=on?T(W*.08,y+W*.2,W*.042,'#7fe0a8','ПОРОГ 6.5 — ЕСТЬ!'):T(W*.08,y+W*.2,W*.042,'#ffd23f','НУЖНО МИНИМУМ 6.5');return h}).join('')+`</div>`
+</script></body></html>

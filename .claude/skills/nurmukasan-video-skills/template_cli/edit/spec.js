@@ -5,7 +5,8 @@ const CL = window.CLIPN || {} // clip frame counts (filled by render.js)
 
 // ---------- SHOTS ----------
 shot(0, c('n02'), { clip: 'c01', from: 0.9, speed: 0.95, z: [1.08, 1.0] })
-shot(c('n02'), c('n03'), { img: 'ots_laptop', z: [1.0, 1.32], px: [0.5, 0.55], py: [0.5, 0.72] })
+{ const P0 = { z: [1.0, 1.32], px: [0.5, 0.55], py: [0.5, 0.72], span: [c('n02'), c('n03')] }, m0 = s('n02') + 0.1, m1 = Wt('n02', 'мок') - 0.1
+  shot(c('n02'), m0, { img: 'ots_laptop', ...P0 }); shot(m0, m1, { img: 'ots_mail', ...P0 }); shot(m1, c('n03'), { img: 'ots_mock', ...P0 }) }
 const n3 = c('n03'), n3e = c('t01'), fl = 0.55
 ;['old_r', 'old_s', 'old_w', 'old_l'].forEach((k, i) => shot(n3 + i * fl, n3 + (i + 1) * fl, { img: k, z: [1.0, 1.08], filter: () => 'saturate(.55) contrast(1.05) brightness(.9)' }))
 shot(n3 + 4 * fl, n3e, { img: 'facepalm', z: [1.05, 1.18], py: [0.35, 0.3] })
@@ -36,7 +37,9 @@ shot(c('ex1'), c('t02'), { img: 'examiner', z: [1.0, 1.1], py: [0.3, 0.25] })
 shot(c('t02'), c('t02') + 3.6, { clip: 'c10' })
 shot(c('t02') + 3.6, c('n14'), { img: 'timur_speak', z: [1.05, 1.15], py: [0.3, 0.28] })
 const tOv = Wt('n14', 'общий') - 0.1
-shot(c('n14'), tOv, { img: 'phone_pov', z: [1.2, 1.2], px: [0.493, 0.493], py: [0.353, 0.353] })
+{ const PP = { z: [1.2, 1.2], px: [0.493, 0.493], py: [0.353, 0.353] }, ks = ['лиснинг', 'ридинг', 'спикинг', 'шесть']
+  const ts = [c('n14'), ...ks.map((w) => Wt('n14', w) - 0.05), tOv]
+  for (let i = 0; i < 5; i++) shot(ts[i], ts[i + 1], { img: 'phone_r' + i, ...PP }) }
 shot(tOv, c('j02'), { clip: 'c11', speed: 0.5 })
 shot(c('j02'), c('n15'), { img: 'jake', z: [1.15, 1.25], py: [0.25, 0.22] })
 shot(c('n15'), c('n15') + 3, { clip: 'c12', speed: 0.55 })
@@ -50,14 +53,6 @@ CAP_HIDE.push([0, c('n02')])
 // ---------- STAKES: e-mail and mock ON the laptop screen ----------
 const LAP = [622, 1226, 1194, 1578], n2 = s('n02'), mk = Wt('n02', 'мок')
 const scr = (inner, bg = '#f3eefc') => `<div style="position:absolute;inset:0;background:${bg}">${inner}</div>`
-ov(n2 + 0.1, mk - 0.1, (lt) => SCREEN(LAP, 250, scr(`<div style="position:absolute;left:0;right:0;top:0;height:30px;background:#8a62d6"></div>${TX(10, 9, 230, 11, '#fff', '1 НОВОЕ ПИСЬМО')}
- ${TX(12, 40, 230, 9, '#6d6290', 'UNIVERSITY · MANCHESTER')}${TX(12, 60, 230, 15, '#160f24', 'OFFER: <span style="color:#c8304a">7.0</span>')}
- ${TX(12, 90, 230, 10, '#160f24', 'НИ ОДНОЙ ЧАСТИ<br>НИЖЕ <span style="color:#c8304a">6.5</span>', 'left', '', 'line-height:1.7')}
- <div style="position:absolute;left:12px;top:136px;width:${Math.min(1, lt / 1.2) * 220}px;height:5px;background:#ffd23f"></div>`)), { anim: 'fade', out: 0 })
-ov(mk - 0.1, c('n03'), (lt) => SCREEN(LAP, 360, scr(`${TX(14, 12, 330, 11, '#ff5a6e', 'MOCK TEST · ДЕНЬ 0')}` + SK.map(([k, col], i) => {
-  const v = [5, 5, 5, 6][i], y = 40 + i * 30
-  return TX(16, y + 2, 30, 12, col, k) + `<div class="bar" style="left:46px;top:${y}px;width:210px;height:18px;border-width:2px"><i style="width:${(v / 9) * 100 * Math.min(1, lt / 0.4)}%;background:${col}"></i></div>` + TX(270, y + 2, 70, 12, '#f7f3ff', v.toFixed(1), 'right')
-}).join('') + TX(16, 168, 200, 11, '#a89cc8', 'OVERALL') + TX(200, 160, 140, 22, '#ff5a6e', '5.5', 'right', 'stroke'), '#1e1736')), { anim: 'fade', out: 0 })
 fx(mk - 0.1, mk + 0.05, () => `<div style="position:absolute;inset:0;background:rgba(255,90,110,.25)"></div>`)
 ov(e('n02') - 0.55, c('n03'), (lt) => ROW(690, `<div style="filter:blur(${Math.max(0, 3 - lt * 4)}px);display:flex;gap:10px">${CHIPC('В ФИНАЛЕ: OVERALL ?.?', 'var(--yellow)', 15)}</div>`), { anim: 'up' })
 ;[['ВСЕЛЕННАЯ 1 · READING', 'var(--yellow)'], ['ВСЕЛЕННАЯ 2 · SPEAKING', 'var(--mint)'], ['ВСЕЛЕННАЯ 3 · WRITING', 'var(--pink)'], ['ВСЕЛЕННАЯ 4 · LISTENING', 'var(--sky)']].forEach(([t, col], i) =>
@@ -130,15 +125,6 @@ ov(s('n13') + 0.05, s('n13') + 2.2, () => ROW(236, CHIPC('ДЕНЬ 60 · ЭКЗ�
 // ---------- RESULT on the phone screen ----------
 const PH = [520, 666, 997, 1619]
 const rows = [['LISTENING', 'var(--sky)', 8, 'лиснинг'], ['READING', 'var(--yellow)', 8, 'ридинг'], ['SPEAKING', 'var(--mint)', 7.5, 'спикинг'], ['WRITING', 'var(--pink)', 6.5, 'шесть']]
-ov(c('n14'), tOv, (lt, d, t) => SCREEN(PH, 260, `<div style="position:absolute;inset:0;background:linear-gradient(#2f2556,#160f24)"></div>
-  <div style="position:absolute;left:0;right:0;top:22px;display:flex;justify-content:center">${owlSvg(3)}</div>${TX(0, 70, 260, 12, 'var(--yellow)', 'IELTS · РЕЗУЛЬТАТ', 'center')}` +
-  rows.map(([k, col, v, w], i) => {
-    const y = 110 + i * 78, ta = Wt('n14', w) - 0.05, on = t >= ta, g = clamp((t - ta) / 0.45)
-    let h = TX(18, y, 150, 11, col, k) + TX(160, y - 4, 82, 18, on ? 'var(--cream)' : '#6d6290', on ? v.toFixed(1) : '?', 'right')
-    h += `<div class="bar" style="left:18px;top:${y + 24}px;width:224px;height:16px;border-width:2px"><i style="width:${g * (v / 9) * 100}%;background:${col}"></i></div>`
-    if (i === 3) h += on ? `<div style="position:absolute;left:18px;top:${y + 50}px">${CHECK(2)}</div>` + TX(46, y + 50, 200, 9, 'var(--mint)', 'ПОРОГ 6.5 — ЕСТЬ!') : TX(18, y + 50, 230, 9, `rgba(255,210,63,${0.5 + 0.5 * Math.abs(Math.sin(t * 6))})`, 'НУЖНО МИНИМУМ 6.5')
-    return h
-  }).join(''), `box-shadow:0 0 30px rgba(255,210,63,.5)`), { anim: 'fade', out: 0 })
 ov(tOv, c('j02'), () => CARD(650, 360, 130, 'var(--yellow)', '', TX(0, 18, 360, 15, 'var(--cream)', 'OVERALL', 'center') + TX(0, 50, 360, 54, 'var(--yellow)', '7.5', 'center', 'stroke2')), { anim: 'slam' })
 fx(tOv, tOv + 0.15, (lt) => `<div style="position:absolute;inset:0;background:#fff;opacity:${0.8 - lt * 5}"></div>`)
 ov(s('j02') - 0.1, c('n15'), () => CARD(650, 420, 100, 'var(--mint)', 'JAKE · 21:04', TX(0, 30, 420, 15, 'var(--cream)', 'See you in<br>Manchester, mate!', 'center', '', 'line-height:1.6')), { anim: 'up' })

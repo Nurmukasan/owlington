@@ -135,7 +135,8 @@ function setBg(el, src, s, x, y, w0, h0) {
 }
 window.renderAt = async function (t) {
   const sh = SHOTS.find((s) => t >= s.t0 && t < s.t1) || SHOTS[SHOTS.length - 1]
-  const u = clamp((t - sh.t0) / (sh.t1 - sh.t0)); const e = sh.lin ? u : ease(u)
+  const sp = sh.span || [sh.t0, sh.t1]
+  const u = clamp((t - sp[0]) / (sp[1] - sp[0])); const e = sh.lin ? u : ease(u)
   const z = sh.z || [1, 1.06], px = sh.px || [0.5, 0.5], py = sh.py || [0.5, 0.5]
   let src, w0 = 720, h0 = 1280
   if (sh.clip) {
