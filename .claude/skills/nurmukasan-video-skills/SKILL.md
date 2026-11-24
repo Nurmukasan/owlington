@@ -41,7 +41,7 @@ Don't animate every shot ("не все кадры должны двигать к
 
 ## 2. Story & directing (what made it work)
 
-Length 2:20 (±5 s). Structure (Katya episode, times in brackets):
+Length **1:30-1:45** from episode 6 on (Katya ran 2:20 and lost viewers; never under 1:00). Keep the structure below but cut the weakest teaching beats; ~260 words of narration. Structure (Katya episode, times in brackets):
 1. **Hook ≤ 3 s** — the question as a big title + a ticking number (`168:00:00`), heroine in shock, camera push-in clip, heartbeat SFX.
 2. **Who + stakes** (3-17 s) — name tag, level bar (B2→C1), the bad mock as a red stamp, «moks решено 40+», friends prepared for months vs she worked in a café and helped mum with brothers → empathy.
 3. **Twist of pain** — friend's voice message (waveform UI), heroine doesn't answer («Прочитано · 23:48»).
@@ -136,5 +136,5 @@ Moves that worked: fast dramatic push-in (hook); slow dolly forward with slight 
 
 Timur 60 days (the «4 вселенные» series, finale = Listening, 1:45, ended with the teaser «А если всё сразу?»). Listening beats: rule «2 часа English в день», background listening doesn't count («фоном → мозг в игре»), twist «по-старинке», dictation «1 мин аудио = 10 мин», podcast speed 1.0x → 1.25x → 1.5x, accent roulette UK/USA/Australia/Scotland/India/Ireland, «терпимо», day 40 «locked in», mum «Тимур! Ужинать!» unheard, day 50 the fictional podcast «Manchester Mornings», day 60 exam «та же ловушка» (fourteen… sorry, forty). Reading R 8.5 → overall 7.0; Speaking S 8.0 (L7 R6 W6) → 7.0; Writing W 8.0 (R6 S6 L5.5) → 6.5; Listening L 9.0 (S8 R6.5 W6) → 7.5.
 Katya one week: L 8.0, R 8.0, W 6.5, S 7.0 → 7.5 (mock 5.5 three months before; level B2-C1).
-Stats (TikTok, first 6 h): ep 5 Katya (2:20) — ~1K views, avg watch 43.2 s (31 %), full watch 6.65 %, 9 follows, most viewers left at 0:01 → the first frame loses people. Ep 4 Timur Listening (1:45) went viral. Lessons for next episodes: action + voice from frame 0 (no fade-in, no calm opener), 3-5-word title readable in 1 s, aim for ~1:40-1:50, tease the result in the first 3 s, keep the series' recurring hero/hook the audience already knows.
+Stats (TikTok, first 6 h): ep 5 Katya (2:20) — ~1K views, avg watch 43.2 s (31 %), full watch 6.65 %, 9 follows, most viewers left at 0:01 → the first frame loses people. Ep 4 Timur Listening (1:45) went viral. Lessons for next episodes: action + voice from frame 0 (no fade-in, no calm opener), 3-5-word title readable in 1 s, aim for ~1:30-1:45 (never under 1:00), tease the result in the first 3 s, keep the series' recurring hero/hook the audience already knows.
 Next ideas the audience asked for: «прокачать всё сразу», new heroes, «что если…» ideas tied to IELTS (неделя до экзамена, только ИИ, только игры и сериалы, сдать 5 раз подряд).
