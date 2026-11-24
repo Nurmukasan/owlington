@@ -21,6 +21,8 @@ Code template (copy, then rewrite the episode-specific parts): `template/` next 
 - Owl mascot is in every video (the series motto: «всегда есть сова»). Katya's owl wears a **pink bow**.
 - **Comment replies** (TikTok/IG): sound like a real person — short, casual, lowercase ok, light slang, at most 1 emoji (none if the user says «без эмодзи»). No `**`, no `•`, no polished "AI" phrasing or em-dash lists. One recommendation per reply.
 - **Book recommendations: only books from our Telegram channel**, always mention «в нашем тгк owlingtonedu». Current list: B1 — The Wonderful Wizard of Oz, Peter Pan, Alice in Wonderland; B1+ — The Adventures of Sherlock Holmes, Treasure Island, Around the World in Eighty Days; B2 — The Hound of the Baskervilles, The Time Machine, The War of the Worlds.
+- **Podcast recommendations (Listening): only from our Telegram listening post**, mention «в нашем тгк owlingtonedu». B1 — 6 Minute English (youtube.com/@bbclearningenglish), All Ears English (youtube.com/@AllEarsEnglishPodcast), IELTS Energy (youtube.com/channel/UCOJ3eBlqtM-alGOS2Qyh34g); B1+ — Luke's English Podcast (youtube.com/@LukesEnglishPodcast), Thinking in English (youtube.com/@thinkinginenglishpodcast), Aussie English (youtube.com/channel/UCPIAvE0MO9pyWGNh5OoYInQ); B2 — The Scottish English Podcast (youtube.com/playlist?list=PLCRkHoZ9BMJHffr67uFqbolGmWVO27BKV), The Diary Of A CEO (youtube.com/@TheDiaryOfACEO), TED (youtube.com/@TED).
+- **Telegram posts**: written in the user's voice (male, «я»/«мы» for the team), casual, a few emoji ok, hook first, plain URLs (no markdown links), split by level B1 / B1+ / B2 like the books post, end with a question for comments. Tie the post to the video's in-story rules; Timur/Katya are characters, never present their scores as real results.
 - «Где найти Маргарет / носителя» → Slowly (letters), HelloTalk, Tandem.
 - Price questions: «цена зависит от ваших целей, можно записаться на бесплатную консультацию».
 - Never promise things that aren't real; the stories are fiction (profile is labelled AI) — never sell a course with Timur/Katya results as real.
@@ -132,6 +134,6 @@ Moves that worked: fast dramatic push-in (hook); slow dolly forward with slight 
 
 ## 10. Episode history
 
-Timur 60 days: Reading R 8.5 → overall 7.0; Speaking S 8.0 (L7 R6 W6) → 7.0; Writing W 8.0 (R6 S6 L5.5) → 6.5; Listening L 9.0 (S8 R6.5 W6) → 7.5.
+Timur 60 days (the «4 вселенные» series, finale = Listening, 1:45, ended with the teaser «А если всё сразу?»). Listening beats: rule «2 часа English в день», background listening doesn't count («фоном → мозг в игре»), twist «по-старинке», dictation «1 мин аудио = 10 мин», podcast speed 1.0x → 1.25x → 1.5x, accent roulette UK/USA/Australia/Scotland/India/Ireland, «терпимо», day 40 «locked in», mum «Тимур! Ужинать!» unheard, day 50 the fictional podcast «Manchester Mornings», day 60 exam «та же ловушка» (fourteen… sorry, forty). Reading R 8.5 → overall 7.0; Speaking S 8.0 (L7 R6 W6) → 7.0; Writing W 8.0 (R6 S6 L5.5) → 6.5; Listening L 9.0 (S8 R6.5 W6) → 7.5.
 Katya one week: L 8.0, R 8.0, W 6.5, S 7.0 → 7.5 (mock 5.5 three months before; level B2-C1).
 Next ideas the audience asked for: «прокачать всё сразу», new heroes, «что если…» ideas tied to IELTS (неделя до экзамена, только ИИ, только игры и сериалы, сдать 5 раз подряд).
