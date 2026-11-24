@@ -42,6 +42,18 @@ function sprite(rows, pal, p) {
   return `<svg width="${rows[0].length * p}" height="${rows.length * p}" viewBox="0 0 ${rows[0].length} ${rows.length}" shape-rendering="crispEdges" style="display:block">${r}</svg>`
 }
 const owlSvg = (p) => sprite(OWL, OWLP, p)
+// place html laid out in a w-px-wide box onto a rectangle of the current background image (source px)
+function SCREEN([x0, y0, x1, y1], w, html, extra = '') {
+  const { base, ox, oy } = window.CUR; const k = ((x1 - x0) * base) / w
+  return `<div style="position:absolute;left:${ox + x0 * base}px;top:${oy + y0 * base}px;width:${w}px;height:${((y1 - y0) * base) / k}px;transform:scale(${k});transform-origin:0 0;overflow:hidden;${extra}">${html}</div>`
+}
+// centred helpers
+const ROW = (y, inner, gap = 12) => `<div style="position:absolute;left:0;right:0;top:${y}px;display:flex;justify-content:center;gap:${gap}px">${inner}</div>`
+const CHIPC = (text, bg = 'var(--pink)', size = 15) => `<div class="chip" style="position:relative;background:${bg};font-size:${size}px">${text}</div>`
+function CARD(y, w, h, col, tab, inner) { // centred card, inner coords relative to card
+  const x = (720 - w) / 2
+  return `<div style="position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${h}px">${P(0, 0, w, h, col)}${tab ? TAB(18, -16, tab, col) : ''}${inner}</div>`
+}
 const CHECK = (p = 4, c = '#7fe0a8') => sprite(['........cc', '.......ccc', 'c.....ccc.', 'cc...ccc..', 'ccc.ccc...', '.ccccc....', '..ccc.....'], { c }, p)
 const ARROW = (p = 4, c = '#ffd23f') => sprite(['....c...', '....cc..', 'cccccccc', 'cccccccc', '....cc..', '....c...'], { c }, p)
 
@@ -119,6 +131,7 @@ function setBg(el, src, s, x, y, w0, h0) {
   const ox = (720 - W) * x, oy = (1280 - H) * y
   el.style.width = W + 'px'; el.style.height = H + 'px'; el.style.transform = `translate(${ox}px,${oy}px)`
   el.style.display = 'block'
+  window.CUR = { base, ox, oy }
 }
 window.renderAt = async function (t) {
   const sh = SHOTS.find((s) => t >= s.t0 && t < s.t1) || SHOTS[SHOTS.length - 1]
@@ -139,6 +152,7 @@ window.renderAt = async function (t) {
   for (const x of FX) if (t >= x.a && t < x.b) f += x.f(t - x.a, x.b - x.a)
   document.getElementById('fx').innerHTML = f
   let h = ''
+  if (window.NOOV) { document.getElementById('ov').innerHTML = '<div style="position:absolute;inset:0;background:repeating-linear-gradient(transparent 0 99px,rgba(255,0,0,.85) 99px 101px)"></div>'; if (!A.complete || !A.naturalWidth) await new Promise((r) => { A.onload = r; A.onerror = r }); return }
   for (const o of OVS) if (t >= o.a && t < o.b) h += `<div style="position:absolute;inset:0;transform-origin:${o.origin || '50% 50%'};${anim(t - o.a, o.b - o.a, o.anim || 'pop', o.out ?? 0.2)}">${o.f(t - o.a, o.b - o.a, t)}</div>`
   h += hudAt(t) + captionAt(t)
   document.getElementById('ov').innerHTML = h
