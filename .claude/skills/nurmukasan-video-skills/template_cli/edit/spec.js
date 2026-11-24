@@ -71,10 +71,10 @@ ov(Wt('n04', 'каждый') - 0.1, c('n05'), (lt) => CARD(240, 440, 196, 'var(-
 
 // ---------- READING ----------
 ov(Wt('n05', 'сначала') - 0.1, Wt('n05', 'вопросе') - 0.1, () => ROW(236, CHIPC('1. ВОПРОСЫ', 'var(--yellow)', 15) + CHIPC('2. ТЕКСТ', 'var(--cream)', 15)), { anim: 'down' })
-ov(Wt('n05', 'вопросе') - 0.1, Wt('n05', 'если') - 0.1, (lt) => CARD(604, 460, 168, 'var(--yellow)', 'ПАРАФРАЗ',
-  TX(0, 28, 460, 11, 'var(--grey)', 'В ВОПРОСЕ', 'center') + TX(0, 48, 460, 17, 'var(--cream)', 'a big problem', 'center') +
-  `<div style="opacity:${clamp((lt - 1.3) / 0.2)}">${TX(0, 90, 460, 11, 'var(--grey)', 'В ТЕКСТЕ', 'center')}${TX(0, 110, 460, 17, 'var(--yellow)', 'a significant issue', 'center')}</div>`))
-ov(Wt('n05', 'если') - 0.1, c('n06'), () => ROW(660, CHIPC('НЕТ ИНФЫ → NOT GIVEN', 'var(--pink)', 16)), { anim: 'up' })
+ov(Wt('n05', 'вопросе') - 0.1, Wt('n05', 'если') - 0.1, (lt) => CARD(652, 440, 150, 'var(--yellow)', 'ПАРАФРАЗ',
+  TX(0, 24, 440, 11, 'var(--grey)', 'В ВОПРОСЕ', 'center') + TX(0, 42, 440, 17, 'var(--cream)', 'a big problem', 'center') +
+  `<div style="opacity:${clamp((lt - 1.3) / 0.2)}">${TX(0, 80, 440, 11, 'var(--grey)', 'В ТЕКСТЕ', 'center')}${TX(0, 98, 440, 17, 'var(--yellow)', 'a significant issue', 'center')}</div>`))
+ov(Wt('n05', 'если') - 0.1, c('n06'), () => ROW(720, CHIPC('НЕТ ИНФЫ → NOT GIVEN', 'var(--pink)', 16)), { anim: 'up' })
 
 // ---------- LISTENING ----------
 ov(Wt('n06', 'число') - 0.1, c('x01'), () => ROW(690, ['ЧИСЛО?', 'ИМЯ?', 'МЕСТО?'].map((t) => CHIPC(t, 'var(--sky)', 15)).join('')), { anim: 'up' })
