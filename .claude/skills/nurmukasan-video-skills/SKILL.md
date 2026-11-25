@@ -155,3 +155,10 @@ Card layout v2 (the user's feedback on Timur ep 5: «иллюстрации не
 - Drop cards that only repeat the voice (e.g. «20 мин на текст», a second «ДЕНЬ 30» banner when the HUD already shows it); merge pairs of chips into one card.
 - Style: 4 px border, 12 px radius, slightly translucent gradient, ink outline + soft drop, 11 px tabs.
 
+## 12. Hook = for COLD viewers (lesson from Timur ep 5)
+Eps 3-6 had better retention/likes than eps 1-2 but far fewer views: the hooks spoke to fans of the series («Четыре вселенные. Четыре Тимура. А теперь — один.»), so people from the For You feed swiped away in 1-2 s. Retention and like % only count those who stayed; reach is decided by the 1-2 s swipe rate and shares/saves. Visual polish and credits spent do not buy reach.
+- First frame: the OUTCOME for a stranger — a big score jump «5.5 → ?.?» resolving to 7.5 within 1 s, the hero in motion (victory clip), voice from 0.0: «С пяти с половиной — до семи с половиной. За шестьдесят дней. Вот что он делал каждый день.» Then straight to stakes.
+- No series lore, character names or «серия N» in the first 3 s. Lore can come later.
+- Prefer hooks about the viewer's problem or a concrete trick («ты теряешь балл на этой ловушке») and a comment question people want to answer.
+- Before judging a video, check «Источники трафика» (% For You) and the first-2-s drop on the retention graph.
+

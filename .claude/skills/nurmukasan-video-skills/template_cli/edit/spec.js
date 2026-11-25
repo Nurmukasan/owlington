@@ -4,7 +4,9 @@ const END = TL.END
 const CL = window.CLIPN || {} // clip frame counts (filled by render.js)
 
 // ---------- SHOTS ----------
-shot(0, c('n02'), { clip: 'c01', from: 0.9, speed: 0.95, z: [1.08, 1.0] })
+const hk = Wt('h01', 'вот') - 0.1
+shot(0, hk, { clip: 'c11', speed: 0.42, z: [1.12, 1.0] })
+shot(hk, c('n02'), { clip: 'c01', from: 2.4, speed: 0.9, z: [1.0, 1.08] })
 { const P0 = { z: [1.0, 1.32], px: [0.5, 0.55], py: [0.5, 0.72], span: [c('n02'), c('n03')] }, m0 = s('n02') + 0.1, m1 = Wt('n02', 'мок') - 0.1
   shot(c('n02'), m0, { img: 'ots_laptop', ...P0 }); shot(m0, m1, { img: 'ots_mail', ...P0 }); shot(m1, c('n03'), { img: 'ots_mock', ...P0 }) }
 const n3 = c('n03'), n3e = c('t01'), fl = 0.55
@@ -46,8 +48,10 @@ shot(c('n15'), c('n15') + 3, { clip: 'c12', speed: 0.55 })
 shot(c('n15') + 3, END + 1, { img: 'owl_close', z: [1.25, 1.35], py: [0.6, 0.62] })
 
 // ---------- HOOK ----------
-fx(0, 0.18, (lt) => `<div style="position:absolute;inset:0;background:#fff;opacity:${1 - lt / 0.18}"></div>`)
-ov(0, c('n02'), () => TX(40, 900, 640, 32, 'var(--cream)', 'ВСЕ 4 ЧАСТИ.', 'center', 'stroke2') + TX(40, 956, 640, 46, 'var(--yellow)', '60 ДНЕЙ.', 'center', 'stroke2'), { anim: 'slam', out: 0.15 })
+const ARR = `<svg width="66" height="48" viewBox="0 0 11 8" shape-rendering="crispEdges" style="margin:0 18px"><path fill="#ffd23f" d="M0 3h7v2H0zM6 0h1v8H6zM7 1h1v6H7zM8 2h1v4H8zM9 3h1v2H9z"/></svg>`
+ov(0, hk, (lt) => `<div style="position:absolute;left:0;right:0;top:880px;display:flex;justify-content:center;align-items:center;font-family:PS;font-size:68px" class="stroke2"><span style="color:var(--cream)">5.5</span>${ARR}${lt < 0.9 ? '<span style="color:#a89cc8">?.?</span>' : '<span style="color:var(--yellow)">7.5</span>'}</div>`
+  + `<div style="opacity:${clamp((lt - 2.0) / 0.2)}">${TX(40, 980, 640, 26, 'var(--cream)', 'ЗА 60 ДНЕЙ · IELTS', 'center', 'stroke')}</div>`, { anim: 'none', out: 0.1 })
+ov(hk, c('n02'), () => TX(40, 900, 640, 28, 'var(--cream)', 'ВОТ ЧТО ОН ДЕЛАЛ', 'center', 'stroke2') + TX(40, 952, 640, 34, 'var(--yellow)', 'КАЖДЫЙ ДЕНЬ ↓', 'center', 'stroke2'), { anim: 'up', out: 0.1 })
 CAP_HIDE.push([0, c('n02')])
 
 // ---------- STAKES: e-mail and mock ON the laptop screen ----------
