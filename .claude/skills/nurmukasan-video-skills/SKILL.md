@@ -178,7 +178,7 @@ Eps 3-6 had better retention/likes than eps 1-2 but far fewer views: the hooks s
 - gpt_image_2_6 sometimes returns RGBA with the "blank screen" / background TRANSPARENT (shows white in viewers, black in the edit and in Kling). Always pass `--background opaque`; if a still is RGBA, the transparent area is a perfect screen mask (`ui/masks/`), then flatten onto white.
 - Pixel hair outline can read as a headset band: in exam/no-headset scenes write «NO headset, light/mid brown hair, no dark band across the head, ears visible».
 - Seated figure behind a desk seen from the front can show legs through the drawers — crop to the upper part (zoom) or use a view where the desk front hides the legs.
-- User's meme SFX (in `audio/sfx/` of the episode): dexter (scheming plan), faaah (fail, trim 0.15-1.9 s), huss «hush hush» (shush), almost «ah, almost» (near miss, first 1.65 s). Leave a gap in the voice track where a meme talks.
+- User's meme SFX (in `audio/sfx/` of the episode): dexter (scheming plan), faaah (fail, trim 0.15-1.9 s), huss «huss huss huss» = HUSTLE / grinding hard (NOT «be quiet»): use it where the hero keeps grinding (e.g. mum calls for dinner, he keeps playing — chip «НЕ ДО УЖИНА — ГРИНД!»), almost «ah, almost» (near miss, first 1.65 s). Leave a gap in the voice track where a meme talks.
 - Game-UI card set: НОВЫЙ КВЕСТ toast, ACHIEVEMENT UNLOCKED (pixel trophy), LEVEL UP!, КВЕСТ ПРОВАЛЕН, DEFEAT, ● LIVE; science cards with a small source line (McGaugh 2004; Gruber et al. 2014 Neuron; Sundqvist & Wikström 2015 System).
 - Teammate voice Landon dc1c0a41-53cd-53af-aec5-ab637840505f, streamer Knox 195e386a-cb61-5c1b-a53b-0e2f0669c408 (Cody failed in elevenlabs_v4).
 
