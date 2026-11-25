@@ -138,6 +138,7 @@ Timur 60 days (the «4 вселенные» series, finale = Listening, 1:45, en
 Katya one week: L 8.0, R 8.0, W 6.5, S 7.0 → 7.5 (mock 5.5 three months before; level B2-C1).
 Stats (TikTok, first 6 h): ep 5 Katya (2:20) — ~1K views, avg watch 43.2 s (31 %), full watch 6.65 %, 9 follows, most viewers left at 0:01 → the first frame loses people. Ep 4 Timur Listening (1:45) went viral. Lessons for next episodes: action + voice from frame 0 (no fade-in, no calm opener), 3-5-word title readable in 1 s, aim for ~1:30-1:45 (never under 1:00), tease the result in the first 3 s, keep the series' recurring hero/hook the audience already knows.
 Next: Timur ep 5 «А если всё сразу?» (2:00, Timur v2 redesign, mock 5.5 → 7.5) — full production pack in `episodes/timur-05-vse-srazu.md`.
+Mistake to never repeat (Timur ep 5): after the hook came «Раньше он качал по одной части» + flashes of old episodes and no explanation who Timur is — the first 20 s made no sense to new viewers.
 Next ideas the audience asked for: «прокачать всё сразу», new heroes, «что если…» ideas tied to IELTS (неделя до экзамена, только ИИ, только игры и сериалы, сдать 5 раз подряд).
 
 ## 11. Cloud Claude Code pipeline (Higgsfield CLI) — used for Timur ep 5
@@ -154,6 +155,9 @@ Card layout v2 (the user's feedback on Timur ep 5: «иллюстрации не
 - Everything else: compact cards 420-520 px wide, always horizontally centred (`CARD`, `ROW`+`CHIPC`), in the free zone of THAT shot: wall/board above the head (y 236-440) or desk/legs below the hands (y 600-790, captions start at 818). Measure with `tools/bare.js` (bare frames + 100 px grid at start/middle/end of every card) before placing.
 - Drop cards that only repeat the voice (e.g. «20 мин на текст», a second «ДЕНЬ 30» banner when the HUD already shows it); merge pairs of chips into one card.
 - Style: 4 px border, 12 px radius, slightly translucent gradient, ink outline + soft drop, 11 px tabs.
+
+## 0. GOAL №1 — VIEWS AND NEW VIEWERS (the user's hard rule, above everything else)
+Every video is made for a person who has NEVER seen Owlington. Zero references to previous episodes, «вселенные», «серия N», «как в прошлый раз», old-episode flashbacks or characters the viewer is supposed to know — not in the hook, not in the first 20 s, not as a hint. By second 3 the viewer must know what they get (score jump / trick), by second 15 who the hero is, what he needs and why (one clear setup line: «Это Тимур. Чтобы учиться в Манчестере, ему нужен IELTS 7…»). Recurring characters are introduced from scratch every time. Pretty visuals and credits do not bring reach — the hook and clarity do.
 
 ## 12. Hook = for COLD viewers (lesson from Timur ep 5)
 Eps 3-6 had better retention/likes than eps 1-2 but far fewer views: the hooks spoke to fans of the series («Четыре вселенные. Четыре Тимура. А теперь — один.»), so people from the For You feed swiped away in 1-2 s. Retention and like % only count those who stayed; reach is decided by the 1-2 s swipe rate and shares/saves. Visual polish and credits spent do not buy reach.
