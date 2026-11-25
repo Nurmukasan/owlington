@@ -12,13 +12,13 @@ const T=(x,y,size,col,txt,extra='')=>`<div class="t" style="left:${x}px;top:${y}
 const SK=[['L','LISTENING','#3a8fd6'],['R','READING','#d89a00'],['W','WRITING','#d0457a'],['S','SPEAKING','#2f9e64']]
 function paper(W,H,title,vals,hot){let h=`<div class="s" style="width:${W}px;height:${H}px;background:#fbf8f0">`+
   T(W*.1,H*.06,Math.min(H*.045,W*.8/title.length),'#160f24',title)+`<div style="position:absolute;left:${W*.07}px;right:${W*.07}px;top:${H*.13}px;height:3px;background:#160f24"></div>`
-  SK.forEach(([k,n,c],i)=>{const y=H*(.19+i*.15);h+=T(W*.07,y,H*.035,c,n)+`<div class="bar" style="left:${W*.07}px;top:${y+H*.05}px;width:${W*.6}px;height:${H*.045}px;${i===hot?'border-color:#d0243a':''}"><i style="width:${vals[i]/9*100}%;background:${i===hot?'#d0243a':c}"></i></div>`+T(W*.74,y+H*.035,H*.055,i===hot?'#d0243a':'#160f24',vals[i].toFixed(1))})
-  const o=Math.round(vals.reduce((a,b)=>a+b)/4*2)/2;return h+T(W*.12,H*.83,H*.04,'#6d6290','OVERALL')+T(W*.6,H*.8,H*.08,'#d0243a',o.toFixed(1))+`</div>`}
+  SK.forEach(([k,n,c],i)=>{const y=H*(.17+i*.13);h+=T(W*.07,y,H*.035,c,n)+`<div class="bar" style="left:${W*.07}px;top:${y+H*.05}px;width:${W*.58}px;height:${H*.045}px;${i===hot?'border-color:#d0243a':''}"><i style="width:${vals[i]/9*100}%;background:${i===hot?'#d0243a':c}"></i></div>`+T(W*.69,y+H*.035,Math.min(H*.05,W*.06),i===hot?'#d0243a':'#160f24',vals[i].toFixed(1))})
+  const o=Math.round(vals.reduce((a,b)=>a+b)/4*2)/2;return h+T(W*.18,H*.725,Math.min(H*.035,W*.04),'#6d6290','OVERALL')+T(W*.62,H*.7,Math.min(H*.075,W*.09),'#d0243a',o.toFixed(1))+`</div>`}
 window.mock0=(W,H)=>paper(W,H,'MOCK TEST · ДЕНЬ 0',[5,5,5,5],-1)
 window.mock45=(W,H)=>paper(W,H,'MOCK TEST · ДЕНЬ 45',[6.5,7,5,6.5],2)
 window.settings=(W,H,n)=>{const rows=[['LANGUAGE','РУССКИЙ','ENGLISH'],['SUBTITLES','OFF','ON'],['SERVER','RU','INTERNATIONAL']]
   let h=`<div class="s" style="width:${W}px;height:${H}px;background:linear-gradient(#22184a,#0f0b24)">`+T(W*.06,H*.08,H*.09,'#ffd23f','SETTINGS')+`<div style="position:absolute;left:${W*.06}px;right:${W*.06}px;top:${H*.24}px;height:3px;background:#c39bff"></div>`
-  rows.forEach(([k,a,b],i)=>{const y=H*(.33+i*.2),on=i<n;h+=T(W*.06,y,H*.065,'#a89cc8',k)+T(W*.5,y-H*.01,H*.075,on?'#7fe0a8':'#f7f3ff',(on?'▶ ':'')+(on?b:a),on?'text-shadow:0 0 8px #7fe0a8':'')});return h+`</div>`}
+  rows.forEach(([k,a,b],i)=>{const y=H*(.33+i*.2),on=i<n;const tx=(on?'▶ ':'')+(on?b:a);h+=T(W*.06,y,Math.min(H*.065,W*.035),'#a89cc8',k)+T(W*.4,y-H*.01,Math.min(H*.075,W*.52/tx.length),on?'#7fe0a8':'#f7f3ff',tx,on?'text-shadow:0 0 8px #7fe0a8':'')});return h+`</div>`}
 window.sub=(W,H)=>`<div class="s" style="width:${W}px;height:${H}px;background:#120c20;display:flex;align-items:center;justify-content:center;text-align:center">`+`<div style="font-size:${H*.2}px;color:#fff;line-height:1.5">Where is the key<br>to the old tower?</div></div>`
 window.result=(W,H,n)=>{const R=[['READING','#ffd23f',7.5],['LISTENING','#a8d8ff',7],['SPEAKING','#7fe0a8',7],['WRITING','#ff8fc7',5]]
   let h=`<div class="s" style="width:${W}px;height:${H}px;background:linear-gradient(#2f2556,#160f24)">`+T(W*.05,H*.08,H*.075,'#ffd23f','IELTS · РЕЗУЛЬТАТ')

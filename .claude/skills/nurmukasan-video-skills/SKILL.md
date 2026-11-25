@@ -160,6 +160,7 @@ Card layout v2 (the user's feedback on Timur ep 5: «иллюстрации не
 Credits are the user's money. Never generate clips or render before every still passed this gate, and never deliver before every clip and every card passed it.
 - Look at EVERY still at full size (≥ 720 px tall), one by one, not as 120-150 px thumbnails. Checklist per still: what the screens show matches the line (shooter = shooter HUD/crosshair, not a fantasy landscape); every object recognisable and at real scale; no body/furniture intersections; who/where/time of day logical; nothing transparent (RGBA).
 - Kling clips: look at 5+ frames at full size. Reject: foreground layers sliding separately from the room (bed moving while the room stays), morphing, objects appearing, cheap wobble. If a move looks cheap, use the still with an edit-camera move instead — fewer, better clips.
+- Baked screens (ui.html → shots.js): shots.js fails when any text leaves the screen (4 % margin) or two texts overlap; fit long values with font = min(size, width/len). The user caught «INTERNATIONAL» running off the monitor because only overlays were checked.
 - Cards: no text may overflow its panel. render.js must check DOM overflow (scrollWidth > clientWidth / text outside its panel) on every frame and fail the render.
 - Ask before re-spending: show the user the full-size stills sheet first for episodes with a new look, then generate clips.
 
