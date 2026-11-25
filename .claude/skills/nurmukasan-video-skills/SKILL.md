@@ -156,6 +156,13 @@ Card layout v2 (the user's feedback on Timur ep 5: «иллюстрации не
 - Drop cards that only repeat the voice (e.g. «20 мин на текст», a second «ДЕНЬ 30» banner when the HUD already shows it); merge pairs of chips into one card.
 - Style: 4 px border, 12 px radius, slightly translucent gradient, ink outline + soft drop, 11 px tabs.
 
+## 00. QUALITY GATE — before ANY paid generation and before delivery (user: «проверь каждый чертовый кадр»)
+Credits are the user's money. Never generate clips or render before every still passed this gate, and never deliver before every clip and every card passed it.
+- Look at EVERY still at full size (≥ 720 px tall), one by one, not as 120-150 px thumbnails. Checklist per still: what the screens show matches the line (shooter = shooter HUD/crosshair, not a fantasy landscape); every object recognisable and at real scale; no body/furniture intersections; who/where/time of day logical; nothing transparent (RGBA).
+- Kling clips: look at 5+ frames at full size. Reject: foreground layers sliding separately from the room (bed moving while the room stays), morphing, objects appearing, cheap wobble. If a move looks cheap, use the still with an edit-camera move instead — fewer, better clips.
+- Cards: no text may overflow its panel. render.js must check DOM overflow (scrollWidth > clientWidth / text outside its panel) on every frame and fail the render.
+- Ask before re-spending: show the user the full-size stills sheet first for episodes with a new look, then generate clips.
+
 ## 0. GOAL №1 — VIEWS AND NEW VIEWERS (the user's hard rule, above everything else)
 Every video is made for a person who has NEVER seen Owlington. Zero references to previous episodes, «вселенные», «серия N», «как в прошлый раз», old-episode flashbacks or characters the viewer is supposed to know — not in the hook, not in the first 20 s, not as a hint. By second 3 the viewer must know what they get (score jump / trick), by second 15 who the hero is, what he needs and why (one clear setup line: «Это Тимур. Чтобы учиться в Манчестере, ему нужен IELTS 7…»). Recurring characters are introduced from scratch every time. The narrator must SAY the premise out loud in the first 10 s, in one plain sentence, not only in on-screen text or a character's line: who, which exam, in how many days, from what score to what goal (e.g. «Тимур сдаёт IELTS через 60 дней. Сейчас у него 5.5, а нужно 7.»). Timur ep 5 never said in the voice-over that he is taking IELTS in 60 days — only «оффер в Манчестер, нужно 7» — and the user called the whole video a failure for it. Before rendering, read the narration alone (no visuals) and check that a stranger understands the premise. Pretty visuals and credits do not bring reach — the hook and clarity do.
 
