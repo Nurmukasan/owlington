@@ -26,7 +26,7 @@ const flyAway = (at, dur, words) => words.map((w, i) => {
   const x = i % 2 === 0 ? 70 : 250, y = 600 - (i >> 1) * 40, d = Math.min(1.4, dur - i * 0.25)
   if (d < 0.3) return null
   return (
-    <Layer at={at + i * 0.25} dur={d} animate={[{ property: 'offsetY', keyframes: [{ at: 0, value: 0 }, { at: d, value: -150 }] }, { property: 'offsetX', keyframes: [{ at: 0, value: 0 }, { at: d, value: i % 2 === 0 ? -20 : 20 }] }, { property: 'opacity', keyframes: [{ at: 0, value: 0 }, { at: 0.1, value: 1 }, { at: d * 0.7, value: 1 }, { at: d, value: 0 }] }]}>
+    <Layer at={at + i * 0.25} dur={d} animate={[{ property: 'offsetY', keyframes: [{ at: 0, value: 0 }, { at: d, value: -120 }] }, { property: 'offsetX', keyframes: [{ at: 0, value: 0 }, { at: d, value: i % 2 === 0 ? -20 : 20 }] }, { property: 'opacity', keyframes: [{ at: 0, value: 0 }, { at: 0.1, value: 1 }, { at: d * 0.7, value: 1 }, { at: d, value: 0 }] }]}>
       <rect x={x - 4} y={y - 4} width={168} height={58} fill={C.ink} /><rect x={x} y={y} width={160} height={50} fill={['#fff3b0', '#d8ecff', '#ffd8e0', '#d8f5dc', '#fbf7ec'][i % 5]} />
       {Tx(x, y + 18, 160, w.length > 8 ? 11 : 14, C.ink, w, 'center')}
     </Layer>
@@ -132,7 +132,7 @@ shot(T.morning, ({ at, dur }) => (
     {hud('ДЕНЬ 2', 1)}{st(dur, '50', '50%', 0, [[1, 0.6]])}
     <Chip at={0.05} dur={dur - 0.05} x={70} y={250} text="УТРО" color={C.gold} fg={C.ink} size={22} />
     {flyAway(0.3, dur - 0.3, ['ABANDON', 'ABUNDANT', 'ABILITY', 'ACCOMPLISH'])}
-    <Counter at={0.5} dur={dur - 0.5} t1={Math.max(0.4, dur - 1.0)} values={['50', '41', '33', '25']} y={320} label="ПОМНИТ СЛОВ" color={C.red} fg={C.red} />
+    <Counter at={0.5} dur={dur - 0.5} t1={Math.max(0.4, dur - 1.0)} values={['50', '41', '33', '25']} y={310} label="ПОМНИТ СЛОВ" color={C.red} fg={C.red} />
   </Sc>
 ))
 // 07 twist: the forgetting curve
