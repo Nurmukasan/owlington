@@ -53,5 +53,24 @@ for i, t in enumerate(toks):
 if cur: chunks.append(cur)
 REP = []
 HI = re.compile(r'\d|Speaking|Listening|Writing|Reading|Mock|IELTS|Сова|сова|Поворот|сон|Сон|Отдых|прогулка|наушниках')
+out = []
+for c in chunks:
+    text = ' '.join(toks[i] for i in c)
+    for a, b in REP: text = text.replace(a, b)
+    text = text.replace(' — ', ' ').replace('— ', '').replace(' —', '')
+    out.append({'t0': start[c[0]], 't1': end[c[-1]], 'words': text.split()})
+caps = []
+for k, c in enumerate(out):
+    at = max(0, c['t0'] - 0.08)
+    nxt = out[k + 1]['t0'] - 0.08 if k + 1 < len(out) else c['t1'] + 1.0
+    end_ = nxt if nxt - c['t1'] < 0.8 else c['t1'] + 0.5
+    n = len(c['words'])
+    words = [[w, round(c['t0'] + (c['t1'] - c['t0']) * j / n - at, 2), bool(HI.search(w))] for j, w in enumerate(c['words'])]
+    caps.append({'at': round(at, 2), 'dur': round(end_ - at, 2), 'words': words})
+starts = sorted(v[0] for v in TL['clips'].values())
+for cp in caps:
+    for st_ in starts:
+        if cp['at'] < st_ < cp['at'] + cp['dur']: cp['dur'] = round(st_ - cp['at'] - 0.05, 2)
+open('edit/captions.jsx', 'w').write('export const CAPTIONS = ' + json.dumps(caps, ensure_ascii=False) + '\n')
 print(len(caps))
 for c in caps: print(c['at'], c['dur'], ' '.join(w[0] for w in c['words']))
