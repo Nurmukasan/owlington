@@ -44,14 +44,14 @@ const rain = (dur) => Array.from({ length: 12 }, (_, i) => {
   )
 })
 
-// camera guard: keep the face bottom above the caption (y 872) with clearance — face bottoms measured on the plates
-const FB = { room: 815, max: 815, wall: 815, pile: 815, kitchen: 875, klass: 864 }
+// camera guard: keep the face bottom at y <= 800 (caption at 872) without showing the plate edge — face bottoms measured on the plates
+const FB = { room: 815, max: 815, wall: 815, pile: 815, kitchen: 875, klass: 864, call: 775 }
 const Sc = ({ base, zoom = [1, 1.06], panY, ...o }) => {
   const fb = FB[base.split('_')[0]]
   if (!fb || panY) return Scene({ base, zoom, panY, ...o })
-  const zmin = 445 / (1280 - fb) + 0.005
+  const zmin = 480 / (1280 - fb) + 0.005
   const z = zoom.map((v) => Math.max(v, zmin))
-  return Scene({ base, zoom: z, panY: z.map((v) => Math.min(0, 195 - v * (fb - 640))), ...o })
+  return Scene({ base, zoom: z, panY: z.map((v) => Math.min(0, 160 - v * (fb - 640))), ...o })
 }
 
 // --- shots ---------------------------------------------------------------
