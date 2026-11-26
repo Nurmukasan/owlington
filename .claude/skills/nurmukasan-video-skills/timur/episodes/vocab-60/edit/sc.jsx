@@ -1,7 +1,7 @@
 import { W, H, C, P, FONT, IMG, Layer, Scene, blinks, every, popScale, popSlide, PText } from './lib.jsx'
 import { PowerUp, Chip, BigTitle, Steps } from './ui.jsx'
 import { Glitch, Message, box, T as Tx } from './ui3.jsx'
-import { Hud5, Stats5, HookTitle, Flash, Curve, Bricks, KnownWord, Say, Scores5 } from './ui5.jsx'
+import { Hud5, Stats5, HookTitle, Flash, Curve, Bricks, KnownWord, Say, Scores5, Counter } from './ui5.jsx'
 import { T, D } from './times.jsx'
 
 // Layout rule for every shot: overlays stay inside x 56-664, below the HUD (y > 240) and above the faces.
@@ -26,7 +26,7 @@ const flyAway = (at, dur, words) => words.map((w, i) => {
   const x = i % 2 === 0 ? 70 : 250, y = 600 - (i >> 1) * 40, d = Math.min(1.4, dur - i * 0.25)
   if (d < 0.3) return null
   return (
-    <Layer at={at + i * 0.25} dur={d} animate={[{ property: 'offsetY', keyframes: [{ at: 0, value: 0 }, { at: d, value: -200 }] }, { property: 'offsetX', keyframes: [{ at: 0, value: 0 }, { at: d, value: i % 2 === 0 ? -20 : 20 }] }, { property: 'opacity', keyframes: [{ at: 0, value: 0 }, { at: 0.1, value: 1 }, { at: d * 0.7, value: 1 }, { at: d, value: 0 }] }]}>
+    <Layer at={at + i * 0.25} dur={d} animate={[{ property: 'offsetY', keyframes: [{ at: 0, value: 0 }, { at: d, value: -150 }] }, { property: 'offsetX', keyframes: [{ at: 0, value: 0 }, { at: d, value: i % 2 === 0 ? -20 : 20 }] }, { property: 'opacity', keyframes: [{ at: 0, value: 0 }, { at: 0.1, value: 1 }, { at: d * 0.7, value: 1 }, { at: d, value: 0 }] }]}>
       <rect x={x - 4} y={y - 4} width={168} height={58} fill={C.ink} /><rect x={x} y={y} width={160} height={50} fill={['#fff3b0', '#d8ecff', '#ffd8e0', '#d8f5dc', '#fbf7ec'][i % 5]} />
       {Tx(x, y + 18, 160, w.length > 8 ? 11 : 14, C.ink, w, 'center')}
     </Layer>
@@ -122,8 +122,7 @@ shot(T.day1, ({ at, dur }) => {
         const t1 = i + 1 < EN.length ? (ws[i + 1] ? ws[i + 1][1] - at - 0.05 : t0 + 0.9) : rel(at, 'twoh')
         return <Flash at={t0} dur={Math.max(0.2, t1 - t0)} en={en} ru={ru} y={300} col={cs[i]} />
       })}
-      <Chip at={rel(at, 'twoh')} dur={dur - rel(at, 'twoh')} x={70} y={270} text="2 ЧАСА" color={C.navy3} size={20} />
-      <Steps at={rel(at, 'twoh')} dur={dur - rel(at, 'twoh')} t1={rel(at, 'twoh') + 1.0} values={['10/50', '30/50', '50/50']} x={56} w={400} y={360} size={48} color={C.mintL} />
+      <Counter at={rel(at, 'twoh')} dur={dur - rel(at, 'twoh')} t1={1.0} values={['10/50', '30/50', '50/50']} y={260} label="ВЫУЧЕНО ЗА 2 ЧАСА" />
     </Sc>
   )
 })
@@ -133,7 +132,7 @@ shot(T.morning, ({ at, dur }) => (
     {hud('ДЕНЬ 2', 1)}{st(dur, '50', '50%', 0, [[1, 0.6]])}
     <Chip at={0.05} dur={dur - 0.05} x={70} y={250} text="УТРО" color={C.gold} fg={C.ink} size={22} />
     {flyAway(0.3, dur - 0.3, ['ABANDON', 'ABUNDANT', 'ABILITY', 'ACCOMPLISH'])}
-    <Steps at={0.6} dur={dur - 0.6} t1={Math.max(0.8, dur - 0.5)} values={['50', '41', '33', '25']} x={200} w={240} y={250} size={56} color={C.red} />
+    <Counter at={0.5} dur={dur - 0.5} t1={Math.max(0.4, dur - 1.0)} values={['50', '41', '33', '25']} y={320} label="ПОМНИТ СЛОВ" color={C.red} fg={C.red} />
   </Sc>
 ))
 // 07 twist: the forgetting curve
@@ -192,8 +191,7 @@ shot(T.day30, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="pile" zoom={[1.0, 1.08]} swaps={every('pile_b', dur, 1.3, 0.14, 0.9)}>
     {hud('ДЕНЬ 30', 3)}{st(dur, '1500', '85%', 0, [[0, 0.1]])}
     <BigTitle at={0.05} dur={dur - 0.05} y={250} text="ДЕНЬ 30" size={52} />
-    <Steps at={0.6} dur={dur - 0.6} t1={Math.max(0.8, rel(at, 'w1500') + 0.5)} values={['700', '1000', '1300', '1500']} x={56} w={400} y={340} size={52} color={C.yellow} />
-    <Layer at={0.6} dur={dur - 0.6}>{Tx(56, 410, 400, 18, C.white, 'СЛОВ', 'center')}</Layer>
+    <Counter at={0.6} dur={dur - 0.6} t1={Math.max(0.4, rel(at, 'w1500') - 0.1)} values={['700', '1000', '1300', '1500']} y={340} label="ВЫУЧЕНО СЛОВ" color={C.gold} fg={C.yellow} />
   </Sc>
 ))
 shot(T.teacher, ({ at, dur }) => (

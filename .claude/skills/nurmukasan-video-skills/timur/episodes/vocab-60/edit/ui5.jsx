@@ -2,6 +2,7 @@
 // x 56-664, nothing above y 128, right column (x > 610) free from y 600, captions centred at y 872.
 import { W, H, C, FONT, Layer, popScale, popSlide, PText } from './lib.jsx'
 import { box, T as Tx } from './ui3.jsx'
+import { Steps } from './ui.jsx'
 
 const cardIcon = (x, y) => [
   <rect x={x} y={y + 12} width={44} height={30} fill={C.ink} />, <rect x={x + 3} y={y + 15} width={38} height={24} fill="#fff3b0" />,
@@ -177,6 +178,18 @@ export function Scores5({ at, dur, rows, times }) {
           </Layer>
         )
       })}
+    </Layer>
+  )
+}
+
+// a counter on its own dark panel, on the left column (x 70, same edge as the chips): label on top, the number counts up/down
+export function Counter({ at, dur, values, t1 = 1.0, y, label, color = C.mint, fg = C.mintL, w = 300 }) {
+  const x = 70
+  return (
+    <Layer at={at} dur={dur} animate={popSlide()}>
+      {box(x, y, w, 100, color, C.navy1)}
+      {Tx(x + 18, y + 14, w - 36, 14, C.grey3, label)}
+      <Steps at={0.15} dur={Math.max(0.1, dur - 0.15)} t1={Math.max(0.3, Math.min(t1, dur - 0.1))} values={values} x={x + 18} w={w - 36} y={y + 42} size={44} color={fg} align="left" />
     </Layer>
   )
 }
