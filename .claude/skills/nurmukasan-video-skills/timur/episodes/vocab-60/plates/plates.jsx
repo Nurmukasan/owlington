@@ -17,7 +17,7 @@ const pile = (x, y, n, k = 0, w = 16) => {
   return o
 }
 // a card lying ON the owl's head (in owl-sprite pixels: rows 0.5-4.5 over the forehead, tape strip down onto the head)
-const owlCard = (x, y, p, k = 3) => boxes([[3, 0.5, 10, 4, '#1a1424'], [3.5, 1, 9, 3, CARD[k]], [4.5, 1.8, 6, 0.5, '#6a6070'], [4.5, 2.8, 4, 0.5, '#a89aa0'], [7, 3.8, 2, 1.4, '#d4d4e0']], x, y, p)
+const cardOnOwl = (x, y, p, k = 3) => boxes([[3, 0.5, 10, 4, '#1a1424'], [3.5, 1, 9, 3, CARD[k]], [4.5, 1.8, 6, 0.5, '#6a6070'], [4.5, 2.8, 4, 0.5, '#a89aa0'], [7, 3.8, 2, 1.4, '#d4d4e0']], x, y, p)
 // cards stuck all over the bedroom wall (week 2+)
 const WALL = [[4, 84], [18, 90], [34, 82], [48, 92], [62, 86], [8, 104], [24, 110], [40, 102], [56, 108], [10, 124], [28, 128], [46, 122], [62, 130], [60, 34],
   [88, 104], [104, 110], [120, 104], [134, 112], [96, 124], [116, 128], [136, 130], [12, 140], [32, 146], [70, 120]]
@@ -36,7 +36,7 @@ const room = ({ level = 1, wall = 0, owl = 'open', owlCard = false, held = true,
   if (held) d.push(...card(64, 172, 1, 14, 9))
   out.push(boxes(d))
   out.push(Owl({ x: 94 * P, y: 74 * P, p: 5, eyes: owl }))
-  if (owlCard) out.push(owlCard(94 * P, 74 * P, 5))
+  if (owlCard) out.push(cardOnOwl(94 * P, 74 * P, 5))
   return out
 }
 
@@ -68,7 +68,7 @@ const mirror = ({ ...o } = {}) => [
   Boy({ x: 216, y: 517, p: 18, mode: 'arms', ...o }),
   boxes([[14, 179, 116, 3, '#d4cede'], [-20, 196, 190, 8, '#f4f0e8'],
     ...[[16, 20], [36, 18], [96, 20], [116, 24], [14, 40], [118, 44], [14, 66], [118, 70], [16, 150], [116, 150], [14, 128], [118, 120]].flatMap(([x, y], i) => card(x, y, i, 11, 7))]),
-  Owl({ x: 500, y: 980 - 20 * 7, p: 7, eyes: 'squint' }), owlCard(500, 980 - 20 * 7, 7, 1),
+  Owl({ x: 500, y: 980 - 20 * 7, p: 7, eyes: 'squint' }), cardOnOwl(500, 980 - 20 * 7, 7, 1),
 ]
 
 // 4. classroom: the teacher puzzled, Timur proud; the blackboard left clean for the overlay words
@@ -125,7 +125,7 @@ const owlClose = (eyes, withCard = false) => [
   boxes([[-10, 178, 170, 9, '#4a2e1c'], [-10, 177, 170, 2, '#6a4428'], [-10, 186, 170, 2, '#3a2418'], [120, 170, 3, 8, '#4a2e1c'], [122, 166, 8, 3, '#4a2e1c'],
     ...disc(132, 164, 4, '#3f7a5a'), ...disc(138, 168, 3, '#4f8a4f'), ...disc(18, 172, 4, '#3f7a5a'), ...disc(12, 175, 3, '#4f8a4f'), [40, 184, 3, 8, '#4a2e1c'], ...disc(41, 194, 3, '#3f7a5a')]),
   Owl({ x: 216, y: 178 * P - 20 * 12, p: 12, eyes }),
-  withCard ? owlCard(216, 178 * P - 20 * 12, 12) : null,
+  withCard ? cardOnOwl(216, 178 * P - 20 * 12, 12) : null,
 ]
 const sky = () => [boxes(bands(['#070820', '#0b0c26', '#101236', '#16184a', '#1d1e56'], 0, 256, 0, 144)), boxes(stars(90, 0, 0, 144, 200, 31)), boxes(disc(126, 18, 13, '#22245e')), boxes(disc(126, 18, 10, C.cream)), boxes(disc(122, 15, 2, '#f0dca8')), boxes(disc(129, 22, 1, '#f0dca8')), boxes(skyline(-4, 256, 152, 3, ['#0c0d2a', '#101236', '#14153a'])), boxes(skyline(-4, 256, 152, 8, ['#16184a', '#1c2550', '#1d1e56']))]
 
