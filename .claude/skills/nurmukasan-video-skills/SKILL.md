@@ -130,8 +130,16 @@ Moves that worked: fast dramatic push-in (hook); slow dolly forward with slight 
 - Cover the user liked: AI flat pixel art (same style, no neon glow/gloss), big yellow pixel title with dark outline + red shadow (e.g. «60 ДНЕЙ / ТОЛЬКО LISTENING»), white-on-dark score badge («5.0 → 9.0»), the hero centre, owl present; **exact Owlington logo small in the top-left corner** — render it from the site sprite (`OWL_HEAD` from `src/scene/sprites.ts`) + Fraunces 650 (SOFT 100, WONK 1), colour #fff1c9, via Playwright in the sandbox (`NODE_PATH=$(npm root -g)`), never redraw it by hand.
 - Description: 1-2 short lines with a hook + score jump, «книги и материалы бесплатно в тг: owlingtonedu», 5 hashtags incl. `#ielts #английский #higgsfield` + the skill hashtag.
 
+## 11. Timur format (code-drawn pixel art, ~4-5 credits per episode) — `timur/`
+
+The cheap format: every frame is drawn with code (no image/video credits), only the ElevenLabs voice costs (~4 credits for narration + 3 character lines).
+- Pipeline in `timur/` (see its README): `plates/` pixel library (Boy=Timur, Owl, Jake, Examiner, Mom, Teacher, sets), `edit/` higgsedit UI kit, audio + caption + SFX scripts. Per-episode files in `timur/episodes/<ep>/` (vocab-60 is the newest, use it as the template).
+- Sandbox setup: `git clone -b <branch> https://github.com/Nurmukasan/owlington.git owl`, copy `timur/plates/*`, `timur/edit/{lib,ui,ui3}.jsx`, the episode files, download Press Start 2P from google/fonts into `<ep>/fonts/` and `~/.fonts`. Then `higgsedit build plates.jsx` and `./dump.sh $(node keys.mjs)` -> `plates/out/*.png` -> `edit/plates/`.
+- Audio: Alexey narrator, `ffmpeg -af atempo=1.2` -> `narr_f.wav`; whisper (`audio/asr.py`), `audio/assemble.py` inserts character clips at silence midpoints and starts the voice at 0.02 s (no lead-in silence); `times.py` (anchors; mode 'x' for mid-sentence cues), `captions.py` (number phrases merged before chunking, max ~2 lines), `sfx.py`.
+- Fixes the user asked for (vocab-60 has them all): title + voice on frame 0 (HookTitle without pop-in), HUD at x 56 y 128 and stats panel x 404-640 (safe zone), captions centred x 90-630 at y 872, **camera guard** `Sc` in sc.jsx keeps every face bottom at y <= 800 (FB table = face bottoms measured on the plates by skin colour #f2c29b), overlays only above the faces, nothing text-like in the right column below y 600. Verify by measuring skin rows on rendered frames, not by eye on thumbnails.
+
 ## 10. Episode history
 
-Timur 60 days: Reading R 8.5 → overall 7.0; Speaking S 8.0 (L7 R6 W6) → 7.0; Writing W 8.0 (R6 S6 L5.5) → 6.5; Listening L 9.0 (S8 R6.5 W6) → 7.5.
+Timur 60 days: Reading R 8.5 → overall 7.0; Speaking S 8.0 (L7 R6 W6) → 7.0; Writing W 8.0 (R6 S6 L5.5) → 6.5; Listening L 9.0 (S8 R6.5 W6) → 7.5; Vocab-only (universe #5, 3000 words): R 6.5, L 5.5, W 5.0, S 5.0 → 5.5 (lesson: words need sentences, listening and speaking out loud). Video media 0546fb35-c675-4bb6-a20d-eb2c842ec78d, 1:46.
 Katya one week: L 8.0, R 8.0, W 6.5, S 7.0 → 7.5 (mock 5.5 three months before; level B2-C1).
 Next ideas the audience asked for: «прокачать всё сразу», new heroes, «что если…» ideas tied to IELTS (неделя до экзамена, только ИИ, только игры и сериалы, сдать 5 раз подряд).
