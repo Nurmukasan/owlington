@@ -3,6 +3,9 @@ import { W, H, C, P, boxes } from './lib.jsx'
 import { Boy, BoyBack, Owl, Examiner, ExaminerBack, Jake, Person, Mom, Invigilator, Teacher } from './chars.jsx'
 import { bedroomNight, deskFront, lampGlow, examHall, classroom, classDesks, disc, stars, bands, skyline } from './sets.jsx'
 import { examRoom, examProps, laptopBack, jakeRoom, bathroom, mirrorInside } from './sets2.jsx'
+let s = 1
+const seed = (k) => { s = k * 7919 + 13 }
+const rnd = () => ((s = (s * 1103515245 + 12345) % 2147483648) / 2147483648)
 
 const glow = (cx, cy, r, col, a) => <rect x={cx - r} y={cy - r} width={r * 2} height={r * 2} fill={{ kind: 'radial', stops: [{ offset: 0, color: col, opacity: a }, { offset: 0.65, color: col, opacity: 0 }] }} />
 
@@ -131,6 +134,40 @@ const owlClose = (eyes, withCard = false) => [
 ]
 const sky = () => [boxes(bands(['#070820', '#0b0c26', '#101236', '#16184a', '#1d1e56'], 0, 256, 0, 144)), boxes(stars(90, 0, 0, 144, 200, 31)), boxes(disc(126, 18, 13, '#22245e')), boxes(disc(126, 18, 10, C.cream)), boxes(disc(122, 15, 2, '#f0dca8')), boxes(disc(129, 22, 1, '#f0dca8')), boxes(skyline(-4, 256, 152, 3, ['#0c0d2a', '#101236', '#14153a'])), boxes(skyline(-4, 256, 152, 8, ['#16184a', '#1c2550', '#1d1e56']))]
 
+
+// 9. building lot at sunset (the "words are bricks, speech is a house" metaphor): crane, fence, a wheelbarrow of mortar,
+// Timur on the right, the owl in a hard hat on a fence post. The bricks / house are animated in the edit (Scene world).
+const hardHat = (x, y, p) => boxes([[3, -0.5, 10, 3, '#ffd23f'], [1.5, 2, 13, 1.2, '#e0a020'], [5, -0.5, 5, 1, '#fff1a8'], [7.3, -1.2, 1.4, 3, '#e0a020']], x, y, p)
+const lot = ({ owl = 'open', ...o } = {}) => {
+  const k = []
+  k.push(...bands(['#14153a', '#1d1e56', '#2b2b6e', '#47377a', '#6e437c', '#a6577a', '#d8706e', '#f09a6a', '#f6b86e'], -20, 136, -20, 190))
+  k.push(...stars(26, 0, -10, 144, 50, 17))
+  // the sun going down behind the city, with a soft ring
+  k.push(...disc(116, 124, 17, '#f6b86e'), ...disc(116, 124, 13, '#ffd27a'), ...disc(116, 124, 10, '#ffe7a8'))
+  k.push(...skyline(-6, 140, 160, 23, ['#2a1f45', '#33244f', '#3d2a57'], ['#ffcf7a', '#f2a541']))
+  // tower crane: lattice mast, jib, counter-jib, cab, cable and a hook with a pallet of bricks
+  k.push([8, 26, 4, 116, '#c8862a'], [8, 26, 1, 116, '#e8a83a'])
+  for (let y = 28; y < 140; y += 6) k.push([8, y, 4, 1, '#8a5a1a'], [9, y + 2, 1, 1, '#8a5a1a'], [10, y + 3, 1, 1, '#8a5a1a'])
+  k.push([-4, 24, 96, 3, '#c8862a'], [-4, 24, 96, 1, '#e8a83a'], [12, 18, 2, 6, '#c8862a'], [12, 18, 40, 1, '#8a5a1a'], [-10, 27, 10, 4, '#5a4a6a'])
+  for (let x = 14; x < 92; x += 6) k.push([x, 25, 1, 1, '#8a5a1a'])
+  k.push([6, 27, 8, 6, '#3a3a50'], [7, 28, 6, 3, '#9ab4e0'], [74, 27, 1, 26, '#2e2a3c'], [72, 53, 5, 2, '#2e2a3c'], [73, 55, 1, 2, '#2e2a3c'])
+  k.push([66, 57, 18, 2, '#5a3a22'], [66, 59, 18, 1, '#3a2418'])
+  for (let i = 0; i < 3; i++) k.push([67 + i * 6, 54 - 0, 5, 3, '#b04e3c'], [67 + i * 6, 54, 5, 1, '#e08a6a'])
+  // ground: grass edge, dirt with stones
+  k.push([-20, 158, 190, 100, '#6b4a32'], [-20, 158, 190, 2, '#4f8a4f'], [-20, 157, 190, 1, '#7bc188'])
+  seed(31); for (let i = 0; i < 70; i++) k.push([Math.floor(rnd() * 150) - 4, 162 + Math.floor(rnd() * 94), 2, 1, rnd() < 0.5 ? '#5a3c28' : '#7d5a40'])
+  // construction fence behind (low planks)
+  for (let x = -4; x < 150; x += 9) k.push([x, 142, 7, 16, '#c8a878'], [x, 142, 7, 1, '#e0c49a'], [x + 3, 140, 1, 2, '#8a6a4a'])
+  k.push([-4, 146, 154, 2, '#8a6a4a'], [-4, 153, 154, 2, '#8a6a4a'])
+  // the owl's post on the left
+  k.push([4, 128, 9, 30, '#7a5232'], [4, 128, 9, 2, '#a87850'], [5, 131, 1, 26, '#5a3a22'])
+  // wheelbarrow of mortar on the right, a trowel stuck in it
+  k.push([122, 148, 20, 8, '#4a5a8a'], [123, 149, 18, 6, '#5d6a9a'], [124, 145, 16, 4, '#b8b6c6'], [126, 143, 10, 2, '#d4d2e0'], [131, 138, 1, 6, '#5a3a22'], [129, 136, 5, 3, '#a9a8bb'])
+  k.push(...disc(126, 158, 3, '#2e2a3c'), ...disc(126, 158, 1, '#a9a8bb'), [140, 152, 8, 2, '#5a3a22'], [138, 156, 2, 4, '#5a3a22'])
+  return [boxes(k), glow(580, 600, 340, '#ffb070', 0.18), Owl({ x: 8 * P - 6, y: 128 * P - 20 * 4, p: 4, eyes: owl }), hardHat(8 * P - 6, 128 * P - 20 * 4, 4),
+    Boy({ x: 500, y: 158 * P - 30 * 6, p: 6, ...o })]
+}
+
 export const PLATES = {
   max: room({ level: 3, wall: 24, eyes: 'wide', sweat: true, mouth: 'o', owlCard: true, owl: 'squint' }), max_b: room({ level: 3, wall: 24, eyes: 'closed', sweat: true, mouth: 'o', owlCard: true, owl: 'squint' }),
   room: room({ eyes: 'down' }), room_b: room({ eyes: 'closed' }), room_open: room({ eyes: 'open', held: false }), room_smile: room({ eyes: 'happy', mouth: 'smile' }),
@@ -142,6 +179,7 @@ export const PLATES = {
   call: call(), call_blink: call({ eyes: 'closed' }), call_um: call({ eyes: 'wide', mouth: 'o', sweat: true }), call_um2: call({ eyes: 'wide', mouth: 'flat', sweat: true }),
   screen: screen(), screen_talk: screen({ jake: { mouth: 'open' } }), screen_q: screen({ jake: { brow: 'up' }, me: { eyes: 'wide', sweat: true } }),
   examA: examA(), examA_talk: examA({ mouth: 'open' }), examB_scared: examB({ eyes: 'wide', sweat: true }), examB_um: examB({ eyes: 'wide', mouth: 'o', sweat: true }), examB_blink: examB({ eyes: 'closed', sweat: true }),
+  lot_q: lot({ mode: 'stand', eyes: 'side', mouth: 'flat' }), lot_happy: lot({ mode: 'gesture', eyes: 'happy', mouth: 'smile', owl: 'happy' }), lot_sad: lot({ mode: 'stand', eyes: 'down', mouth: 'flat', sweat: true, owl: 'sad' }),
   hall: hall(), owl_open: owlClose('open'), owl_wink: owlClose('wink'), owl_card: owlClose('squint', true), sky: sky(),
 }
 export const ORDER = Object.keys(PLATES)

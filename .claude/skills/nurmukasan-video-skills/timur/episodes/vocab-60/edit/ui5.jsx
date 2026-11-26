@@ -193,3 +193,93 @@ export function Counter({ at, dur, values, t1 = 1.0, y, label, color = C.mint, f
     </Layer>
   )
 }
+
+// ---- words are bricks, speech is a house: the whole build lives in plate coordinates (Scene world) on the 'lot' plate ----
+// art px * 5 = screen px. Ground at art 158. House wall art x 18..92, rows 6 (7 art pitch), roof 8 steps, door, two windows, chimney.
+const Q = 5
+const BW5 = ['WEEKEND', 'GO', 'I', 'LAST', 'YOU', 'DID', 'WHAT', 'PLACE', 'VERY', 'NICE', 'ABANDON', 'ABILITY', 'VISIT', 'LIKE', 'SAY']
+const HOUSE5 = (() => {
+  const o = []
+  for (let r = 0; r < 6; r++) {
+    const y = 152 - 7 * r
+    const row = r % 2 === 0 ? [[18, 14], [33, 14], [48, 14], [63, 14], [78, 14]] : [[18, 7], [26, 14], [41, 14], [56, 14], [71, 14], [86, 6]]
+    row.forEach(([x, w]) => o.push([x, y, w]))
+  }
+  return o
+})()
+const heapSlots = (n) => {
+  const lens = n === 15 ? [5, 4, 3, 2, 1] : [8, 7, 6, 5, 4, 3], o = []
+  let i = 0
+  lens.forEach((len, j) => {
+    const x0 = 55 - (len * 10 + 4) / 2
+    for (let k = 0; k < len && i < n; k++, i++) o.push([x0 + k * 10 + (((i * 37) % 5) - 2), 152 - j * 5 + (((i * 13) % 3) - 1)])
+  })
+  return o
+}
+const HEAP_A = heapSlots(15), HEAP_B = heapSlots(33)
+const brickEls = (w, i, word) => [
+  <rect x={0} y={0} width={w * Q} height={6 * Q} fill="#5a2418" />,
+  <rect x={Q * 0.6} y={Q * 0.6} width={w * Q - Q * 1.2} height={6 * Q - Q * 1.2} fill={i % 3 === 0 ? '#b04e3c' : i % 3 === 1 ? '#c25a44' : '#a8463a'} />,
+  <rect x={Q * 0.6} y={Q * 0.6} width={w * Q - Q * 1.2} height={Q} fill="#e08a6a" />,
+  <rect x={Q * 0.6} y={6 * Q - Q * 1.6} width={w * Q - Q * 1.2} height={Q} fill="#7a3426" />,
+  word ? Tx(0, Q * 2.1, w * Q, word.length > 6 ? 8 : 10, '#fff1e0', word, 'center') : null,
+]
+export function HouseWorld({ dur, tHouse, tMortarOff, tLightsOff, tCollapse }) {
+  const out = []
+  const fade = (a, b, k = 0.25) => [{ property: 'opacity', keyframes: [{ at: 0, value: 0 }, { at: Math.min(k, (b - a) / 2), value: 1 }, { at: Math.max(0.02, b - a - 0.2), value: 1 }, { at: b - a, value: 0 }] }]
+  // grammar = the mortar behind the bricks
+  out.push(<Layer at={tHouse + 0.15} dur={tMortarOff + 0.3 - tHouse - 0.15} animate={fade(tHouse + 0.15, tMortarOff + 0.3, 0.3)}><rect x={18 * Q} y={117 * Q} width={74 * Q} height={41 * Q} fill="#d8d2e2" /><rect x={18 * Q} y={117 * Q} width={74 * Q} height={Q} fill="#f0ecf6" /></Layer>)
+  // the bricks: the 15 word-bricks fly from the heap into the wall, the rest drop in; at the end every brick falls into a bigger heap
+  HOUSE5.forEach(([x, y, w], i) => {
+    const [bx, by] = HEAP_B[i], dB = [(bx - x) * Q, (by - y) * Q], cAt = tCollapse + (32 - i) * 0.012
+    if (i < 15) {
+      const [ax, ay] = HEAP_A[i], dA = [(ax - x) * Q, (ay - y) * Q], f0 = tHouse + i * 0.02, f1 = f0 + 0.3
+      const kf = (d0, d1) => [{ at: 0, value: d0 }, { at: f0, value: d0 }, { at: f1, value: 0, easing: 'ease-out' }, { at: cAt, value: 0 }, { at: cAt + 0.42, value: d1, easing: 'ease-in' }]
+      out.push(<frame x={x * Q} y={y * Q} width={w * Q} height={6 * Q} layout="none" animate={[{ property: 'offsetX', keyframes: kf(dA[0], dB[0]) }, { property: 'offsetY', keyframes: kf(dA[1], dB[1]) }]}>{brickEls(w, i, BW5[i])}</frame>)
+    } else {
+      const a = tHouse + 0.25 + (i - 15) * 0.015, c = cAt - a
+      out.push(
+        <Layer at={a} dur={dur - a}>
+          <frame x={x * Q} y={y * Q} width={w * Q} height={6 * Q} layout="none" animate={[
+            { property: 'offsetY', keyframes: [{ at: 0, value: -140 }, { at: 0.2, value: 0, easing: 'ease-in' }, { at: c, value: 0 }, { at: c + 0.42, value: dB[1], easing: 'ease-in' }] },
+            { property: 'offsetX', keyframes: [{ at: 0, value: 0 }, { at: c, value: 0 }, { at: c + 0.42, value: dB[0], easing: 'ease-in' }] }]}>{brickEls(w, i, null)}</frame>
+        </Layer>)
+    }
+  })
+  // door + window frames, then the lights (practice) — they go out, then everything falls
+  const t0 = tHouse + 0.6, gone = tCollapse + 0.15
+  out.push(<Layer at={t0} dur={gone - t0} animate={fade(t0, gone, 0.12)}>
+    <rect x={47 * Q} y={137 * Q} width={16 * Q} height={21 * Q} fill="#4a2e1c" /><rect x={48 * Q} y={138 * Q} width={14 * Q} height={20 * Q} fill="#7a4c2a" />
+    <rect x={49 * Q} y={139 * Q} width={12 * Q} height={8 * Q} fill="#8a5a32" /><rect x={49 * Q} y={149 * Q} width={12 * Q} height={8 * Q} fill="#8a5a32" /><rect x={59 * Q} y={148 * Q} width={2 * Q} height={2 * Q} fill="#ffd23f" />
+    {[23, 73].map((wx) => [<rect x={wx * Q} y={126 * Q} width={14 * Q} height={12 * Q} fill="#4a2e1c" />, <rect x={(wx + 1) * Q} y={127 * Q} width={12 * Q} height={10 * Q} fill="#2b2b5a" />, <rect x={(wx - 1) * Q} y={138 * Q} width={16 * Q} height={2 * Q} fill="#e8e0d0" />])}
+  </Layer>)
+  const lOn = tHouse + 0.85
+  out.push(<Layer at={lOn} dur={tLightsOff - lOn} animate={[{ property: 'opacity', keyframes: [{ at: 0, value: 0 }, { at: 0.12, value: 1 }, { at: Math.max(0.15, tLightsOff - lOn - 0.12), value: 1 }, { at: tLightsOff - lOn, value: 0 }] }]}>
+    {[23, 73].map((wx) => [<rect x={(wx + 1) * Q} y={127 * Q} width={12 * Q} height={10 * Q} fill="#ffd27a" />, <rect x={(wx + 1) * Q} y={127 * Q} width={12 * Q} height={3 * Q} fill="#fff1c0" />,
+      <rect x={(wx + 6.5) * Q} y={127 * Q} width={Q} height={10 * Q} fill="#4a2e1c" />, <rect x={(wx + 1) * Q} y={131.5 * Q} width={12 * Q} height={Q} fill="#4a2e1c" />,
+      <rect x={(wx - 6) * Q} y={120 * Q} width={26 * Q} height={24 * Q} fill={{ kind: 'radial', stops: [{ offset: 0, color: '#ffd27a', opacity: 0.35 }, { offset: 0.7, color: '#ffd27a', opacity: 0 }] }} />])}
+  </Layer>)
+  // roof steps drop in; chimney with smoke while the lights are on
+  for (let k = 0; k < 8; k++) {
+    const a = tHouse + 0.55 + k * 0.03
+    out.push(<Layer at={a} dur={gone - a} animate={[{ property: 'offsetY', keyframes: [{ at: 0, value: -90 }, { at: 0.18, value: 0, easing: 'ease-in' }, { at: tCollapse - a, value: 0 }, { at: tCollapse - a + 0.3, value: 260, easing: 'ease-in' }] }]}>
+      <rect x={(13 + 5 * k) * Q} y={(113 - 4 * k) * Q} width={(84 - 10 * k) * Q} height={4 * Q} fill={k % 2 ? '#8a2f2a' : '#a8413a'} />
+      <rect x={(13 + 5 * k) * Q} y={(113 - 4 * k) * Q} width={(84 - 10 * k) * Q} height={Q} fill={k % 2 ? '#a8413a' : '#c8564a'} />
+    </Layer>)
+  }
+  const ch = tHouse + 0.75
+  out.push(<Layer at={ch} dur={gone - ch} animate={fade(ch, gone, 0.1)}><rect x={75 * Q} y={95 * Q} width={8 * Q} height={15 * Q} fill="#5a2418" /><rect x={76 * Q} y={96 * Q} width={6 * Q} height={14 * Q} fill="#b04e3c" /><rect x={74 * Q} y={94 * Q} width={10 * Q} height={2 * Q} fill="#7a3426" /></Layer>)
+  for (let k = 0; k < 6; k++) {
+    const a = tHouse + 0.95 + k * 0.28, d = 1.1
+    if (a + 0.2 > tLightsOff) break
+    const dd = Math.min(d, tLightsOff - a)
+    out.push(<Layer at={a} dur={dd} animate={[{ property: 'offsetY', keyframes: [{ at: 0, value: 0 }, { at: dd, value: -70 * dd }] }, { property: 'opacity', keyframes: [{ at: 0, value: 0 }, { at: 0.15, value: 0.85 }, { at: dd, value: 0 }] }]}>
+      <rect x={(77 + (k % 2) * 2) * Q} y={89 * Q} width={4 * Q} height={4 * Q} fill="#e8e4f0" />
+    </Layer>)
+  }
+  // dust when it all comes down
+  out.push(<Layer at={tCollapse + 0.3} dur={Math.max(0.1, Math.min(0.9, dur - tCollapse - 0.3))} animate={[{ property: 'opacity', keyframes: [{ at: 0, value: 0 }, { at: 0.15, value: 0.7 }, { at: 0.8, value: 0 }] }]}>
+    {[[14, 150], [30, 146], [70, 148], [88, 150], [50, 140]].map(([x, y]) => <rect x={x * Q} y={y * Q} width={12 * Q} height={6 * Q} fill="#c8b8a0" />)}
+  </Layer>)
+  return out
+}

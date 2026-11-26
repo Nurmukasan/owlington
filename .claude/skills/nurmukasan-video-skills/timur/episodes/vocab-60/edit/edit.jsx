@@ -5,7 +5,7 @@ import { CAPTIONS } from './captions.jsx'
 import { T } from './times.jsx'
 
 const END = T.END
-const PLATES = 'max max_b room room_b room_open room_wide room_wide2 wall wall_b pile pile_b kitchen mirror mirror_talk mirror_talk2 klass klass_o call call_blink call_um call_um2 screen screen_talk examA examA_talk examB_um examB_blink examB_scared hall owl_open owl_wink owl_card sky'.split(' ')
+const PLATES = 'max max_b room room_b room_open room_wide room_wide2 wall wall_b pile pile_b kitchen mirror mirror_talk mirror_talk2 klass klass_o call call_blink call_um call_um2 screen screen_talk examA examA_talk examB_um examB_blink examB_scared lot_q lot_happy lot_sad hall owl_open owl_wink owl_card sky'.split(' ')
 
 export default async ({ project }) => {
   const p = await project({ dir: '.', size: '720x1280', fps: 24, background: C.navy1 })

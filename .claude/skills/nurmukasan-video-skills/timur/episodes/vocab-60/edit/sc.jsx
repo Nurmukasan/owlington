@@ -1,7 +1,7 @@
 import { W, H, C, P, FONT, IMG, Layer, Scene, blinks, every, popScale, popSlide, PText } from './lib.jsx'
 import { PowerUp, Chip, BigTitle, Steps } from './ui.jsx'
 import { Glitch, Message, box, T as Tx } from './ui3.jsx'
-import { Hud5, Stats5, HookTitle, Flash, Curve, Bricks, KnownWord, Say, Scores5, Counter } from './ui5.jsx'
+import { Hud5, Stats5, HookTitle, Flash, Curve, Bricks, KnownWord, Say, Scores5, Counter, HouseWorld } from './ui5.jsx'
 import { T, D } from './times.jsx'
 
 // Layout rule for every shot: overlays stay inside x 56-664, below the HUD (y > 240) and above the faces.
@@ -232,17 +232,22 @@ shot(T.knew, ({ at, dur }) => (
     <Layer at={rel(at, 'couldnt')} dur={dur - rel(at, 'couldnt')} centre animate={popScale(0.3)}>{box(110, 510, 500, 90, C.red, C.navy1)}{Tx(110, 530, 500, 16, C.grey3, 'ОТВЕТ', 'center')}{Tx(110, 560, 500, 24, C.red, '...', 'center')}</Layer>
   </Sc>
 ))
-// 13 words are bricks, speech is a house
-shot(T.bricks, ({ at, dur }) => (
-  <Sc at={at} dur={dur} base="sky" zoom={[1.0, 1.04]}>
-    <BigTitle at={0.05} dur={rel(at, 'house')} y={260} text="СЛОВА = КИРПИЧИ" size={30} />
-    <BigTitle at={rel(at, 'house')} dur={rel(at, 'without') - rel(at, 'house')} y={260} text="РЕЧЬ = ДОМ" size={36} color={C.mintL} under={C.blue2} />
-    <Bricks at={0.2} dur={dur - 0.2} tHouse={rel(at, 'house') - 0.2} tHeap={rel(at, 'without') + 0.6} />
-    <Layer at={rel(at, 'house') + 1.0} dur={rel(at, 'without') - rel(at, 'house') - 0.4}>{Tx(56, 716, 608, 14, '#d4cede', 'РАСТВОР = ГРАММАТИКА · СВЕТ = ПРАКТИКА', 'center')}</Layer>
-    <Chip at={rel(at, 'without') + 0.7} dur={dur - rel(at, 'without') - 0.7} x={70} y={350} text="ГРАММАТИКА ×" color={C.red} size={18} />
-    <Chip at={rel(at, 'without') + 1.1} dur={dur - rel(at, 'without') - 1.1} x={330} y={350} text="ПРАКТИКА ×" color={C.red} size={18} />
-  </Sc>
-))
+// 13 words are bricks, speech is a house — a building lot at sunset; the build happens inside the camera (world)
+shot(T.bricks, ({ at, dur }) => {
+  const tH = rel(at, 'house'), tM = rel(at, 'without') + 0.3, tL = Math.max(tM + 0.35, rel(at, 'practice') + 0.1), tC = Math.max(tL + 0.3, rel(at, 'pile'))
+  return (
+    <Sc at={at} dur={dur} base="lot_q" zoom={[1.0, 1.05]} swaps={[['lot_happy', tH + 0.85, tC - tH - 0.85], ['lot_sad', tC, dur - tC]]}
+      world={HouseWorld({ dur, tHouse: tH, tMortarOff: tM, tLightsOff: tL, tCollapse: tC })}>
+      <BigTitle at={0.05} dur={tH - 0.05} y={250} text="СЛОВА = КИРПИЧИ" size={30} />
+      <BigTitle at={tH} dur={tC - tH} y={250} text="РЕЧЬ = ДОМ" size={36} color={C.mintL} under={C.blue2} />
+      <BigTitle at={tC + 0.2} dur={dur - tC - 0.2} y={250} text="ПРОСТО КУЧА" size={36} />
+      <Chip at={tH + 0.45} dur={tM - tH - 0.45} x={70} y={320} text="↓ РАСТВОР = ГРАММАТИКА" color={C.navy3} size={16} />
+      <Chip at={tH + 0.9} dur={tL - tH - 0.9} x={70} y={372} text="СВЕТ В ОКНАХ = ПРАКТИКА" color={C.navy3} fg={C.yellow} size={16} />
+      <Chip at={tM} dur={dur - tM} x={70} y={320} text="ГРАММАТИКА ×" color={C.red} size={16} />
+      <Chip at={tL} dur={dur - tL} x={70} y={372} text="ПРАКТИКА ×" color={C.red} size={16} />
+    </Sc>
+  )
+})
 // 14 day 60: 3000 words, the exam
 shot(T.day60, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="hall" zoom={[1.0, 1.06]}>
