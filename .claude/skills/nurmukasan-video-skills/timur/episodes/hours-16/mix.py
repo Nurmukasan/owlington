@@ -22,14 +22,18 @@ flux = np.maximum(0, np.diff(e)); flux -= flux.mean()
 ac = np.correlate(flux, flux, 'full')[len(flux) - 1:]
 lag = np.argmax(ac[33:100]) + 33; bar = 4 * lag * SR // 100  # beat 0.33-1.0 s (60-180 bpm), 4/4 bar
 A = dpos + 2 * bar; B = A + ((len(g) - A) // bar) * bar  # A and B sit on the same bar phase
-xf = SR // 20
+# refine the loop point: what plays before B must match what plays before A (onset envelopes, 5 ms hops)
+oenv = lambda b: np.diff([np.sqrt(np.mean(g[i:i + SR // 200] ** 2)) for i in range(b - 2 * SR, b, SR // 200)])
+ref = oenv(A)
+B = max(range(B - int(0.4 * SR), min(B + int(0.4 * SR), len(g)) + 1, SR // 200), key=lambda b: float(np.dot(ref, oenv(b))))
+xf = SR // 20; B0 = B
 while len(g) < int(SR * (T['d30'] + 1.0)):
     seg = g[A:B].copy(); tail = g[B:B + xf]
     if len(tail) == xf: seg[:xf] = seg[:xf] * np.linspace(0, 1, xf) + tail * np.linspace(1, 0, xf)
     g = np.concatenate([g[:B], seg]); B = len(g)
 g = norm(g)
 g[:dpos] *= 1.8  # lift the tension intro under the hook a little
-print('grind: drop %.2f -> %.2f (cue offset %.2f), beat %.2f s, extended to %.1f s' % (drop, land, off, lag / 100, len(g) / SR))
+print('grind: drop %.2f -> %.2f (cue offset %.2f), beat %.2f s, loop %.2f -> %.2f, extended to %.1f s' % (drop, land, off, lag / 100, B0 / SR, A / SR, len(g) / SR))
 env = np.ones(len(g), np.float32)
 fs = min(int(SR * T['wk3']), len(g) - int(SR * 2.5)); fe = min(int(SR * T['d30']), len(g))
 env[fs:fe] = np.linspace(1, 0, max(1, fe - fs)); env[fe:] = 0
