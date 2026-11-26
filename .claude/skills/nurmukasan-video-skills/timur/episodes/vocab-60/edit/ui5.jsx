@@ -228,7 +228,7 @@ export function HouseWorld({ dur, tHouse, tMortarOff, tLightsOff, tCollapse }) {
   const out = []
   const fade = (a, b, k = 0.25) => [{ property: 'opacity', keyframes: [{ at: 0, value: 0 }, { at: Math.min(k, (b - a) / 2), value: 1 }, { at: Math.max(0.02, b - a - 0.2), value: 1 }, { at: b - a, value: 0 }] }]
   // grammar = the mortar behind the bricks
-  out.push(<Layer at={tHouse + 0.15} dur={tMortarOff + 0.3 - tHouse - 0.15} animate={fade(tHouse + 0.15, tMortarOff + 0.3, 0.3)}><rect x={18 * Q} y={117 * Q} width={74 * Q} height={41 * Q} fill="#d8d2e2" /><rect x={18 * Q} y={117 * Q} width={74 * Q} height={Q} fill="#f0ecf6" /></Layer>)
+  out.push(<Layer at={tHouse + 0.62} dur={tMortarOff + 0.3 - tHouse - 0.62} animate={fade(tHouse + 0.62, tMortarOff + 0.3, 0.15)}><rect x={18 * Q} y={117 * Q} width={74 * Q} height={41 * Q} fill="#d8d2e2" /><rect x={18 * Q} y={117 * Q} width={74 * Q} height={Q} fill="#f0ecf6" /></Layer>)
   // the bricks: the 15 word-bricks fly from the heap into the wall, the rest drop in; at the end every brick falls into a bigger heap
   HOUSE5.forEach(([x, y, w], i) => {
     const [bx, by] = HEAP_B[i], dB = [(bx - x) * Q, (by - y) * Q], cAt = tCollapse + (32 - i) * 0.012
@@ -261,8 +261,9 @@ export function HouseWorld({ dur, tHouse, tMortarOff, tLightsOff, tCollapse }) {
   </Layer>)
   // roof steps drop in; chimney with smoke while the lights are on
   for (let k = 0; k < 8; k++) {
-    const a = tHouse + 0.55 + k * 0.03
-    out.push(<Layer at={a} dur={tCollapse - a + 0.32} animate={[{ property: 'offsetY', keyframes: [{ at: 0, value: -90 }, { at: 0.18, value: 0, easing: 'ease-in' }, { at: tCollapse - a, value: 0 }, { at: tCollapse - a + 0.3, value: 260, easing: 'ease-in' }] }]}>
+    const a = tHouse + 0.6 + k * 0.025
+    out.push(<Layer at={a} dur={tCollapse - a + 0.3} animate={[{ property: 'offsetY', keyframes: [{ at: 0, value: -30 }, { at: 0.1, value: 0, easing: 'ease-in' }, { at: tCollapse - a, value: 0 }, { at: tCollapse - a + 0.28, value: 120, easing: 'ease-in' }] },
+      { property: 'opacity', keyframes: [{ at: 0, value: 0 }, { at: 0.06, value: 1 }, { at: tCollapse - a, value: 1 }, { at: tCollapse - a + 0.2, value: 0 }] }]}>
       <rect x={(13 + 5 * k) * Q} y={(113 - 4 * k) * Q} width={(84 - 10 * k) * Q} height={4 * Q} fill={k % 2 ? '#8a2f2a' : '#a8413a'} />
       <rect x={(13 + 5 * k) * Q} y={(113 - 4 * k) * Q} width={(84 - 10 * k) * Q} height={Q} fill={k % 2 ? '#a8413a' : '#c8564a'} />
     </Layer>)
