@@ -18,6 +18,8 @@ const pile = (x, y, n, k = 0, w = 16) => {
 }
 // a card lying ON the owl's head (in owl-sprite pixels: rows 0.5-4.5 over the forehead, tape strip down onto the head)
 const cardOnOwl = (x, y, p, k = 3) => boxes([[3, 0.5, 10, 4, '#1a1424'], [3.5, 1, 9, 3, CARD[k]], [4.5, 1.8, 6, 0.5, '#6a6070'], [4.5, 2.8, 4, 0.5, '#a89aa0'], [7, 3.8, 2, 1.4, '#d4d4e0']], x, y, p)
+// a card lying flat on the desk top (seen edge-on)
+const flat = (x, y, k = 0) => [[x - 1, y - 2, 14, 3, '#1a1424'], [x, y - 1, 12, 1, CARD[k % 5]]]
 // cards stuck all over the bedroom wall (week 2+)
 const WALL = [[4, 84], [18, 90], [34, 82], [48, 92], [62, 86], [8, 104], [24, 110], [40, 102], [56, 108], [10, 124], [28, 128], [46, 122], [62, 130], [60, 34],
   [88, 104], [104, 110], [120, 104], [134, 112], [96, 124], [116, 128], [136, 130], [12, 140], [32, 146], [70, 120]]
@@ -32,7 +34,7 @@ const room = ({ level = 1, wall = 0, owl = 'open', owlCard = false, held = true,
   const N = level === 1 ? [3, 5] : level === 2 ? [12, 16] : [26, 30]
   d.push(...pile(36, 181, N[0], 0), ...pile(96, 181, N[1], 2))
   if (level >= 2) d.push(...pile(14, 181, N[0] - 4, 3, 14), ...pile(116, 181, N[1] - 6, 1, 14))
-  if (level >= 3) d.push(...card(26, 214, 1), ...card(50, 224, 3), ...card(86, 218, 0), ...card(110, 228, 4), ...card(2, 232, 2), ...card(126, 212, 1))
+  if (level >= 3) d.push(...flat(0, 181, 1), ...flat(132, 181, 3), ...flat(4, 179, 4), ...card(18, 240, 1), ...card(108, 244, 3), ...card(62, 246, 0))
   if (held) d.push(...card(64, 172, 1, 14, 9))
   out.push(boxes(d))
   out.push(Owl({ x: 94 * P, y: 74 * P, p: 5, eyes: owl }))
@@ -83,7 +85,7 @@ const call = ({ owl = 'open', ...o } = {}) => [
   bedroomNight(), boxes(wallCards()), lampGlow(600, 840, 360, 0.3),
   Boy({ x: 280, y: 650, p: 10, mode: 'arms', ...o }),
   glow(360, 760, 200, '#7fb4ff', 0.12),
-  deskFront({ y: 182 }), laptopBack(182), boxes([...pile(12, 181, 14, 0), ...pile(110, 181, 18, 2), ...card(30, 214, 1), ...card(100, 224, 3)]),
+  deskFront({ y: 182 }), laptopBack(182), boxes([...pile(12, 181, 14, 0), ...pile(110, 181, 18, 2), ...card(20, 241, 1), ...card(108, 245, 3)]),
   Owl({ x: 94 * P, y: 74 * P, p: 5, eyes: owl }),
 ]
 const screen = ({ jake = {}, me = {} } = {}) => [
