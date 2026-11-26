@@ -22,6 +22,23 @@ for i in range(len(toks)):
         else:
             f = (i - lo) / (hi - lo); start[i] = end[lo] + (start[hi] - end[lo]) * f; end[i] = start[i] + 0.25
 print('unmatched', len(toks) - len(known))
+# merge number phrases into one display token BEFORE chunking (so "ридинг шесть с половиной" never splits)
+REPT = [('ридинг шесть с половиной', 'Reading 6.5'), ('лиснинг пять с половиной', 'Listening 5.5'), ('райтинг пять', 'Writing 5.0'), ('спикинг пять', 'Speaking 5.0'),
+  ('общий пять с половиной', 'Общий 5.5'), ('шестьдесят', '60'), ('пятьдесят', '50'), ('пятидесяти', '50'), ('три тысячи', '3000'), ('полторы тысячи', '1500'),
+  ('номер пять', '#5'), ('день ноль', 'день 0'), ('день первый', 'день 1'), ('неделя вторая', 'неделя 2'), ('день тридцатый', 'день 30'), ('день сорок пятый', 'день 45'),
+  ('день шестидесятый', 'день 60'), ('два часа', '2 часа'), ('пять слов', '5 слов')]
+bare = lambda t: re.sub(r'[^0-9a-zа-яё]', '', t.lower().replace('ё', 'е'))
+nt, ns, ne, i = [], [], [], 0
+while i < len(toks):
+    for pat, rep in REPT:
+        p = pat.split()
+        if [bare(x) for x in toks[i:i + len(p)]] == [bare(x) for x in p]:
+            last = toks[i + len(p) - 1]; punct = re.search(r'[^0-9A-Za-zА-Яа-яЁё]*$', last).group(0)
+            r = rep[0].upper() + rep[1:] if toks[i][0].isupper() and rep[0].isalpha() else rep
+            nt.append(r + punct); ns.append(start[i]); ne.append(end[i + len(p) - 1]); i += len(p); break
+    else:
+        nt.append(toks[i]); ns.append(start[i]); ne.append(end[i]); i += 1
+toks, start, end = nt, ns, ne
 chunks, cur = [], []
 for i, t in enumerate(toks):
     cur.append(i)
@@ -31,11 +48,7 @@ for i, t in enumerate(toks):
     if re.search(r'[.?!…»]$', t) or (re.search(r'[,:]$', t) and len(cur) >= 3 and L >= 14) or (L >= 22 and not ends_next) or L >= 32 or gap_next > 1.5:
         chunks.append(cur); cur = []
 if cur: chunks.append(cur)
-REP = [('шестьдесят дней', '60 дней'), ('По пятьдесят', 'По 50'), ('Три тысячи слов', '3000 слов'), ('номер пять', '#5'), ('День ноль', 'День 0'), ('день ноль', 'день 0'),
-  ('Спикинг пять.', 'Speaking 5.0.'), ('каждый день пятьдесят', 'каждый день 50'), ('День первый', 'День 1'), ('Два часа и все пятьдесят', '2 часа и все 50'),
-  ('Неделя вторая', 'Неделя 2'), ('День тридцатый', 'День 30'), ('Полторы тысячи', '1500'), ('День сорок пятый', 'День 45'), ('День шестидесятый', 'День 60'),
-  ('ридинг шесть с половиной,', 'Reading 6.5,'), ('Лиснинг пять с половиной:', 'Listening 5.5:'), ('Райтинг пять.', 'Writing 5.0.'),
-  ('Общий пять с половиной.', 'Общий 5.5.'), ('Пять слов,', '5 слов,'), ('пятидесяти', '50')]
+REP = []
 HI = re.compile(r'\d|Speaking|Listening|Writing|Reading|Сова|сове|Поворот|кирпичи|дом|вслух|карточки')
 out = []
 for c in chunks:
