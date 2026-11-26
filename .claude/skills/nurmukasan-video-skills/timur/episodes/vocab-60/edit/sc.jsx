@@ -32,17 +32,31 @@ const flyAway = (at, dur, words) => words.map((w, i) => {
     </Layer>
   )
 })
-// falling cards for the cold open, in the side columns only
-const rain = (dur) => Array.from({ length: 12 }, (_, i) => {
-  const x = i % 2 ? 60 + (i % 3) * 50 : 500 + (i % 3) * 40, a = (i * 0.37) % 2.6, d = 1.6
-  if (a + 0.2 > dur) return null
-  return (
-    <Layer at={a} dur={Math.min(d, dur - a)} animate={[{ property: 'offsetY', keyframes: [{ at: 0, value: -120 }, { at: d, value: 700 }] }]}>
-      <rect x={x - 3} y={250} width={66} height={44} fill={C.ink} /><rect x={x} y={253} width={60} height={38} fill={['#fff3b0', '#d8ecff', '#ffd8e0', '#d8f5dc', '#fbf7ec'][i % 5]} />
-      <rect x={x + 8} y={264} width={44} height={4} fill="#6a6070" /><rect x={x + 8} y={274} width={30} height={4} fill="#a89aa0" />
-    </Layer>
-  )
-})
+// cold open: cards drop onto the tops of the card towers. They live inside the camera (plate coordinates),
+// so wherever the zoom is, they land exactly on a tower top and stay there (the towers grow).
+// tower tops in the 'max' plate: pile() outline top = (181 - n - 3) * 5 px
+const TOWERS = [[70, 140, 780], [180, 260, 760], [580, 650, 770]]
+const drops = (dur) => {
+  const out = [], CS = ['#fff3b0', '#d8ecff', '#ffd8e0', '#d8f5dc', '#fbf7ec'], FALL = 0.65, cnt = [0, 0, 0], cw = 52, ch = 34
+  for (let i = 0; i < 12; i++) {
+    const tw = [0, 2, 1][i % 3], [x0, x1, top] = TOWERS[tw], a = i * 0.42 - 0.3, land = a + FALL
+    if (land > dur - 0.15) break
+    const x = Math.round((x0 + x1) / 2 - cw / 2 + ((i * 7) % 9) - 4), bottom = top - cnt[tw] * 7
+    cnt[tw]++
+    const y0 = -90, dy = bottom - ch - y0, s0 = a < 0 ? -a / FALL : 0, l0 = Math.max(0, a)
+    const kf = [{ at: 0, value: dy * s0 * s0 }]
+    for (const q of [0.25, 0.5, 0.75, 1]) if (q > s0 + 0.01) kf.push({ at: a + q * FALL - l0, value: dy * q * q })
+    out.push(
+      <Layer at={l0} dur={land - l0} animate={[{ property: 'offsetY', keyframes: kf }]}>
+        <rect x={x - 3} y={y0 - 3} width={cw + 6} height={ch + 6} fill={C.ink} /><rect x={x} y={y0} width={cw} height={ch} fill={CS[i % 5]} />
+        <rect x={x + 7} y={y0 + 10} width={cw - 14} height={4} fill="#6a6070" /><rect x={x + 7} y={y0 + 19} width={cw - 24} height={4} fill="#a89aa0" />
+      </Layer>,
+      <Layer at={land} dur={dur - land}>
+        <rect x={x - 6} y={bottom - 8} width={cw + 12} height={8} fill={C.ink} /><rect x={x - 3} y={bottom - 6} width={cw + 6} height={4} fill={CS[i % 5]} />
+      </Layer>)
+  }
+  return out
+}
 
 // camera guard: keep the face bottom at y <= 800 (caption at 872) without showing the plate edge — face bottoms measured on the plates
 const FB = { room: 815, max: 815, wall: 815, pile: 815, kitchen: 875, klass: 836, call: 775, owl: 790 }
@@ -60,8 +74,7 @@ const shot = (t, fn) => SHOTS.push([t > 0 ? t - 0.08 : 0, fn])
 
 // 01 cold open — the title and the voice are there on frame 0
 shot(0, ({ at, dur }) => (
-  <Sc at={at} dur={dur} base="max" zoom={[1.22, 1.04]} swaps={blinks('max_b', [1.2, 3.1])}>
-    {rain(dur)}
+  <Sc at={at} dur={dur} base="max" zoom={[1.22, 1.04]} swaps={blinks('max_b', [1.2, 3.1])} world={drops(dur)}>
     <Layer at={0} dur={dur}>{HookTitle({ y: 250, text: '60 ДНЕЙ', size: 64 })}{HookTitle({ y: 340, text: 'ТОЛЬКО СЛОВА', size: 38, color: C.white, under: C.blue2 })}</Layer>
     <Steps at={0.35} dur={dur - 0.35} t1={Math.max(0.6, dur - 0.6)} values={['50', '400', '900', '1500', '2200', '3000']} x={0} y={440} size={52} color={C.yellow} />
     <Layer at={0.35} dur={dur - 0.35}>{Tx(0, 512, W, 18, C.white, 'СЛОВ', 'center')}</Layer>
@@ -184,11 +197,10 @@ shot(T.day30, ({ at, dur }) => (
   </Sc>
 ))
 shot(T.teacher, ({ at, dur }) => (
-  <Sc at={at} dur={dur} base="klass" zoom={[1.0, 1.06]} swaps={[['klass_o', Math.min(dur - 0.3, 2.2), dur]]}>
+  <Sc at={at} dur={dur} base="klass" zoom={[1.0, 1.06]} swaps={[['klass_o', Math.min(dur - 0.3, 2.2), dur]]}
+    world={[['UBIQUITOUS', 0.3], ['SERENDIPITY', 0.9], ['QUINTESSENTIAL', 1.5]].map(([w, t], i) => (
+      <Layer at={t} dur={dur - t} animate={[{ property: 'opacity', keyframes: [{ at: 0, value: 0 }, { at: 0.15, value: 1 }] }]}>{Tx(80, 325 + i * 52, 560, 26, '#e8e0c8', w, 'center')}</Layer>))}>
     {hud('ДЕНЬ 30', 3)}
-    {[['UBIQUITOUS', 0.3], ['SERENDIPITY', 0.9], ['QUINTESSENTIAL', 1.5]].map(([w, t], i) => (
-      <Layer at={t} dur={dur - t} animate={[{ property: 'opacity', keyframes: [{ at: 0, value: 0 }, { at: 0.15, value: 1 }] }]}>{Tx(70, 270 + i * 66, 580, 28, '#e8e0c8', w, 'center')}</Layer>
-    ))}
     <Chip at={Math.min(dur - 0.3, 2.2)} dur={dur - Math.min(dur - 0.3, 2.2)} x={70} y={540} text="УЧИТЕЛЬ: ???" color={C.gold} fg={C.ink} size={20} />
   </Sc>
 ))
@@ -210,7 +222,7 @@ shot(T.jake - 0.05, ({ at, dur }) => (
 ))
 shot(SJ, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="call_um" zoom={[1.05, 1.12]} swaps={every('call_um2', dur, 0.9, 0.4, 0.5)}>
-    <Say at={0.05} dur={dur - 0.05} y={250} w={390} en="I... weekend... I go... ubiquitous...?" ru="«Я... выходные... я идти... вездесущий...?»" name="ТИМУР" tab={C.red} />
+    <Say at={0.05} dur={dur - 0.05} y={250} w={390} en="I... weekend... I go... ubiquitous...?" ru="«Я... выходные... я идти... вездесущий...?»" name="ТИМУР" tab={C.red} tail="right" />
   </Sc>
 ))
 // 12 he knew every word of the question — and couldn't answer
@@ -244,12 +256,12 @@ shot(T.day60, ({ at, dur }) => (
 ))
 shot(T.exam - 0.05, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="examA" zoom={[1.0, 1.05]} swaps={talk('examA_talk', 0.15, dur - 0.2)}>
-    <Say at={0.1} dur={dur - 0.1} y={300} en="Describe a place you like to visit." ru="«Опишите место, которое вы любите посещать.»" name="EXAMINER" tab={C.grey2} />
+    <Say at={0.1} dur={dur - 0.1} y={300} en="Describe a place you like to visit." ru="«Опишите место, которое вы любите посещать.»" name="EXAMINER" tab={C.grey2} tail="center" />
   </Sc>
 ))
 shot(SE, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="examB_um" zoom={[1.05, 1.12]} swaps={every('examB_scared', dur, 0.9, 0.4, 0.5)}>
-    <Say at={0.05} dur={dur - 0.05} y={300} en="Place... very... beautiful... quintessential..." ru="«Место... очень... красивый... квинтэссенция...»" name="ТИМУР" tab={C.red} />
+    <Say at={0.05} dur={dur - 0.05} y={300} en="Place... very... beautiful... quintessential..." ru="«Место... очень... красивый... квинтэссенция...»" name="ТИМУР" tab={C.red} tail="center" />
   </Sc>
 ))
 // 15 results

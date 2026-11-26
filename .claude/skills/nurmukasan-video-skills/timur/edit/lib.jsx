@@ -58,7 +58,8 @@ export function Layer({ at = 0, dur, children, animate, centre = false }) {
 }
 
 // a scene: the camera moves the plate (and its swaps); UI sits on top, still
-export function Scene({ at, dur, base, swaps = [], zoom = [1, 1.06], pan = [0, 0], panY = [0, 0], children }) {
+// world: things that belong to the picture (they move with the camera, in plate coordinates); children: UI on top, still
+export function Scene({ at, dur, base, swaps = [], zoom = [1, 1.06], pan = [0, 0], panY = [0, 0], world = null, children }) {
   return (
     <frame at={at} duration={dur} width={W} height={H} layout="none" clip={true}>
       <frame width={W} height={H} layout="none" origin="center"
@@ -67,6 +68,7 @@ export function Scene({ at, dur, base, swaps = [], zoom = [1, 1.06], pan = [0, 0
           { property: 'offsetY', from: panY[0], to: panY[1], at: 0, duration: dur, easing: 'linear' }]}>
         <Plate k={base} />
         {swaps.filter(([k, t, d]) => t < dur - 0.02).map(([k, t, d]) => <Layer at={t} dur={Math.min(d, dur - t)}><Plate k={k} /></Layer>)}
+        {world}
       </frame>
       {children}
     </frame>
