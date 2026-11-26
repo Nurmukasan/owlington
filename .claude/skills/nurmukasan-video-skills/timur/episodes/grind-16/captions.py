@@ -23,7 +23,7 @@ for i in range(len(toks)):
             f = (i - lo) / (hi - lo); start[i] = end[lo] + (start[hi] - end[lo]) * f; end[i] = start[i] + 0.25
 print('unmatched', len(toks) - len(known))
 # merge number phrases into one display token BEFORE chunking (so "ридинг шесть с половиной" never splits)
-REPT = [('девятьсот шестьдесят', '960'), ('четыре часа лиснинга', '4 часа Listening'), ('четыре ридинга', '4 Reading'), ('четыре райтинга', '4 Writing'), ('четыре спикинга', '4 Speaking'),
+REPT = [('девятьсот шестьдесят', '960'), ('лиснинг восемь с половиной', 'Listening 8.5'), ('ридинг восемь', 'Reading 8.0'), ('райтинг семь', 'Writing 7.0'), ('спикинг восемь', 'Speaking 8.0'), ('общий восемь', 'Общий 8.0'), ('пятидесятый семь с половиной', 'День 50: 7.5'), ('мок пять', 'Mock 5.0'), ('по пять', 'по 5.0'), ('четыре часа лиснинга', '4 часа Listening'), ('четыре ридинга', '4 Reading'), ('четыре райтинга', '4 Writing'), ('четыре спикинга', '4 Speaking'),
   ('лиснинг восемь', 'Listening 8.0'), ('ридинг семь с половиной', 'Reading 7.5'), ('райтинг шесть с половиной', 'Writing 6.5'), ('спикинг семь с половиной', 'Speaking 7.5'),
   ('общий семь с половиной', 'Общий 7.5'), ('день сороковой шесть с половиной', 'День 40: 6.5'), ('пятидесятый семь', 'День 50: 7.0'), ('снова шесть с половиной', 'снова 6.5'),
   ('четвертая шесть', 'Четвёртая 6.0'), ('мок пять с половиной', 'Mock 5.5'), ('мок шесть', 'Mock 6.0'), ('четыре блока по девяносто минут', '4 блока по 90 минут'),
@@ -52,7 +52,7 @@ for i, t in enumerate(toks):
         chunks.append(cur); cur = []
 if cur: chunks.append(cur)
 REP = []
-HI = re.compile(r'\\d|Speaking|Listening|Writing|Reading|Mock|Сова|сова|Поворот|сон|Отдых|фокус|прогулка|перерыв')
+HI = re.compile(r'\d|Speaking|Listening|Writing|Reading|Mock|Сова|сова|Поворот|сон|Отдых|фокус|прогулка|перерыв')
 out = []
 for c in chunks:
     text = ' '.join(toks[i] for i in c)
