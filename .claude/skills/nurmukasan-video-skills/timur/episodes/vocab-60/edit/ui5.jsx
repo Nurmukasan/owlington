@@ -99,8 +99,8 @@ export function Curve({ at, dur, t0 = 0.3, span = 1.6, spaced = false, title = '
 }
 // words as bricks: a heap -> a house (grammar = mortar, practice = the door light) -> a heap again
 const BW = ['I', 'GO', 'WEEKEND', 'LAST', 'DID', 'YOU', 'WHAT', 'PLACE', 'VERY', 'BEAUTIFUL', 'ABANDON', 'ABILITY', 'VISIT', 'LIKE', 'DO', 'SAY']
-const HOUSE = BW.map((_, i) => { const r = Math.floor(i / 4), c = i % 4; return [196 + c * 82 + (r % 2 ? 20 : 0), 600 - r * 34] })
-const HEAP = [[120, 616], [210, 622], [300, 612], [390, 620], [480, 616], [160, 588], [250, 594], [350, 586], [440, 592], [200, 560], [300, 556], [400, 562], [250, 528], [350, 530], [140, 640], [470, 644]]
+const HOUSE = BW.map((_, i) => { const r = Math.floor(i / 4), c = i % 4; return [196 + c * 82 + (r % 2 ? 20 : 0), 640 - r * 34] })
+const HEAP = [[150, 640], [232, 640], [314, 640], [396, 640], [478, 640], [190, 608], [272, 608], [354, 608], [436, 608], [232, 576], [314, 576], [396, 576], [272, 544], [354, 544], [314, 512], [560, 640]]
 export function Bricks({ at, dur, tHouse, tHeap, move = 0.6 }) {
   const brick = (i, w) => [<rect x={0} y={0} width={78} height={30} fill={C.ink} />, <rect x={3} y={3} width={72} height={24} fill={i % 3 ? '#c8604a' : '#b04e3c'} />, <rect x={3} y={3} width={72} height={4} fill="#e08a6a" />,
     Tx(3, 11, 72, w.length > 7 ? 7 : 9, C.white, w, 'center')]
@@ -118,11 +118,12 @@ export function Bricks({ at, dur, tHouse, tHeap, move = 0.6 }) {
   const roofOn = tHouse + move + 0.5
   return (
     <Layer at={at} dur={dur}>
+      <rect x={70} y={670} width={580} height={10} fill="#3f7a5a" /><rect x={70} y={680} width={580} height={22} fill="#4a3422" /><rect x={70} y={670} width={580} height={3} fill="#5fae6a" />
       {out}
       <Layer at={roofOn} dur={Math.max(0.05, tHeap - roofOn)} animate={popSlide(0.2)}>
-        {[0, 1, 2, 3, 4].map((k) => <rect x={196 + k * 36} y={460 - k * 30} width={336 - k * 72} height={30} fill={k % 2 ? '#3a4a8a' : '#2e3a6a'} />)}
-        <rect x={330} y={566} width={62} height={68} fill={C.yellow} /><rect x={336} y={572} width={50} height={62} fill="#fff1a8" />
-        {[0, 1, 2, 3].map((r) => <rect x={196} y={598 - r * 34} width={330} height={4} fill="#d4cede" />)}
+        {[0, 1, 2, 3, 4].map((k) => <rect x={196 + k * 36} y={508 - k * 30} width={348 - k * 72} height={30} fill={k % 2 ? '#3a4a8a' : '#2e3a6a'} />)}
+        <rect x={330} y={604} width={62} height={66} fill={C.yellow} /><rect x={336} y={610} width={50} height={60} fill="#fff1a8" />
+        {[0, 1, 2, 3].map((r) => <rect x={196} y={638 - r * 34} width={348} height={4} fill="#d4cede" />)}
       </Layer>
     </Layer>
   )

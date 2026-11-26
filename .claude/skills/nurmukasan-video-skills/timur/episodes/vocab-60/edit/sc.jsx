@@ -45,7 +45,7 @@ const rain = (dur) => Array.from({ length: 12 }, (_, i) => {
 })
 
 // camera guard: keep the face bottom at y <= 800 (caption at 872) without showing the plate edge — face bottoms measured on the plates
-const FB = { room: 815, max: 815, wall: 815, pile: 815, kitchen: 875, klass: 864, call: 775 }
+const FB = { room: 815, max: 815, wall: 815, pile: 815, kitchen: 875, klass: 836, call: 775 }
 const Sc = ({ base, zoom = [1, 1.06], panY, ...o }) => {
   const fb = FB[base.split('_')[0]]
   if (!fb || panY) return Scene({ base, zoom, panY, ...o })
@@ -228,7 +228,7 @@ shot(T.bricks, ({ at, dur }) => (
     <BigTitle at={0.05} dur={rel(at, 'house')} y={260} text="СЛОВА = КИРПИЧИ" size={30} />
     <BigTitle at={rel(at, 'house')} dur={rel(at, 'without') - rel(at, 'house')} y={260} text="РЕЧЬ = ДОМ" size={36} color={C.mintL} under={C.blue2} />
     <Bricks at={0.2} dur={dur - 0.2} tHouse={rel(at, 'house') - 0.2} tHeap={rel(at, 'without') + 0.6} />
-    <Layer at={rel(at, 'house') + 1.0} dur={rel(at, 'without') - rel(at, 'house') - 0.4}>{Tx(56, 680, 608, 14, '#d4cede', 'РАСТВОР = ГРАММАТИКА · СВЕТ = ПРАКТИКА', 'center')}</Layer>
+    <Layer at={rel(at, 'house') + 1.0} dur={rel(at, 'without') - rel(at, 'house') - 0.4}>{Tx(56, 716, 608, 14, '#d4cede', 'РАСТВОР = ГРАММАТИКА · СВЕТ = ПРАКТИКА', 'center')}</Layer>
     <Chip at={rel(at, 'without') + 0.7} dur={dur - rel(at, 'without') - 0.7} x={70} y={350} text="ГРАММАТИКА ×" color={C.red} size={18} />
     <Chip at={rel(at, 'without') + 1.1} dur={dur - rel(at, 'without') - 1.1} x={330} y={350} text="ПРАКТИКА ×" color={C.red} size={18} />
   </Sc>

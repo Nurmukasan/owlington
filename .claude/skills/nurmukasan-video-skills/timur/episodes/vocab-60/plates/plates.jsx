@@ -16,9 +16,11 @@ const pile = (x, y, n, k = 0, w = 16) => {
   o.push([x, y - n - 2, w, 2, CARD[k % 5]])
   return o
 }
+// a card lying ON the owl's head (in owl-sprite pixels: rows 0.5-4.5 over the forehead, tape strip down onto the head)
+const owlCard = (x, y, p, k = 3) => boxes([[3, 0.5, 10, 4, '#1a1424'], [3.5, 1, 9, 3, CARD[k]], [4.5, 1.8, 6, 0.5, '#6a6070'], [4.5, 2.8, 4, 0.5, '#a89aa0'], [7, 3.8, 2, 1.4, '#d4d4e0']], x, y, p)
 // cards stuck all over the bedroom wall (week 2+)
 const WALL = [[4, 84], [18, 90], [34, 82], [48, 92], [62, 86], [8, 104], [24, 110], [40, 102], [56, 108], [10, 124], [28, 128], [46, 122], [62, 130], [60, 34],
-  [88, 104], [104, 110], [120, 104], [134, 112], [96, 124], [116, 128], [136, 130], [4, 54], [20, 60], [38, 56], [12, 140], [32, 146], [70, 120]]
+  [88, 104], [104, 110], [120, 104], [134, 112], [96, 124], [116, 128], [136, 130], [12, 140], [32, 146], [70, 120]]
 const wallCards = (n = WALL.length) => WALL.slice(0, n).flatMap(([x, y], i) => card(x, y, i))
 
 // 1. night room: Timur at the desk with flashcards; level = how many cards (1 a few, 2 piles, 3 towers + wall)
@@ -30,11 +32,11 @@ const room = ({ level = 1, wall = 0, owl = 'open', owlCard = false, held = true,
   const N = level === 1 ? [3, 5] : level === 2 ? [12, 16] : [26, 30]
   d.push(...pile(36, 181, N[0], 0), ...pile(96, 181, N[1], 2))
   if (level >= 2) d.push(...pile(14, 181, N[0] - 4, 3, 14), ...pile(116, 181, N[1] - 6, 1, 14))
-  if (level >= 3) d.push(...card(30, 186, 1), ...card(52, 190, 3), ...card(84, 188, 0), ...card(110, 192, 4), ...card(-2, 194, 2), ...card(128, 186, 1))
+  if (level >= 3) d.push(...card(26, 214, 1), ...card(50, 224, 3), ...card(86, 218, 0), ...card(110, 228, 4), ...card(2, 232, 2), ...card(126, 212, 1))
   if (held) d.push(...card(64, 172, 1, 14, 9))
   out.push(boxes(d))
   out.push(Owl({ x: 94 * P, y: 74 * P, p: 5, eyes: owl }))
-  if (owlCard) out.push(boxes(card(95, 70, 3, 10, 6)))
+  if (owlCard) out.push(owlCard(94 * P, 74 * P, 5))
   return out
 }
 
@@ -57,7 +59,7 @@ const kitchen = ({ ...o } = {}) => {
   for (let y = 182; y < 280; y += 10) for (let x = -20; x < 170; x += 10) if (((x + y) / 10) % 2 === 0) k.push([x, y, 10, 10, '#b8a890'])
   k.push([60, -20, 1, 64, '#2e2a3c'], [51, 44, 20, 8, '#e8a040'], [53, 52, 16, 2, '#fff1a8'])
   return [boxes(k), glow(300, 330, 420, '#ffd88a', 0.3), Mom({ x: 110, y: 650, p: 9, mouth: 'closed' }), Boy({ x: 330, y: 760, p: 10, mode: 'arms', ...o }),
-    boxes([[-10, 202, 170, 5, '#f4f0e8'], [-10, 207, 170, 3, '#d8c8b0'], [-8, 210, 166, 70, '#b07a45']])]
+    boxes([[-10, 190, 170, 5, '#f4f0e8'], [-10, 195, 170, 3, '#d8c8b0'], [-8, 198, 166, 82, '#b07a45'], [-8, 198, 166, 2, '#8a5a32']])]
 }
 
 // 3. the bathroom mirror, cards round the frame; the owl on the sink with a card too
@@ -66,13 +68,14 @@ const mirror = ({ ...o } = {}) => [
   Boy({ x: 216, y: 517, p: 18, mode: 'arms', ...o }),
   boxes([[14, 179, 116, 3, '#d4cede'], [-20, 196, 190, 8, '#f4f0e8'],
     ...[[16, 20], [36, 18], [96, 20], [116, 24], [14, 40], [118, 44], [14, 66], [118, 70], [16, 150], [116, 150], [14, 128], [118, 120]].flatMap(([x, y], i) => card(x, y, i, 11, 7))]),
-  Owl({ x: 500, y: 980 - 20 * 7, p: 7, eyes: 'squint' }), boxes(card(103, 168, 1, 10, 6)),
+  Owl({ x: 500, y: 980 - 20 * 7, p: 7, eyes: 'squint' }), owlCard(500, 980 - 20 * 7, 7, 1),
 ]
 
 // 4. classroom: the teacher puzzled, Timur proud; the blackboard left clean for the overlay words
 const klass = ({ tm = 'closed', ...o } = {}) => [
   classroom(), boxes([[13, 43, 118, 56, '#24483a'], [16, 46, 112, 50, '#2a5242']]),
-  Teacher({ x: 70, y: 700, p: 9, mouth: tm }), Boy({ x: 450, y: 760, p: 9, mode: 'arms', ...o }), classDesks(),
+  Teacher({ x: 70, y: 731, p: 9, mouth: tm }), Boy({ x: 470, y: 730, p: 9, mode: 'arms', ...o }),
+  boxes([[84, 182, 66, 5, C.woodL], [84, 182, 66, 1, '#c89a65'], [86, 187, 62, 26, C.wood], [88, 189, 58, 1, '#7a4c2a'], [90, 213, 4, 60, C.woodD], [142, 213, 4, 60, C.woodD], [100, 178, 14, 4, '#f4f0e8'], [101, 179, 10, 1, '#9a8c70']]),
 ]
 
 // 5. the video call: Timur at the laptop (back of the lid), and the screen itself (Jake big, self-view top-left)
@@ -80,7 +83,7 @@ const call = ({ owl = 'open', ...o } = {}) => [
   bedroomNight(), boxes(wallCards()), lampGlow(600, 840, 360, 0.3),
   Boy({ x: 280, y: 650, p: 10, mode: 'arms', ...o }),
   glow(360, 760, 200, '#7fb4ff', 0.12),
-  deskFront({ y: 182 }), laptopBack(182), boxes([...pile(12, 181, 14, 0), ...pile(110, 181, 18, 2), ...card(30, 186, 1), ...card(100, 190, 3)]),
+  deskFront({ y: 182 }), laptopBack(182), boxes([...pile(12, 181, 14, 0), ...pile(110, 181, 18, 2), ...card(30, 214, 1), ...card(100, 224, 3)]),
   Owl({ x: 94 * P, y: 74 * P, p: 5, eyes: owl }),
 ]
 const screen = ({ jake = {}, me = {} } = {}) => [
@@ -122,16 +125,16 @@ const owlClose = (eyes, withCard = false) => [
   boxes([[-10, 178, 170, 9, '#4a2e1c'], [-10, 177, 170, 2, '#6a4428'], [-10, 186, 170, 2, '#3a2418'], [120, 170, 3, 8, '#4a2e1c'], [122, 166, 8, 3, '#4a2e1c'],
     ...disc(132, 164, 4, '#3f7a5a'), ...disc(138, 168, 3, '#4f8a4f'), ...disc(18, 172, 4, '#3f7a5a'), ...disc(12, 175, 3, '#4f8a4f'), [40, 184, 3, 8, '#4a2e1c'], ...disc(41, 194, 3, '#3f7a5a')]),
   Owl({ x: 216, y: 178 * P - 20 * 12, p: 12, eyes }),
-  withCard ? boxes([[46, 121, 26, 15, '#1a1424'], [47, 122, 24, 13, '#ffd8e0'], [50, 126, 18, 2, '#6a6070'], [50, 130, 12, 2, '#a89aa0']]) : null,
+  withCard ? owlCard(216, 178 * P - 20 * 12, 12) : null,
 ]
 const sky = () => [boxes(bands(['#070820', '#0b0c26', '#101236', '#16184a', '#1d1e56'], 0, 256, 0, 144)), boxes(stars(90, 0, 0, 144, 200, 31)), boxes(disc(126, 18, 13, '#22245e')), boxes(disc(126, 18, 10, C.cream)), boxes(disc(122, 15, 2, '#f0dca8')), boxes(disc(129, 22, 1, '#f0dca8')), boxes(skyline(-4, 256, 152, 3, ['#0c0d2a', '#101236', '#14153a'])), boxes(skyline(-4, 256, 152, 8, ['#16184a', '#1c2550', '#1d1e56']))]
 
 export const PLATES = {
-  max: room({ level: 3, wall: 27, eyes: 'wide', sweat: true, mouth: 'o', owlCard: true, owl: 'squint' }), max_b: room({ level: 3, wall: 27, eyes: 'closed', sweat: true, mouth: 'o', owlCard: true, owl: 'squint' }),
+  max: room({ level: 3, wall: 24, eyes: 'wide', sweat: true, mouth: 'o', owlCard: true, owl: 'squint' }), max_b: room({ level: 3, wall: 24, eyes: 'closed', sweat: true, mouth: 'o', owlCard: true, owl: 'squint' }),
   room: room({ eyes: 'down' }), room_b: room({ eyes: 'closed' }), room_open: room({ eyes: 'open', held: false }), room_smile: room({ eyes: 'happy', mouth: 'smile' }),
   room_wide: room({ eyes: 'wide', sweat: true, mouth: 'o' }), room_wide2: room({ eyes: 'wide', sweat: true, mouth: 'flat' }),
-  wall: room({ level: 2, wall: 27, eyes: 'happy', mouth: 'smile' }), wall_b: room({ level: 2, wall: 27, eyes: 'closed', mouth: 'smile' }),
-  pile: room({ level: 2, wall: 27, eyes: 'half', mouth: 'smile' }), pile_b: room({ level: 2, wall: 27, eyes: 'closed', mouth: 'smile' }),
+  wall: room({ level: 2, wall: 24, eyes: 'happy', mouth: 'smile' }), wall_b: room({ level: 2, wall: 24, eyes: 'closed', mouth: 'smile' }),
+  pile: room({ level: 2, wall: 24, eyes: 'half', mouth: 'smile' }), pile_b: room({ level: 2, wall: 24, eyes: 'closed', mouth: 'smile' }),
   kitchen: kitchen({ eyes: 'happy', mouth: 'smile' }), mirror: mirror({ eyes: 'happy', mouth: 'smile' }), mirror_talk: mirror({ mouth: 'open' }), mirror_talk2: mirror({ mouth: 'wide' }),
   klass: klass({ eyes: 'half', mouth: 'smile' }), klass_o: klass({ tm: 'o', eyes: 'half', mouth: 'smile' }),
   call: call(), call_blink: call({ eyes: 'closed' }), call_um: call({ eyes: 'wide', mouth: 'o', sweat: true }), call_um2: call({ eyes: 'wide', mouth: 'flat', sweat: true }),
