@@ -62,7 +62,7 @@ export function HookTitle({ y, text, size = 56, color = C.yellow, under = C.red 
 }
 // a big flashcard: English word + Russian translation
 export function Flash({ at, dur, en, ru, y = 300, col = '#fff3b0' }) {
-  const x = 150, w = 420, h = 190
+  const x = 60, w = 380, h = 190
   return (
     <Layer at={at} dur={dur} centre animate={popScale(0.18)}>
       <rect x={x + 8} y={y + 8} width={w} height={h} fill="#05060f" opacity={0.45} />

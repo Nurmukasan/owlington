@@ -21,12 +21,12 @@ const stamp = (dur, at, title, lines, mark, markAt, col = C.red) => (
     </Layer>
   </Layer>
 )
-// cards that fly away from his head to both sides (never across the face)
+// cards that fly away from his head, left of the owl and above his hair (never across a face)
 const flyAway = (at, dur, words) => words.map((w, i) => {
-  const left = i % 2 === 0, x = left ? 90 : 470, y = 560 - (i >> 1) * 70, d = Math.min(1.4, dur - i * 0.25)
+  const x = i % 2 === 0 ? 70 : 250, y = 600 - (i >> 1) * 40, d = Math.min(1.4, dur - i * 0.25)
   if (d < 0.3) return null
   return (
-    <Layer at={at + i * 0.25} dur={d} animate={[{ property: 'offsetY', keyframes: [{ at: 0, value: 40 }, { at: d, value: -220 }] }, { property: 'offsetX', keyframes: [{ at: 0, value: 0 }, { at: d, value: left ? -60 : 60 }] }, { property: 'opacity', keyframes: [{ at: 0, value: 0 }, { at: 0.1, value: 1 }, { at: d * 0.7, value: 1 }, { at: d, value: 0 }] }]}>
+    <Layer at={at + i * 0.25} dur={d} animate={[{ property: 'offsetY', keyframes: [{ at: 0, value: 0 }, { at: d, value: -200 }] }, { property: 'offsetX', keyframes: [{ at: 0, value: 0 }, { at: d, value: i % 2 === 0 ? -20 : 20 }] }, { property: 'opacity', keyframes: [{ at: 0, value: 0 }, { at: 0.1, value: 1 }, { at: d * 0.7, value: 1 }, { at: d, value: 0 }] }]}>
       <rect x={x - 4} y={y - 4} width={168} height={58} fill={C.ink} /><rect x={x} y={y} width={160} height={50} fill={['#fff3b0', '#d8ecff', '#ffd8e0', '#d8f5dc', '#fbf7ec'][i % 5]} />
       {Tx(x, y + 18, 160, w.length > 8 ? 11 : 14, C.ink, w, 'center')}
     </Layer>
@@ -45,7 +45,7 @@ const rain = (dur) => Array.from({ length: 12 }, (_, i) => {
 })
 
 // camera guard: keep the face bottom at y <= 800 (caption at 872) without showing the plate edge — face bottoms measured on the plates
-const FB = { room: 815, max: 815, wall: 815, pile: 815, kitchen: 875, klass: 836, call: 775 }
+const FB = { room: 815, max: 815, wall: 815, pile: 815, kitchen: 875, klass: 836, call: 775, owl: 790 }
 const Sc = ({ base, zoom = [1, 1.06], panY, ...o }) => {
   const fb = FB[base.split('_')[0]]
   if (!fb || panY) return Scene({ base, zoom, panY, ...o })
@@ -56,7 +56,7 @@ const Sc = ({ base, zoom = [1, 1.06], panY, ...o }) => {
 
 // --- shots ---------------------------------------------------------------
 export const SHOTS = []
-const shot = (t, fn) => SHOTS.push([t, fn])
+const shot = (t, fn) => SHOTS.push([t > 0 ? t - 0.08 : 0, fn])
 
 // 01 cold open — the title and the voice are there on frame 0
 shot(0, ({ at, dur }) => (
@@ -74,15 +74,15 @@ shot(T.u5, ({ at, dur }) => (
     <Layer at={0.1} dur={dur - 0.1} animate={popSlide()}>{hud('ДЕНЬ 0')}</Layer>
     {st(dur, '0', '-', 0.1)}
     <Chip at={0.05} dur={dur - 0.05} x={70} y={260} text="ВСЕЛЕННАЯ #5" color={C.red} size={20} />
-    {[['КНИГИ ×', 70], ['РАЗГОВОРЫ ×', 300]].map(([t, x], i) => <Chip at={rel(at, 'nobooks') + 0.4 + i * 0.5} dur={dur - rel(at, 'nobooks') - 0.4 - i * 0.5} x={x} y={350} text={t} color={C.grey2} size={16} />)}
-    <BigTitle at={rel(at, 'onlycards')} dur={dur - rel(at, 'onlycards')} y={470} text="ТОЛЬКО КАРТОЧКИ" size={32} />
+    {[['КНИГИ ×', 70], ['РАЗГОВОРЫ ×', 236]].map(([t, x], i) => <Chip at={rel(at, 'nobooks') + 0.4 + i * 0.5} dur={dur - rel(at, 'nobooks') - 0.4 - i * 0.5} x={x} y={330} text={t} color={C.grey2} size={16} />)}
+    <BigTitle at={rel(at, 'onlycards')} dur={dur - rel(at, 'onlycards')} y={530} text="ТОЛЬКО КАРТОЧКИ" size={32} />
   </Sc>
 ))
 // 03 day 0: mock speaking, 5.0
 shot(T.day0, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="examB_um" zoom={[1.0, 1.06]} swaps={every('examB_blink', dur, 1.3, 0.14, 0.9)}>
     {hud('ДЕНЬ 0')}{st(dur, '0', '-')}
-    <BigTitle at={0.05} dur={rel(at, 'probe') + 0.6} y={270} text="ДЕНЬ 0" size={56} />
+    <BigTitle at={0.05} dur={rel(at, 'probe')} y={260} text="ДЕНЬ 0" size={56} />
     {stamp(dur, rel(at, 'probe'), 'MOCK · SPEAKING', [['ПАУЗЫ: 14', 0.25], ['«ЭЭЭ...»: 22', 0.45]], '5.0', Math.max(0.5, rel(at, 's5') - rel(at, 'probe')))}
     <Chip at={rel(at, 'decided')} dur={dur - rel(at, 'decided')} x={150} y={580} text="НЕ ХВАТАЕТ СЛОВ?" color={C.gold} fg={C.ink} size={20} />
   </Sc>
@@ -103,14 +103,14 @@ shot(T.day1, ({ at, dur }) => {
     <Sc at={at} dur={dur} base="room" zoom={[1.0, 1.1]} swaps={every('room_b', dur, 1.6, 0.14, 1.2)}>
       {hud('ДЕНЬ 1', 1)}
       {st(rel(at, 'twoh'), '0', '-')}{st(dur, '50', '100%', rel(at, 'twoh'), [[0, 0], [1, 0]])}
-      <BigTitle at={0.05} dur={Math.max(0.3, rel(at, 'words') - 0.05)} y={300} text="ДЕНЬ 1" size={56} />
+      <BigTitle at={0.05} dur={Math.max(0.3, rel(at, 'words') - 0.05)} y={250} text="ДЕНЬ 1" size={56} />
       {EN.map(([en, ru], i) => {
         const t0 = ws[i] ? ws[i][1] - at - 0.05 : rel(at, 'words') + i * 0.9
         const t1 = i + 1 < EN.length ? (ws[i + 1] ? ws[i + 1][1] - at - 0.05 : t0 + 0.9) : rel(at, 'twoh')
         return <Flash at={t0} dur={Math.max(0.2, t1 - t0)} en={en} ru={ru} y={300} col={cs[i]} />
       })}
-      <Chip at={rel(at, 'twoh')} dur={dur - rel(at, 'twoh')} x={250} y={290} text="2 ЧАСА" color={C.navy3} size={20} />
-      <Steps at={rel(at, 'twoh')} dur={dur - rel(at, 'twoh')} t1={rel(at, 'twoh') + 1.0} values={['10/50', '30/50', '50/50']} x={0} y={400} size={48} color={C.mintL} />
+      <Chip at={rel(at, 'twoh')} dur={dur - rel(at, 'twoh')} x={70} y={270} text="2 ЧАСА" color={C.navy3} size={20} />
+      <Steps at={rel(at, 'twoh')} dur={dur - rel(at, 'twoh')} t1={rel(at, 'twoh') + 1.0} values={['10/50', '30/50', '50/50']} x={56} w={400} y={360} size={48} color={C.mintL} />
     </Sc>
   )
 })
@@ -118,9 +118,9 @@ shot(T.day1, ({ at, dur }) => {
 shot(T.morning, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="room_wide" zoom={[1.08, 1.18]} panY={[0, -20]} swaps={[['room_wide2', dur * 0.6, dur]]}>
     {hud('ДЕНЬ 2', 1)}{st(dur, '50', '50%', 0, [[1, 0.6]])}
-    <Chip at={0.05} dur={dur - 0.05} x={260} y={270} text="УТРО" color={C.gold} fg={C.ink} size={22} />
+    <Chip at={0.05} dur={dur - 0.05} x={70} y={250} text="УТРО" color={C.gold} fg={C.ink} size={22} />
     {flyAway(0.3, dur - 0.3, ['ABANDON', 'ABUNDANT', 'ABILITY', 'ACCOMPLISH'])}
-    <Steps at={0.6} dur={dur - 0.6} t1={Math.max(0.8, dur - 0.5)} values={['50', '41', '33', '25']} x={0} y={360} size={56} color={C.red} />
+    <Steps at={0.6} dur={dur - 0.6} t1={Math.max(0.8, dur - 0.5)} values={['50', '41', '33', '25']} x={200} w={240} y={250} size={56} color={C.red} />
   </Sc>
 ))
 // 07 twist: the forgetting curve
@@ -153,8 +153,8 @@ shot(T.owlw, ({ at, dur }) => (
 shot(T.week2, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="wall" zoom={[1.0, 1.08]} swaps={every('wall_b', dur, 1.2, 0.14, 0.8)}>
     {hud('НЕДЕЛЯ 2', 2)}{st(dur, '700', '80%')}
-    <BigTitle at={0.05} dur={dur - 0.05} y={280} text="НЕДЕЛЯ 2" size={48} />
-    <Chip at={0.6} dur={dur - 0.6} x={120} y={380} text="КАРТОЧКИ ВЕЗДЕ" color={C.red} size={22} />
+    <BigTitle at={0.05} dur={dur - 0.05} y={250} text="НЕДЕЛЯ 2" size={48} />
+    <Chip at={0.6} dur={dur - 0.6} x={70} y={330} text="КАРТОЧКИ ВЕЗДЕ" color={C.red} size={22} />
   </Sc>
 ))
 shot(T.fridge - 0.1, ({ at, dur }) => (
@@ -178,9 +178,9 @@ shot(T.onowl - 0.15, ({ at, dur }) => (
 shot(T.day30, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="pile" zoom={[1.0, 1.08]} swaps={every('pile_b', dur, 1.3, 0.14, 0.9)}>
     {hud('ДЕНЬ 30', 3)}{st(dur, '1500', '85%', 0, [[0, 0.1]])}
-    <BigTitle at={0.05} dur={dur - 0.05} y={280} text="ДЕНЬ 30" size={52} />
-    <Steps at={0.6} dur={dur - 0.6} t1={Math.max(0.8, rel(at, 'w1500') + 0.5)} values={['700', '1000', '1300', '1500']} x={0} y={390} size={52} color={C.yellow} />
-    <Layer at={0.6} dur={dur - 0.6}>{Tx(0, 460, W, 18, C.white, 'СЛОВ', 'center')}</Layer>
+    <BigTitle at={0.05} dur={dur - 0.05} y={250} text="ДЕНЬ 30" size={52} />
+    <Steps at={0.6} dur={dur - 0.6} t1={Math.max(0.8, rel(at, 'w1500') + 0.5)} values={['700', '1000', '1300', '1500']} x={56} w={400} y={340} size={52} color={C.yellow} />
+    <Layer at={0.6} dur={dur - 0.6}>{Tx(56, 410, 400, 18, C.white, 'СЛОВ', 'center')}</Layer>
   </Sc>
 ))
 shot(T.teacher, ({ at, dur }) => (
@@ -196,7 +196,7 @@ shot(T.teacher, ({ at, dur }) => (
 shot(T.day45, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="call" zoom={[1.0, 1.06]} swaps={blinks('call_blink', [1.0])}>
     {hud('ДЕНЬ 45', 4)}{st(dur, '2250', '90%')}
-    <BigTitle at={0.05} dur={dur - 0.05} y={270} text="ДЕНЬ 45" size={52} />
+    <BigTitle at={0.05} dur={dur - 0.05} y={250} text="ДЕНЬ 45" size={52} />
     <Message at={rel(at, 'callw')} dur={dur - rel(at, 'callw')} from="JAKE · МАНЧЕСТЕР" text="Входящий видеозвонок..." y={360} />
   </Sc>
 ))
@@ -210,11 +210,11 @@ shot(T.jake - 0.05, ({ at, dur }) => (
 ))
 shot(SJ, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="call_um" zoom={[1.05, 1.12]} swaps={every('call_um2', dur, 0.9, 0.4, 0.5)}>
-    <Say at={0.05} dur={dur - 0.05} y={300} en="I... weekend... I go... ubiquitous...?" ru="«Я... выходные... я идти... вездесущий...?»" name="ТИМУР" tab={C.red} />
+    <Say at={0.05} dur={dur - 0.05} y={250} w={390} en="I... weekend... I go... ubiquitous...?" ru="«Я... выходные... я идти... вездесущий...?»" name="ТИМУР" tab={C.red} />
   </Sc>
 ))
 // 12 he knew every word of the question — and couldn't answer
-const QW = [['WHAT', 70, 260], ['DID', 330, 260], ['YOU', 70, 340], ['DO', 330, 340], ['LAST', 70, 420], ['WEEKEND', 300, 420]]
+const QW = [['WHAT', 70, 240], ['DID', 280, 240], ['YOU', 70, 320], ['DO', 280, 320], ['LAST', 70, 400], ['WEEKEND', 240, 400]]
 shot(T.knew, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="call_um2" zoom={[1.12, 1.2]} panY={[-30, -50]}>
     {st(dur, '2250', '90%', 0, [[2, rel(at, 'couldnt')]])}
@@ -261,7 +261,7 @@ shot(T.result, ({ at, dur }) => {
       <Scores5 at={0.2} dur={dur - 0.2} rows={[['READING', 5.0, 6.5, C.yellow], ['LISTENING', 5.0, 5.5, C.blue3], ['WRITING', 5.0, 5.0, C.mint], ['SPEAKING', 5.0, 5.0, '#f08a9a']]}
         times={[rel(at, 'rR') - 0.2, rel(at, 'rL') - 0.2, rel(at, 'rW') - 0.2, rel(at, 'rS') - 0.2]} />
       {notes.map(([k, s, col], i) => {
-        const a = rel(at, k), b = i + 1 < notes.length ? rel(at, notes[i + 1][0]) : rel(at, 'overall')
+        const a = rel(at, k), b = rel(at, ['rL', 'rW', 'overall'][i])
         return <Layer at={a} dur={Math.max(0.1, b - a)} centre animate={popScale(0.2)}>{box(80, 706, 560, 56, col, C.navy1)}{Tx(80, 724, 560, 18, col, s, 'center')}</Layer>
       })}
       <Layer at={rel(at, 'overall')} dur={dur - rel(at, 'overall')} centre animate={popScale(0.35)}>{box(170, 700, 380, 110, C.red, C.navy1)}{Tx(190, 740, 200, 22, C.white, 'ОБЩИЙ')}{Tx(360, 726, 170, 52, C.red, '5.5', 'right')}</Layer>
@@ -271,9 +271,9 @@ shot(T.result, ({ at, dur }) => {
 // 16 the lesson
 shot(T.power, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="wall" zoom={[1.0, 1.08]} swaps={every('wall_b', dur, 1.4, 0.14, 1.0)}>
-    <BigTitle at={0.05} dur={dur - 0.05} y={280} text="3000 СЛОВ = СИЛА" size={30} />
+    <BigTitle at={0.05} dur={dur - 0.05} y={250} text="3000 СЛОВ = СИЛА" size={30} />
     <Layer at={rel(at, 'notyours')} dur={dur - rel(at, 'notyours')} centre animate={popScale(0.3)}>
-      {box(90, 380, 540, 170, C.red, C.navy1)}{Tx(90, 404, 540, 18, C.white, 'НЕ СКАЗАЛ ВСЛУХ', 'center')}{Tx(90, 470, 540, 30, C.red, '→ НЕ ТВОЁ', 'center')}
+      {box(90, 500, 540, 150, C.red, C.navy1)}{Tx(90, 522, 540, 18, C.white, 'НЕ СКАЗАЛ ВСЛУХ', 'center')}{Tx(90, 580, 540, 30, C.red, '→ НЕ ТВОЁ', 'center')}
     </Layer>
   </Sc>
 ))
@@ -283,12 +283,12 @@ shot(T.tips, ({ at, dur }) => {
   return (
     <Sc at={at} dur={dur} base="mirror_talk" zoom={[1.0, 1.06]} swaps={every('mirror_talk2', dur, 0.5, 0.25, 0.3)}>
       <Layer at={0.05} dur={f - 0.05} animate={popSlide()}>
-        {box(70, 250, 580, 280, C.mint, C.navy1)}{Tx(70, 270, 580, 18, C.mintL, 'КАК УЧИТЬ СЛОВА', 'center')}
-        {rows.map(([k, s], i) => <Layer at={Math.max(0.1, rel(at, k) - 0.05)} dur={Math.max(0.05, f - 0.05 - Math.max(0.1, rel(at, k) - 0.05))}>{Tx(100, 330 + i * 64, 540, 18, C.white, s)}</Layer>)}
+        {box(70, 140, 580, 270, C.mint, C.navy1)}{Tx(70, 160, 580, 18, C.mintL, 'КАК УЧИТЬ СЛОВА', 'center')}
+        {rows.map(([k, s], i) => <Layer at={Math.max(0.1, rel(at, k) - 0.05)} dur={Math.max(0.05, f - 0.05 - Math.max(0.1, rel(at, k) - 0.05))}>{Tx(100, 220 + i * 64, 540, 18, C.white, s)}</Layer>)}
       </Layer>
       <Layer at={f} dur={dur - f} centre animate={popScale(0.3)}>
-        {box(90, 270, 540, 250, C.yellow, C.navy1)}
-        {Tx(90, 300, 540, 40, C.mintL, '5 ВСЛУХ', 'center')}{Tx(90, 372, 540, 30, C.white, '>', 'center')}{Tx(90, 430, 540, 24, C.grey3, '50 НА КАРТОЧКЕ', 'center')}
+        {box(90, 150, 540, 250, C.yellow, C.navy1)}
+        {Tx(90, 180, 540, 40, C.mintL, '5 ВСЛУХ', 'center')}{Tx(90, 252, 540, 30, C.white, '>', 'center')}{Tx(90, 310, 540, 24, C.grey3, '50 НА КАРТОЧКЕ', 'center')}
       </Layer>
     </Sc>
   )

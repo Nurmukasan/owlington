@@ -65,12 +65,12 @@ const kitchen = ({ ...o } = {}) => {
 }
 
 // 3. the bathroom mirror, cards round the frame; the owl on the sink with a card too
-const mirror = ({ ...o } = {}) => [
+const mirror = ({ owl = true, ...o } = {}) => [
   bathroom(), mirrorInside(), glow(360, 420, 300, '#ffe7a8', 0.18),
   Boy({ x: 216, y: 517, p: 18, mode: 'arms', ...o }),
   boxes([[14, 179, 116, 3, '#d4cede'], [-20, 196, 190, 8, '#f4f0e8'],
     ...[[16, 20], [36, 18], [96, 20], [116, 24], [14, 40], [118, 44], [14, 66], [118, 70], [16, 150], [116, 150], [14, 128], [118, 120]].flatMap(([x, y], i) => card(x, y, i, 11, 7))]),
-  Owl({ x: 500, y: 980 - 20 * 7, p: 7, eyes: 'squint' }), cardOnOwl(500, 980 - 20 * 7, 7, 1),
+  ...(owl ? [Owl({ x: 500, y: 980 - 20 * 7, p: 7, eyes: 'squint' }), cardOnOwl(500, 980 - 20 * 7, 7, 1)] : []),
 ]
 
 // 4. classroom: the teacher puzzled, Timur proud; the blackboard left clean for the overlay words
@@ -110,7 +110,7 @@ const STU = ['#2a1c18', '#d0a040', '#1a1a24', '#5a3a22', '#8a5a3a', '#3a2418', '
 const hall = () => {
   const out = [examHall(), Invigilator({ x: 560, y: 398, p: 7 })]
   let n = 0
-  for (let r = 0; r < 3; r++) for (let c = 0; c < 4; c++) {
+  for (let r = 0; r < 2; r++) for (let c = 0; c < 4; c++) {
     const p = 4 + r, x = 20 + c * 180 + (r % 2) * 40, y = 640 + r * 150, me1 = r === 1 && c === 1
     out.push(me1 ? Boy({ x, y: y - 21 * p, p, mode: 'write', eyes: 'down' }) : Person({ x, y: y - 21 * p, p, hair: STU[n++ % STU.length], shirt: '#605f71', eyes: 'down', style: n % 3 ? 'short' : 'long' }))
     out.push(boxes([[0, 0, 22, 3, me1 ? C.woodL : '#7a7888'], [1, 3, 20, 10, me1 ? C.wood : '#5d5b70'], [4, -1, 12, 1, '#f4f0e8']], x - 3 * p, y, p))
@@ -137,7 +137,7 @@ export const PLATES = {
   room_wide: room({ eyes: 'wide', sweat: true, mouth: 'o' }), room_wide2: room({ eyes: 'wide', sweat: true, mouth: 'flat' }),
   wall: room({ level: 2, wall: 24, eyes: 'happy', mouth: 'smile' }), wall_b: room({ level: 2, wall: 24, eyes: 'closed', mouth: 'smile' }),
   pile: room({ level: 2, wall: 24, eyes: 'half', mouth: 'smile' }), pile_b: room({ level: 2, wall: 24, eyes: 'closed', mouth: 'smile' }),
-  kitchen: kitchen({ eyes: 'happy', mouth: 'smile' }), mirror: mirror({ eyes: 'happy', mouth: 'smile' }), mirror_talk: mirror({ mouth: 'open' }), mirror_talk2: mirror({ mouth: 'wide' }),
+  kitchen: kitchen({ eyes: 'happy', mouth: 'smile' }), mirror: mirror({ eyes: 'happy', mouth: 'smile' }), mirror_talk: mirror({ owl: false, mouth: 'open' }), mirror_talk2: mirror({ owl: false, mouth: 'wide' }),
   klass: klass({ eyes: 'half', mouth: 'smile' }), klass_o: klass({ tm: 'o', eyes: 'half', mouth: 'smile' }),
   call: call(), call_blink: call({ eyes: 'closed' }), call_um: call({ eyes: 'wide', mouth: 'o', sweat: true }), call_um2: call({ eyes: 'wide', mouth: 'flat', sweat: true }),
   screen: screen(), screen_talk: screen({ jake: { mouth: 'open' } }), screen_q: screen({ jake: { brow: 'up' }, me: { eyes: 'wide', sweat: true } }),
