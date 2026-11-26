@@ -29,18 +29,21 @@ function face({ eyes = 'open', mouth = 'closed', ink = C.ink, lip = '#b0604f', x
 }
 
 // Timur, front. mode: stand | arms (forearms on a desk) | phone (phone up in his right hand) | point | gesture
-export function boyParts({ mode = 'stand', mouth = 'closed', eyes = 'open', phones = false, sweat = false, grey = false, saiyan = false, blush = false, bags = false } = {}) {
-  const red = grey ? '#8d8b9c' : C.red, redD = grey ? '#6e6c7d' : C.redD
-  const hair = saiyan === 1 ? '#d8a838' : saiyan ? '#ffd23f' : grey ? '#55536a' : HAIR, skin = grey ? '#b9b7c6' : SKIN
+export function boyParts({ mode = 'stand', mouth = 'closed', eyes = 'open', phones = false, sweat = false, grey = false, saiyan = false, blush = false, bags = false, pale = false } = {}) {
+  const red = grey ? '#8d8b9c' : pale ? '#b8464e' : C.red, redD = grey ? '#6e6c7d' : pale ? '#8a3038' : C.redD
+  const hair = saiyan === 1 ? '#d8a838' : saiyan ? '#ffd23f' : grey ? '#55536a' : HAIR, skin = grey ? '#b9b7c6' : pale ? '#ecd6c6' : SKIN
   if (mode === 'sleepdesk') {
-    // asleep face-down on folded arms (on a desk/keyboard): back and shoulders, arms in front, head turned to the side
+    // asleep at the desk, front view: head down on folded arms, eyes shut, a little drool; same face/colours as always
     const o = [
-      [1, 11, 14, 7, red], [2, 11, 12, 1, redD, 1],
-      [3, 7, 10, 8, skin], [3, 5, 10, 4, hair], [2, 6, 2, 7, hair], [3, 5, 6, 1, HAIRL, 1],
-      [9, 11, 2, 1, C.ink, 1], [8, 12, 1, 1, bags ? '#a0708a' : skin, 1], [11, 13, 1, 2, '#9fd3ff', 1],
-      [0, 15, 16, 5, red], [0, 15, 16, 1, '#e8505a', 1], [1, 18, 3, 2, skin], [12, 18, 3, 2, skin],
+      [1, 13, 14, 6, red], [2, 13, 12, 1, redD, 1],
+      [3, 6, 10, 5, hair], [2, 8, 1, 5, hair], [13, 8, 1, 5, hair], [4, 6, 6, 1, HAIRL, 1],
+      [3, 10, 10, 5, skin], [3, 10, 10, 1, hair, 1], [3, 11, 3, 1, hair, 1], [9, 11, 3, 1, hair, 1],
+      [5, 12, 2, 1, C.ink, 1], [9, 12, 2, 1, C.ink, 1], [3, 13, 1, 1, '#f0a08a', 1], [12, 13, 1, 1, '#f0a08a', 1],
+      [7, 14, 2, 1, MOUTH, 1], [8, 15, 1, 2, '#9fd3ff', 1],
+      [0, 15, 16, 4, red], [0, 15, 16, 1, pale ? '#d06068' : '#e8505a', 1], [2, 15, 3, 2, skin], [11, 15, 3, 2, skin],
     ]
-    if (phones) o.push([2, 3, 12, 2, '#2e2a3c'], [1, 7, 2, 5, '#2e2a3c'], [1, 8, 1, 3, C.mint, 1])
+    if (bags) o.push([4, 13, 2, 1, '#a0708a', 1], [10, 13, 2, 1, '#a0708a', 1])
+    if (phones) o.push([2, 5, 12, 2, '#2e2a3c'], [3, 5, 6, 1, '#4a4660', 1], [1, 9, 2, 5, '#2e2a3c'], [13, 9, 2, 5, '#2e2a3c'], [1, 10, 1, 3, C.mint, 1], [14, 10, 1, 3, C.mint, 1])
     return o
   }
   const parts = [
