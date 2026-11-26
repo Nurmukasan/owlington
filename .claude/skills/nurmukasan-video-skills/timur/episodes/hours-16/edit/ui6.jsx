@@ -197,7 +197,7 @@ export function RuleCard({ at, dur, title, sub, tab, y = 292, color = C.yellow }
       {Tx(x + 28, y - 28, 320, 14, C.ink, tab)}
       <rect x={x + 14} y={y + 14} width={84} height={84} fill={C.navy3} />
       {sprite(BOOK, BOOK_PAL, x + 20, y + 35, 6)}
-      {Tx(x + 112, y + 18, w - 124, 18, C.white, title)}
+      {Tx(x + 112, y + (title.length > 10 ? 18 : 14), w - 124, title.length > 10 ? 18 : 24, C.white, title)}
       {Tx(x + 112, y + 52, w - 124, 14, color, sub)}
       <rect x={x + 112} y={y + 82} width={w - 128} height={10} fill="#3a3a6e" />
       <rect x={x + 112} y={y + 82} width={w - 128} height={10} fill={color} origin="top-left" animate={[{ property: 'scaleX', keyframes: [{ at: 0, value: 0 }, { at: 0.2, value: 0 }, { at: 0.75, value: 1, easing: 'ease-out' }] }]} />

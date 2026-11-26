@@ -43,7 +43,7 @@ const room = ({ level = 0, day = false, owl = 'open', lamp = true, ...o } = {}) 
   Boy({ x: 280, y: 700, p: 10, mode: 'write', ...o }), deskFront({ y: DESK, lamp }),
   boxes([[44, 175, 22, 7, '#2e3a6a'], [45, 175, 10, 6, '#fbf7ec'], [56, 175, 10, 6, '#f4efe2'], [55, 175, 1, 7, '#9a8c70']]),
   ...clutter(level),
-  Owl({ x: 94 * P, y: 74 * P, p: 5, eyes: owl }),
+  owl ? Owl({ x: 94 * P, y: 74 * P, p: 5, eyes: owl }) : null,
 ]
 // 2. asleep at the desk (front view, head on his arms); the owl either on the sill or on the desk by the lamp
 // lamp: false = the owl switched it off: same desk and props, the lamp stays but goes dark and the room dims
@@ -102,7 +102,7 @@ const sky = () => [boxes(bands(['#070820', '#0b0c26', '#101236', '#16184a', '#1d
 
 const T1 = { pale: true, bags: true }
 export const PLATES = {
-  hook: room({ level: 3, eyes: 'wide', mouth: 'flat', phones: true, owl: 'closed', ...T1 }), hook_b: room({ level: 3, eyes: 'closed', mouth: 'flat', phones: true, owl: 'closed', ...T1 }),
+  hook: room({ level: 3, eyes: 'wide', mouth: 'flat', phones: true, owl: null, ...T1 }), hook_b: room({ level: 3, eyes: 'closed', mouth: 'flat', phones: true, owl: null, ...T1 }),
   fresh: room({ day: true, eyes: 'open', mouth: 'smile' }), fresh_b: room({ day: true, eyes: 'closed', mouth: 'smile' }), fire: room({ day: true, eyes: 'fierce', mouth: 'grin' }),
   read: room({ level: 1, eyes: 'down', phones: true }), write: room({ level: 1, eyes: 'fierce', mouth: 'flat' }),
   happy: room({ level: 1, eyes: 'happy', mouth: 'smile' }), happy_b: room({ level: 1, eyes: 'closed', mouth: 'smile' }),
