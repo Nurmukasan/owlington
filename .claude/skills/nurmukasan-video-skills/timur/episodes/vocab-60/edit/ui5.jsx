@@ -262,7 +262,7 @@ export function HouseWorld({ dur, tHouse, tMortarOff, tLightsOff, tCollapse }) {
   // roof steps drop in; chimney with smoke while the lights are on
   for (let k = 0; k < 8; k++) {
     const a = tHouse + 0.55 + k * 0.03
-    out.push(<Layer at={a} dur={gone - a} animate={[{ property: 'offsetY', keyframes: [{ at: 0, value: -90 }, { at: 0.18, value: 0, easing: 'ease-in' }, { at: tCollapse - a, value: 0 }, { at: tCollapse - a + 0.3, value: 260, easing: 'ease-in' }] }]}>
+    out.push(<Layer at={a} dur={tCollapse - a + 0.32} animate={[{ property: 'offsetY', keyframes: [{ at: 0, value: -90 }, { at: 0.18, value: 0, easing: 'ease-in' }, { at: tCollapse - a, value: 0 }, { at: tCollapse - a + 0.3, value: 260, easing: 'ease-in' }] }]}>
       <rect x={(13 + 5 * k) * Q} y={(113 - 4 * k) * Q} width={(84 - 10 * k) * Q} height={4 * Q} fill={k % 2 ? '#8a2f2a' : '#a8413a'} />
       <rect x={(13 + 5 * k) * Q} y={(113 - 4 * k) * Q} width={(84 - 10 * k) * Q} height={Q} fill={k % 2 ? '#a8413a' : '#c8564a'} />
     </Layer>)
@@ -278,7 +278,8 @@ export function HouseWorld({ dur, tHouse, tMortarOff, tLightsOff, tCollapse }) {
     </Layer>)
   }
   // dust when it all comes down
-  out.push(<Layer at={tCollapse + 0.3} dur={Math.max(0.1, Math.min(0.9, dur - tCollapse - 0.3))} animate={[{ property: 'opacity', keyframes: [{ at: 0, value: 0 }, { at: 0.15, value: 0.7 }, { at: 0.8, value: 0 }] }]}>
+  const dd0 = Math.max(0.3, Math.min(0.9, dur - tCollapse - 0.3))
+  out.push(<Layer at={tCollapse + 0.3} dur={dd0} animate={[{ property: 'opacity', keyframes: [{ at: 0, value: 0 }, { at: dd0 * 0.2, value: 0.7 }, { at: dd0, value: 0 }] }]}>
     {[[14, 150], [30, 146], [70, 148], [88, 150], [50, 140]].map(([x, y]) => <rect x={x * Q} y={y * Q} width={12 * Q} height={6 * Q} fill="#c8b8a0" />)}
   </Layer>)
   return out
