@@ -29,9 +29,20 @@ function face({ eyes = 'open', mouth = 'closed', ink = C.ink, lip = '#b0604f', x
 }
 
 // Timur, front. mode: stand | arms (forearms on a desk) | phone (phone up in his right hand) | point | gesture
-export function boyParts({ mode = 'stand', mouth = 'closed', eyes = 'open', phones = false, sweat = false, grey = false, saiyan = false, blush = false } = {}) {
+export function boyParts({ mode = 'stand', mouth = 'closed', eyes = 'open', phones = false, sweat = false, grey = false, saiyan = false, blush = false, bags = false } = {}) {
   const red = grey ? '#8d8b9c' : C.red, redD = grey ? '#6e6c7d' : C.redD
   const hair = saiyan === 1 ? '#d8a838' : saiyan ? '#ffd23f' : grey ? '#55536a' : HAIR, skin = grey ? '#b9b7c6' : SKIN
+  if (mode === 'sleepdesk') {
+    // asleep face-down on folded arms (on a desk/keyboard): back and shoulders, arms in front, head turned to the side
+    const o = [
+      [1, 11, 14, 7, red], [2, 11, 12, 1, redD, 1],
+      [3, 7, 10, 8, skin], [3, 5, 10, 4, hair], [2, 6, 2, 7, hair], [3, 5, 6, 1, HAIRL, 1],
+      [9, 11, 2, 1, C.ink, 1], [8, 12, 1, 1, bags ? '#a0708a' : skin, 1], [11, 13, 1, 2, '#9fd3ff', 1],
+      [0, 15, 16, 5, red], [0, 15, 16, 1, '#e8505a', 1], [1, 18, 3, 2, skin], [12, 18, 3, 2, skin],
+    ]
+    if (phones) o.push([2, 3, 12, 2, '#2e2a3c'], [1, 7, 2, 5, '#2e2a3c'], [1, 8, 1, 3, C.mint, 1])
+    return o
+  }
   const parts = [
     [3, 1, 10, 5, hair], [2, 3, 1, 5, hair], [13, 3, 1, 4, hair],
     [3, 4, 10, 7, skin],
@@ -51,6 +62,7 @@ export function boyParts({ mode = 'stand', mouth = 'closed', eyes = 'open', phon
   if (saiyan) parts.push([4, 6, 3, 1, hair, 1], [9, 6, 3, 1, hair, 1])
   if (blush) parts.push([3, 9, 2, 1, '#f07a7a', 1], [11, 9, 2, 1, '#f07a7a', 1])
   if (sweat) parts.push([14, 3, 1, 2, '#9fd3ff'], [14, 5, 1, 1, '#ffffff', 1])
+  if (bags) parts.push([4, 9, 2, 1, '#a0708a', 1], [10, 9, 2, 1, '#a0708a', 1])
   const legs = () => parts.push([4, 21, 8, 7, JEANS], [7, 23, 2, 5, JEANSD, 1], [3, 28, 4, 2, C.white], [9, 28, 4, 2, C.white])
   if (mode === 'game') {
     parts.push([1, 13, 2, 5, red], [13, 13, 2, 5, red], [2, 17, 3, 3, skin], [11, 17, 3, 3, skin], [4, 16, 8, 4, '#1a1424'], [5, 17, 6, 2, '#5d99ea', 1], [6, 17, 2, 1, '#ffd23f', 1])
