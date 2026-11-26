@@ -26,7 +26,9 @@ chunks, cur = [], []
 for i, t in enumerate(toks):
     cur.append(i)
     gap_next = (start[i + 1] - end[i]) if i + 1 < len(toks) else 9
-    if re.search(r'[.?!…»]$', t) or (re.search(r'[,:]$', t) and len(cur) >= 4) or len(cur) >= 6 or gap_next > 1.5:
+    L = len(' '.join(toks[k] for k in cur)); nx = toks[i + 1] if i + 1 < len(toks) else ''
+    ends_next = bool(re.search(r'[.?!…»]$', nx)) and L + 1 + len(nx) <= 34
+    if re.search(r'[.?!…»]$', t) or (re.search(r'[,:]$', t) and len(cur) >= 3 and L >= 14) or (L >= 22 and not ends_next) or L >= 32 or gap_next > 1.5:
         chunks.append(cur); cur = []
 if cur: chunks.append(cur)
 REP = [('шестьдесят дней', '60 дней'), ('По пятьдесят', 'По 50'), ('Три тысячи слов', '3000 слов'), ('номер пять', '#5'), ('День ноль', 'День 0'), ('день ноль', 'день 0'),
