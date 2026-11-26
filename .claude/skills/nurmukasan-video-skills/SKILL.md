@@ -142,6 +142,6 @@ The cheap format: every frame is drawn with code (no image/video credits), only 
 
 ## 10. Episode history
 
-Timur 60 days: Reading R 8.5 → overall 7.0; Speaking S 8.0 (L7 R6 W6) → 7.0; Writing W 8.0 (R6 S6 L5.5) → 6.5; Listening L 9.0 (S8 R6.5 W6) → 7.5; Vocab-only (universe #5, 3000 words): R 6.5, L 5.5, W 5.0, S 5.0 → 5.5 (lesson: words need sentences, listening and speaking out loud). Final video v2 media 94d8cc1e-2d13-450b-9c45-031283d3faef, 1:46 (v1 0546fb35 had a card floating over the owl).
+Timur 60 days: Reading R 8.5 → overall 7.0; Speaking S 8.0 (L7 R6 W6) → 7.0; Writing W 8.0 (R6 S6 L5.5) → 6.5; Listening L 9.0 (S8 R6.5 W6) → 7.5; Vocab-only (universe #5, 3000 words): R 6.5, L 5.5, W 5.0, S 5.0 → 5.5 (lesson: words need sentences, listening and speaking out loud). Final video v3 media 5b4cfe56-456a-404e-ba3a-e439629cc0c4, 1:46 (v1 0546fb35: card floating over the owl; v2 94d8cc1e: falling cards vanished mid-desk because they were in screen space while the camera zoomed).
 Katya one week: L 8.0, R 8.0, W 6.5, S 7.0 → 7.5 (mock 5.5 three months before; level B2-C1).
 Next ideas the audience asked for: «прокачать всё сразу», new heroes, «что если…» ideas tied to IELTS (неделя до экзамена, только ИИ, только игры и сериалы, сдать 5 раз подряд).
