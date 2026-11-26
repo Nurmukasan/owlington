@@ -78,7 +78,7 @@ const klass = ({ tm = 'closed', ...o } = {}) => [
 // 5. the video call: Timur at the laptop (back of the lid), and the screen itself (Jake big, self-view top-left)
 const call = ({ owl = 'open', ...o } = {}) => [
   bedroomNight(), boxes(wallCards()), lampGlow(600, 840, 360, 0.3),
-  Boy({ x: 280, y: 690, p: 10, mode: 'arms', ...o }),
+  Boy({ x: 280, y: 650, p: 10, mode: 'arms', ...o }),
   glow(360, 760, 200, '#7fb4ff', 0.12),
   deskFront({ y: 182 }), laptopBack(182), boxes([...pile(12, 181, 14, 0), ...pile(110, 181, 18, 2), ...card(30, 186, 1), ...card(100, 190, 3)]),
   Owl({ x: 94 * P, y: 74 * P, p: 5, eyes: owl }),
