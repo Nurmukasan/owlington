@@ -1,6 +1,6 @@
 // UI for universe #5 (vocabulary), laid out inside the TikTok/IG safe zone:
 // x 56-664, nothing above y 128, right column (x > 610) free from y 600, captions centred at y 872.
-import { W, H, C, FONT, Layer, popScale, popSlide, PText } from './lib.jsx'
+import { W, H, C, FONT, Layer, popScale, popSlide, PText, sprite } from './lib.jsx'
 import { box, T as Tx } from './ui3.jsx'
 import { Steps } from './ui.jsx'
 
@@ -155,13 +155,52 @@ export function Scores5({ at, dur, rows, times }) {
   )
 }
 
-// a counter on its own dark panel, on the left column (x 70, same edge as the chips): label on top, the number counts up/down
-export function Counter({ at, dur, values, t1 = 1.0, y, label, color = C.mint, fg = C.mintL, w = 300, x = 70, size = 44 }) {
+// a counter on its own dark panel, on the left column (x 70, same edge as the chips): label on top, the number counts up/down.
+// times (optional, relative to `at`): when each value appears — the roll speeds up and the last value lands with a punch + flash
+export function Counter({ at, dur, values, t1 = 1.0, times = null, y, label, color = C.mint, fg = C.mintL, w = 300, x = 70, size = 44 }) {
+  const al = x === 70 ? 'left' : 'center', n = values.length
+  const roll = times && values.map((v, i) => {
+    const a = times[i], last = i === n - 1, e = last ? dur : times[i + 1]
+    return (
+      <Layer at={a} dur={Math.max(0.03, e - a)}>
+        <frame x={x} y={y} width={w} height={100} layout="none" origin="center"
+          animate={last ? [{ property: 'scale', keyframes: [{ at: 0, value: 1.45 }, { at: 0.16, value: 0.94 }, { at: 0.26, value: 1 }] }] : []}>
+          <PText x={18} y={42} w={w - 36} size={size} color={last ? fg : C.white} align={al} text={v} />
+        </frame>
+      </Layer>
+    )
+  })
   return (
     <Layer at={at} dur={dur} animate={popSlide()}>
       {box(x, y, w, 100, color, C.navy1)}
-      {Tx(x + 18, y + 14, w - 36, 14, C.grey3, label, x === 70 ? 'left' : 'center')}
-      <Steps at={0.15} dur={Math.max(0.1, dur - 0.15)} t1={Math.max(0.3, Math.min(t1, dur - 0.1))} values={values} x={x + 18} w={w - 36} y={y + 42} size={size} color={fg} align={x === 70 ? 'left' : 'center'} />
+      {Tx(x + 18, y + 14, w - 36, 14, C.grey3, label, al)}
+      {roll || <Steps at={0.15} dur={Math.max(0.1, dur - 0.15)} t1={Math.max(0.3, Math.min(t1, dur - 0.1))} values={values} x={x + 18} w={w - 36} y={y + 42} size={size} color={fg} align={al} />}
+      {times ? (
+        <Layer at={times[n - 1]} dur={0.45} animate={[{ property: 'opacity', keyframes: [{ at: 0, value: 0.8 }, { at: 0.45, value: 0 }] }]}>
+          <rect x={x - 6} y={y - 6} width={w + 12} height={112} fill={C.white} />
+        </Layer>
+      ) : null}
+    </Layer>
+  )
+}
+
+// compact rule card on the left column (x 70-450): the owl on the sill (x 460-570) stays free
+const BOOK = ['.oooo..oooo.', 'owwwwoowwwwo', 'owaawoowaawo', 'owwwwoowwwwo', 'owaawoowaawo', 'owwwwoowwwwo', 'oooooooooooo']
+const BOOK_PAL = { o: '#2a1b12', w: '#fff7e6', a: '#ffb627' }
+export function RuleCard({ at, dur, title, sub, tab, y = 292, color = C.yellow }) {
+  const x = 70, w = 380, h = 112
+  return (
+    <Layer at={at} dur={dur} animate={popSlide(0.3)}>
+      {box(x, y, w, h, color, C.navy1)}
+      <rect x={x + 14} y={y - 38} width={tab.length * 14 + 28} height={32} fill={C.ink} />
+      <rect x={x + 16} y={y - 36} width={tab.length * 14 + 24} height={30} fill={color} />
+      {Tx(x + 28, y - 28, 320, 14, C.ink, tab)}
+      <rect x={x + 14} y={y + 14} width={84} height={84} fill={C.navy3} />
+      {sprite(BOOK, BOOK_PAL, x + 20, y + 35, 6)}
+      {Tx(x + 112, y + 18, w - 124, 18, C.white, title)}
+      {Tx(x + 112, y + 52, w - 124, 14, color, sub)}
+      <rect x={x + 112} y={y + 82} width={w - 128} height={10} fill="#3a3a6e" />
+      <rect x={x + 112} y={y + 82} width={w - 128} height={10} fill={color} origin="top-left" animate={[{ property: 'scaleX', keyframes: [{ at: 0, value: 0 }, { at: 0.2, value: 0 }, { at: 0.75, value: 1, easing: 'ease-out' }] }]} />
     </Layer>
   )
 }

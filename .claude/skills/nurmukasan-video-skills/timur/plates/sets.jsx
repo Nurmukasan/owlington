@@ -75,12 +75,13 @@ export function bedroomNight({ lampOn = true } = {}) {
   return boxes(o, -0, 0)
 }
 // the desk in front (drawn over the boy): top, front, lamp, clock
-export function deskFront({ y = 170, lamp = true } = {}) {
+// lamp: draw the desk props (lamp, speaker, mug, books, cactus); lit: false keeps them all and only switches the lamp off
+export function deskFront({ y = 170, lamp = true, lit = true } = {}) {
   const o = [[-2, y, 150, 5, C.woodL], [-2, y, 150, 1, '#c89a65'], [-2, y + 5, 150, 2, C.woodD], [2, y + 7, 140, 44, C.wood]]
   for (let k = 0; k < 6; k++) o.push([4 + k * 23, y + 12 + (k % 3) * 9, 16, 1, '#7a4c2a'])
   o.push([6, y + 12, 40, 16, C.woodD], [7, y + 13, 38, 14, '#7a4c2a'], [22, y + 19, 8, 2, '#c8a040'], [6, y + 31, 40, 16, C.woodD], [7, y + 32, 38, 14, '#7a4c2a'], [22, y + 38, 8, 2, '#c8a040'])
   o.push([98, y + 12, 40, 35, C.woodD], [99, y + 13, 38, 33, '#7a4c2a'], [116, y + 28, 2, 6, '#c8a040'])
-  if (lamp) o.push([112, y - 2, 14, 2, '#3a3a50'], [117, y - 26, 3, 24, '#4a4a60'], [106, y - 34, 22, 9, '#2e51a6'], [107, y - 33, 20, 2, '#5d99ea'], [108, y - 26, 18, 2, '#ffd23f'],
+  if (lamp) o.push([112, y - 2, 14, 2, '#3a3a50'], [117, y - 26, 3, 24, '#4a4a60'], [106, y - 34, 22, 9, lit ? '#2e51a6' : '#222a56'], [107, y - 33, 20, 2, lit ? '#5d99ea' : '#323e78'], [108, y - 26, 18, 2, lit ? '#ffd23f' : '#4a4a60'],
     [13, y - 18, 12, 18, '#2e2a3c'], [14, y - 17, 10, 16, '#3a3850'], ...disc(19, y - 13, 2, '#1a1424'), [19, y - 13, 1, 1, '#a9a8bb'], ...disc(19, y - 6, 3, '#1a1424'), ...disc(19, y - 6, 1, '#605f71'), [14, y - 1, 10, 1, '#1a1424'],
     [30, y - 8, 7, 8, '#f4f0e8'], [31, y - 7, 5, 3, '#8a5a32'], [37, y - 6, 2, 3, '#f4f0e8'], [32, y - 12, 1, 3, '#e8e8f8'], [34, y - 14, 1, 4, '#e8e8f8'],
     [124, y - 6, 12, 3, '#2e2a3c'], [125, y - 5, 10, 1, '#f2a541'], [124, y - 9, 12, 3, '#2e2a3c'], [125, y - 8, 10, 1, '#c8402e'], [136, y - 6, 9, 6, '#c8704a'], [135, y - 7, 11, 2, '#a85a3a'], [137, y - 4, 7, 1, '#d8865a'], [139, y - 19, 4, 12, '#3f8a4f'], [140, y - 19, 1, 12, '#5fae6a'], [136, y - 15, 3, 2, '#3f8a4f'], [136, y - 17, 2, 2, '#3f8a4f'], [143, y - 13, 3, 2, '#3f8a4f'], [144, y - 16, 2, 3, '#3f8a4f'], [139, y - 21, 4, 2, '#f08a9a'], [140, y - 22, 2, 1, '#ffd23f'], [142, y - 16, 1, 1, '#e8f4d8'], [139, y - 12, 1, 1, '#e8f4d8'], [142, y - 9, 1, 1, '#e8f4d8'])

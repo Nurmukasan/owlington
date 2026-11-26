@@ -47,14 +47,14 @@ clank = lambda: tri(320, 0.18, 0.5, 18) + np.pad(noise(0.05, 0.25, 0.01), (0, in
 click = lambda: cat([sq(1400, 0.02, 0.16), np.zeros(int(SR * 0.03)), sq(700, 0.03, 0.12)])
 fanfare = lambda: cat([sq(f, d, 0.13, 0.5) for f, d in ((523, 0.1), (659, 0.1), (784, 0.1), (1046, 0.22), (784, 0.1), (1046, 0.45))])
 at(0.0, big()); at(0.02, thud())
-t, gap = 0.35, 0.42
-while t < T['u6'] - 0.3: at(t, tick()); t += gap; gap = max(0.09, gap * 0.86)
-at(T['h960'] + 0.9, coin())
+for t in T['roll'][1:-1]: at(t, tick())  # one tick per counter step, faster and faster
+at(T['roll'][-1], coin()); at(T['roll'][-1] + 0.01, thud())  # lands on the spoken "960"
 at(T['u6'], glitch()); at(T['u6'] + 0.1, blip())
 for i in range(4): at(T['notone'] + 0.4 + i * 0.3, pop())
 at(T['allatonce'], power())
 at(T['day0'] + 0.05, big()); at(T['mock0'], whoosh()); at(T['all5'] + 0.1, thud()); at(T['all5'] + 0.15, down())
-at(T['rule'] + 0.1, power()); at(T['wake7'], cat([sq(1760, 0.07, 0.12), np.zeros(int(SR * 0.05)), sq(1760, 0.07, 0.12)])); at(T['bed2'], blip()); at(T['rest'] + 0.2, pop())
+for k in ('L0', 'R0', 'W0', 'S0'): at(T[k], pop())
+at(T['rule'] + 0.15, power()); at(T['wake7'], cat([sq(1760, 0.07, 0.12), np.zeros(int(SR * 0.05)), sq(1760, 0.07, 0.12)])); at(T['bed2'], blip()); at(T['rest'] + 0.2, pop())
 at(T['wk1'] + 0.05, big())
 for k in range(8): at(T['h112'] - 0.4 + k * 0.12, tick())
 at(T['h112'] + 0.6, coin()); at(T['m6'] + 0.05, ding())

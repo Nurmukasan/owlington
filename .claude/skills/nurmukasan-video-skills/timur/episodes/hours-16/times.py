@@ -2,6 +2,9 @@
 import json, re
 TL = json.load(open('audio/timeline.json'))
 W = [w for w in TL['narr'] if re.sub(r'[^0-9a-zа-яё]', '', w['w'].lower().replace('ё', 'е'))]
+# whisper sometimes returns a zero-length word (e.g. "writing" at 14.88-14.88): start it right after the previous word
+for k in range(1, len(W)):
+    if W[k]['e'] - W[k]['s'] < 0.05: W[k] = dict(W[k], s=max(W[k - 1]['e'] + 0.05, W[k]['s'] - 0.35))
 _M = {'лиснинг': 'listening', 'листнинг': 'listening', 'спикинг': 'speaking', 'ридинг': 'reading', 'райтинг': 'writing'}
 def norm(s):
     k = re.sub(r'[^0-9a-zа-яё]', '', s.lower()).replace('ё', 'е')
@@ -17,7 +20,7 @@ def sstart(i):
     return i
 L_ = ('лиснинг', 'листнинг', 'listening')
 A = [('days60', [('шестьдесят', '60'), 'дней'], 's'), ('h960', [('девятьсот', '960')], 'x'), ('u6', ['вселенн'], 's'), ('notone', ['только', 'здесь'], 's'), ('allatonce', ['он', 'качает'], 's'),
- ('day0', ['день', ('ноль', '0')], 's'), ('mock0', ['пробн'], 's'), ('all5', ['везде'], 'x'),
+ ('day0', ['день', ('ноль', '0')], 's'), ('mock0', ['пробн'], 's'), ('L0', [L_], 'x'), ('R0', [('ридинг', 'reading')], 'x'), ('W0', [('райтинг', 'writing')], 'x'), ('S0', [('спикинг', 'speaking')], 'x'), ('all5', ['везде'], 'x'),
  ('rule', ['правил'], 's'), ('wake7', ['подъем'], 'x'), ('bed2', ['отбой'], 'x'), ('h16', [('шестнадцать', '16'), 'час'], 's'), ('rest', ['остальное'], 's'),
  ('wk1', ['первая', 'неделя'], 's'), ('h112', [('сто', '112')], 's'), ('m6', [('мок', 'мог')], 's'), ('wk2', ['вторая', 'неделя'], 's'), ('cans', ['банок'], 's'),
  ('noans', ['тимур', 'не', 'ответил'], 's'), ('phonesw', ['он', 'был'], 's'), ('wk3', ['третья', 'неделя'], 's'), ('page', ['одну'], 's'), ('noword', ['и', 'не', 'помнит'], 'x'),
@@ -35,6 +38,9 @@ for key, seq, mode in A:
     T[key] = round(W[j]['s'], 2); pos = i + 1
 for k, (a, b) in TL['clips'].items(): T[k] = round(a, 2); T[k + '_end'] = round(b, 2)
 T['END'] = TL['dur']
+# hook counter roll: 16 values (16 h x day) that speed up and land exactly on the spoken "960" (used by sc.jsx and sfx.py)
+_N, _t0, _L = 16, 0.45, T['h960']
+T['roll'] = [0.25] + [round(_t0 + (_L - _t0) * (1 - (1 - i / (_N - 1)) ** 1.6), 3) for i in range(1, _N)]
 D = {k: [[w['w'], w['s'], w['e']] for w in v] for k, v in TL['dwords'].items()}
 open('edit/times.jsx', 'w').write('export const T = ' + json.dumps(T) + '\nexport const D = ' + json.dumps(D, ensure_ascii=False) + '\n')
 print(json.dumps(T))

@@ -46,11 +46,13 @@ const room = ({ level = 0, day = false, owl = 'open', lamp = true, ...o } = {}) 
   Owl({ x: 94 * P, y: 74 * P, p: 5, eyes: owl }),
 ]
 // 2. asleep at the desk (front view, head on his arms); the owl either on the sill or on the desk by the lamp
+// lamp: false = the owl switched it off: same desk and props, the lamp stays but goes dark and the room dims
 const asleep = ({ owlDesk = null, lamp = true } = {}) => [
-  bedroomNight({ lampOn: lamp }), lamp ? lampGlow(600, 840, 360, 0.34) : null,
-  Boy({ x: 280, y: 700, p: 10, mode: 'sleepdesk', pale: true, bags: true, phones: true }), deskFront({ y: DESK, lamp }),
+  bedroomNight(), lamp ? lampGlow(600, 840, 360, 0.34) : null,
+  Boy({ x: 280, y: 700, p: 10, mode: 'sleepdesk', pale: true, bags: true, phones: true }), deskFront({ y: DESK, lit: lamp }),
   boxes([[44, 177, 30, 5, '#fbf7ec'], [45, 178, 12, 1, '#b8c4dc'], [60, 178, 12, 1, '#b8c4dc'], [45, 180, 10, 1, '#b8c4dc']]),
   ...clutter(3),
+  lamp ? null : <rect x={-40} y={-40} width={W + 80} height={H + 80} fill="#05061a" opacity={0.32} />,
   owlDesk ? Owl({ x: 94 * P - 30, y: DESK * P - 20 * 5, p: 5, eyes: owlDesk, wing: owlDesk === 'happy' }) : Owl({ x: 94 * P, y: 74 * P, p: 5, eyes: 'closed' }),
 ]
 // 3. kitchen: mum at the stove, Timur at the table in headphones over his notebook

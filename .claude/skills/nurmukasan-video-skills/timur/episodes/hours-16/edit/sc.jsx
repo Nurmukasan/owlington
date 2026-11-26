@@ -1,7 +1,7 @@
 import { W, H, C, P, FONT, IMG, Layer, Scene, blinks, every, popScale, popSlide, PText } from './lib.jsx'
 import { PowerUp, Chip, BigTitle, Steps } from './ui.jsx'
 import { Glitch, box, T as Tx } from './ui3.jsx'
-import { Hud5, Stats5, HookTitle, Counter, Say, Scores5, Zzz, CanDrop } from './ui6.jsx'
+import { Hud5, Stats5, HookTitle, Counter, Say, Scores5, Zzz, CanDrop, RuleCard } from './ui6.jsx'
 import { T, D } from './times.jsx'
 
 // Layout rules (same as vocab-60): overlays inside x 56-664, below the HUD (y > 240), above every face, never on the owl
@@ -49,11 +49,12 @@ const Sc = ({ base, zoom = [1, 1.06], panY, ...o }) => {
 export const SHOTS = []
 const shot = (t, fn) => SHOTS.push([t > 0 ? t - 0.08 : 0, fn])
 
-// 01 hook — title, counter and voice from frame 0
+// 01 hook — title, counter and voice from frame 0; the counter (16 h x day) speeds up and lands on the spoken "960"
+const ROLL_DAYS = [0, 1, 2, 3, 5, 7, 10, 14, 19, 25, 31, 38, 45, 52, 57, 60]
 shot(0, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="hook" zoom={[1.2, 1.04]} swaps={blinks('hook_b', [1.3, 3.6])}>
     <Layer at={0} dur={dur}>{HookTitle({ y: 250, text: '16 ЧАСОВ', size: 60 })}{HookTitle({ y: 336, text: '60 ДНЕЙ ПОДРЯД', size: 30, color: C.white, under: C.blue2 })}</Layer>
-    <Counter at={0.25} dur={dur - 0.25} t1={Math.max(0.8, rel(at, 'h960') + 0.6)} values={['0', '112', '336', '480', '720', '960']} y={412} x={210} label="ЧАСОВ АНГЛИЙСКОГО" color={C.gold} fg={C.yellow} />
+    <Counter at={0.25} dur={dur - 0.25} times={T.roll.map((t) => Math.max(0, t - at - 0.25))} values={ROLL_DAYS.map((d) => String(d * 16))} y={412} x={210} label="ЧАСОВ АНГЛИЙСКОГО" color={C.gold} fg={C.yellow} />
   </Sc>
 ))
 // 02 universe #6: everything at once
@@ -73,17 +74,17 @@ shot(T.day0, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="examB_um" zoom={[1.0, 1.06]} swaps={every('examB_blink', dur, 1.3, 0.14, 0.9)}>
     {hud('ДЕНЬ 0')}{st(rel(at, 'all5'), '0', '-', '8 Ч')}{st(dur, '0', '5.0', '8 Ч', rel(at, 'all5'), [[1, 0]])}
     <BigTitle at={0.05} dur={rel(at, 'mock0')} y={262} text="ДЕНЬ 0" size={56} />
-    {stamp(dur, rel(at, 'mock0'), 'MOCK · ДЕНЬ 0', [['LISTENING 5.0', 0.2], ['READING   5.0', 0.35], ['WRITING   5.0', 0.5], ['SPEAKING  5.0', 0.65]], '5.0', Math.max(0.8, rel(at, 'all5') - rel(at, 'mock0')))}
+    {stamp(dur, rel(at, 'mock0'), 'MOCK · ДЕНЬ 0', [['LISTENING 5.0', 'L0'], ['READING   5.0', 'R0'], ['WRITING   5.0', 'W0'], ['SPEAKING  5.0', 'S0']].map(([s, k]) => [s, Math.max(0.2, T[k] - T.mock0 - 0.05)]), '5.0', Math.max(0.8, rel(at, 'all5') - rel(at, 'mock0')))}
   </Sc>
 ))
 // 04 the rule: 16 hours, up at 7, bed at 2
-shot(T.rule, ({ at, dur }) => (
+shot(T.rule + 0.18, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="fire" zoom={[1.0, 1.06]}>
     {hud('ДЕНЬ 1', 1)}{st(rel(at, 'rest'), '0', '5.0', '8 Ч')}{st(dur, '0', '5.0', '5 Ч', rel(at, 'rest'), [[2, 0]])}
-    <PowerUp at={0.1} dur={dur - 0.1} icon="book" title="ПРАВИЛО" sub="16 ЧАСОВ В ДЕНЬ" y={292} tab="БЕЗ ВЫХОДНЫХ" />
-    <Chip at={rel(at, 'wake7')} dur={dur - rel(at, 'wake7')} x={70} y={482} text="07:00 ПОДЪЁМ" color={C.mint} fg={C.ink} size={18} />
-    <Chip at={rel(at, 'bed2')} dur={dur - rel(at, 'bed2')} x={70} y={540} text="02:00 ОТБОЙ" color={C.navy3} size={18} />
-    <Chip at={rel(at, 'rest')} dur={dur - rel(at, 'rest')} x={70} y={598} text="СОН: 5 Ч" color={C.red} size={18} />
+    <RuleCard at={0.05} dur={dur - 0.05} title="ПРАВИЛО" sub="16 ЧАСОВ В ДЕНЬ" tab="БЕЗ ВЫХОДНЫХ" y={292} />
+    <Chip at={rel(at, 'wake7')} dur={dur - rel(at, 'wake7')} x={70} y={446} text="07:00 ПОДЪЁМ" color={C.mint} fg={C.ink} size={18} />
+    <Chip at={rel(at, 'bed2')} dur={dur - rel(at, 'bed2')} x={70} y={504} text="02:00 ОТБОЙ" color={C.navy3} size={18} />
+    <Chip at={rel(at, 'rest')} dur={dur - rel(at, 'rest')} x={70} y={562} text="СОН: 5 Ч" color={C.red} size={18} />
   </Sc>
 ))
 // 05 week 1: reading, writing, speaking — 112 hours, mock 6.0
@@ -187,10 +188,10 @@ shot(T.owl, ({ at, dur }) => (
 shot(T.rule2, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="fresh" zoom={[1.0, 1.06]} swaps={blinks('fresh_b', [2.0])}>
     {hud('ДЕНЬ 31', 4)}{st(rel(at, 'sleep8'), '480', '5.0', '5 Ч')}{st(dur, '480', '5.0', '8 Ч', rel(at, 'sleep8'), [[2, 0]])}
-    <PowerUp at={0.1} dur={dur - 0.1} icon="book" title="НОВОЕ ПРАВИЛО" sub="8 ЧАСОВ, НЕ БОЛЬШЕ" y={292} tab="ОТ СОВЫ" />
-    <Chip at={rel(at, 'blocks')} dur={dur - rel(at, 'blocks')} x={70} y={482} text="50 МИН + 10 ОТДЫХ" color={C.mint} fg={C.ink} size={16} />
-    <Chip at={rel(at, 'sleep8')} dur={dur - rel(at, 'sleep8')} x={70} y={538} text="СОН: 8 Ч" color={C.navy3} size={16} />
-    <Chip at={rel(at, 'walk')} dur={dur - rel(at, 'walk')} x={70} y={594} text="ПРОГУЛКА КАЖДЫЙ ДЕНЬ" color={C.gold} fg={C.ink} size={16} />
+    <RuleCard at={0.1} dur={dur - 0.1} title="НОВОЕ ПРАВИЛО" sub="8 ЧАСОВ, НЕ БОЛЬШЕ" tab="ОТ СОВЫ" y={292} color={C.mintL} />
+    <Chip at={rel(at, 'blocks')} dur={dur - rel(at, 'blocks')} x={70} y={446} text="50 МИН + 10 ОТДЫХ" color={C.mint} fg={C.ink} size={16} />
+    <Chip at={rel(at, 'sleep8')} dur={dur - rel(at, 'sleep8')} x={70} y={502} text="СОН: 8 Ч" color={C.navy3} size={16} />
+    <Chip at={rel(at, 'walk')} dur={dur - rel(at, 'walk')} x={70} y={558} text="ПРОГУЛКА КАЖДЫЙ ДЕНЬ" color={C.gold} fg={C.ink} size={16} />
   </Sc>
 ))
 // 15 days 40 and 50: walks, focus, the score climbs faster
@@ -241,7 +242,7 @@ shot(T.result, ({ at, dur }) => (
 // 18 the moral
 shot(T.moral, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="end" zoom={[1.0, 1.06]}>
-    <BigTitle at={0.05} dur={dur - 0.05} y={252} text="НЕ ЧАСЫ, А КАЧЕСТВО" size={24} />
+    <BigTitle at={0.05} dur={dur - 0.05} y={252} text="НЕ ЧАСЫ, А КАЧЕСТВО" size={28} />
     <Layer at={rel(at, 'notsit')} dur={dur - rel(at, 'notsit')} centre animate={popScale(0.3)}>
       {box(70, 330, 380, 124, C.mint, C.navy1)}{Tx(88, 352, 344, 16, C.white, 'НЕ СКОЛЬКО СИДИШЬ,')}{Tx(88, 394, 344, 16, C.mintL, 'А СКОЛЬКО УЧИШЬСЯ')}
     </Layer>
