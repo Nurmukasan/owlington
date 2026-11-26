@@ -144,6 +144,7 @@ const lot = ({ owl = 'open', ...o } = {}) => {
   k.push(...stars(26, 0, -10, 144, 50, 17))
   // the sun going down behind the city, with a soft ring
   k.push(...disc(116, 124, 17, '#f6b86e'), ...disc(116, 124, 13, '#ffd27a'), ...disc(116, 124, 10, '#ffe7a8'))
+  k.push([-20, 130, 190, 30, '#3d2a57'])
   k.push(...skyline(-6, 140, 160, 23, ['#2a1f45', '#33244f', '#3d2a57'], ['#ffcf7a', '#f2a541']))
   // tower crane: lattice mast, jib, counter-jib, cab, cable and a hook with a pallet of bricks
   k.push([8, 26, 4, 116, '#c8862a'], [8, 26, 1, 116, '#e8a83a'])
@@ -156,6 +157,11 @@ const lot = ({ owl = 'open', ...o } = {}) => {
   // ground: grass edge, dirt with stones
   k.push([-20, 158, 190, 100, '#6b4a32'], [-20, 158, 190, 2, '#4f8a4f'], [-20, 157, 190, 1, '#7bc188'])
   seed(31); for (let i = 0; i < 70; i++) k.push([Math.floor(rnd() * 150) - 4, 162 + Math.floor(rnd() * 94), 2, 1, rnd() < 0.5 ? '#5a3c28' : '#7d5a40'])
+  k.push(...bands(['#6b4a32', '#634430', '#5a3e2c', '#523828', '#4a3224'], 160, 258, -20, 190))
+  seed(31); for (let i = 0; i < 90; i++) k.push([Math.floor(rnd() * 150) - 4, 162 + Math.floor(rnd() * 94), 2, 1, rnd() < 0.5 ? '#43301f' : '#7d5a40'])
+  for (const [x, y] of [[6, 159], [30, 160], [58, 159], [96, 160], [118, 159], [138, 160]]) k.push([x, y - 2, 1, 2, '#5fae6a'], [x + 2, y - 3, 1, 3, '#4f8a4f'], [x + 4, y - 2, 1, 2, '#5fae6a'])
+  // a shovel and cement bags lying at the front
+  k.push([12, 214, 30, 2, '#8a6a4a'], [40, 212, 6, 6, '#a9a8bb'], [104, 206, 22, 10, '#d8c8a8'], [104, 206, 22, 2, '#e8dcc0'], [108, 210, 12, 2, '#8a6a4a'], [100, 214, 22, 10, '#c8b898'], [100, 214, 22, 2, '#e0d4b8'])
   // construction fence behind (low planks)
   for (let x = -4; x < 150; x += 9) k.push([x, 142, 7, 16, '#c8a878'], [x, 142, 7, 1, '#e0c49a'], [x + 3, 140, 1, 2, '#8a6a4a'])
   k.push([-4, 146, 154, 2, '#8a6a4a'], [-4, 153, 154, 2, '#8a6a4a'])
