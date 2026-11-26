@@ -139,9 +139,11 @@ export function KnownWord({ at, dur, x, y, text }) {
     </Layer>
   )
 }
+// monospace word wrap: how many lines a string takes at cpl characters per line
+const wrapN = (s, cpl) => { let n = 1, cur = 0; for (const w of s.split(' ')) { if (cur === 0) cur = w.length; else if (cur + 1 + w.length <= cpl) cur += 1 + w.length; else { n++; cur = w.length } } return n }
 // speech bubble with the English line and a small Russian translation under it
 export function Say({ at, dur, x = 60, y, w = 600, en, ru, name, tab = C.blue2, tail = 'left', size = 22 }) {
-  const lines = Math.ceil((en.length * size * 1.08) / (w - 36)), rlines = Math.ceil((ru.length * 15 * 1.08) / (w - 36))
+  const lines = wrapN(en, Math.floor((w - 36) / size)), rlines = wrapN(ru, Math.floor((w - 36) / 15))
   const h = lines * size * 1.45 + rlines * 15 * 1.5 + 44
   const tx = tail === 'left' ? x + 40 : tail === 'right' ? x + w - 70 : x + w / 2 - 15
   return (
