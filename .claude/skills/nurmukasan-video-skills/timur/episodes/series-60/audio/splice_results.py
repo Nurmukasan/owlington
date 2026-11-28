@@ -11,7 +11,8 @@ if not os.path.exists('narr_f_old.wav'): os.rename('narr_f.wav', 'narr_f_old.wav
 v = load('narr_f_old.wav'); W = json.load(open('words.json'))['narr_f']
 n = lambda s: re.sub(r'[^а-яё]', '', s.lower())
 i0 = next(i for i, w in enumerate(W) if n(w['w']).startswith('результат'))
-i1 = next(i for i in range(i0, len(W)) if n(W[i]['w']) == 'нет' and n(W[i - 1]['w']) == 'писать')
+prev = lambda i: next(n(W[j]['w']) for j in range(i - 1, -1, -1) if n(W[j]['w']))  # skip dash tokens
+i1 = next(i for i in range(i0, len(W)) if n(W[i]['w']) == 'нет' and prev(i) == 'писать')
 a = W[i0]['s'] - 0.03; b = W[i1]['e'] + 0.12
 x = load(sys.argv[1], 1.2)
 k = int(SR * 0.01); e = np.convolve(np.abs(x), np.ones(k) / k, 'same'); nz = np.where(e > 0.02)[0]
