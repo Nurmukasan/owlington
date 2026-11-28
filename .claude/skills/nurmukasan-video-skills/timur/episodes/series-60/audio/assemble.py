@@ -39,9 +39,9 @@ def gap_mid(i):
         else: run = 0
     if best: return float(ts[best[0]] + best[1] * 0.005)
     return float(ts[int(np.argmin(vals))])
-# insertion points: the sitcom line after "Он понимает каждую шутку.", Jake's call after "Звонок от Джейка."
+# insertion points: the sitcom line after "Он понимает каждую шутку.", Jake's call after "Звонок от Джейка.", the exam after "Экзамен."
 cuts = []; pos = 0
-for seq, name, se in [(['понимает', 'каждую'], 'show', True), (['звонок'], 'jake', True)]:
+for seq, name, se in [(['понимает', 'каждую'], 'show', True), (['звонок'], 'jake', True), (['экзамен'], 'exam', True)]:
     i = find(seq, pos)
     if se: i = sent_end(i)
     if name: cuts.append(('ins', gap_mid(i), name))
