@@ -5,7 +5,7 @@ import { CAPTIONS } from './captions.jsx'
 import { T } from './times.jsx'
 
 const END = T.END
-const PLATES = 'hook hook_b fresh fresh_b fire read write happy happy_b wk2 wk2_b wk3 wk3_b nod wide asleep owl_lamp owl_dark focus focus_b end kitchen kitchen_m1 kitchen_m2 mirror mirror2 street street_b examA examA_talk examB_um examB_blink examB_calm examB_talk hall owl_open owl_wink sky'.split(' ')
+const PLATES = 'hook hook_b fresh fresh_b fire write write_t write_t2 happy happy_b explain explain_b explain_z explain_zb d30 d30_b dark dark_b end examA examA_talk examB_um examB_blink examB_talk hall skel owl_open owl_wink sky'.split(' ')
 
 export default async ({ project }) => {
   const p = await project({ dir: '.', size: '720x1280', fps: 24, background: C.navy1 })
