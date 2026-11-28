@@ -42,14 +42,14 @@ const stamp = (dur, at, title, lines, mark, markAt, col = C.red, y = 300) => (
   </Layer>
 )
 // a labelled bar on its own panel (left column): fills from `from` to `to` (0..1) over `t`
-const Meter = ({ at, dur, label, from = 0, to = 1, t = 0.8, col = C.mintL, y = 398, border = C.mint }) => (
+const Meter = ({ at, dur, label, from = 0, to = 1, t = 0.8, col = C.mintL, y = 398, border = C.mint }) => { t = Math.max(0.25, Math.min(t, dur - 0.05)); return (
   <Layer at={at} dur={dur} animate={popSlide()}>
     {box(70, y, 380, 84, border, C.navy1)}
     {Tx(88, y + 14, 344, 14, C.grey3, label)}
     <rect x={88} y={y + 42} width={344} height={26} fill="#26264f" />
     <rect x={88} y={y + 42} width={344} height={26} fill={col} origin="top-left" animate={[{ property: 'scaleX', keyframes: [{ at: 0, value: Math.max(0.001, from) }, { at: 0.2, value: Math.max(0.001, from) }, { at: t, value: to, easing: 'ease-out' }] }]} />
   </Layer>
-)
+) }
 // eyes vs ears with Russian subtitles: the eyes bar fills, the ears bar barely moves
 const EyesEars = ({ at, dur }) => (
   <Layer at={at} dur={dur} animate={popSlide()}>
