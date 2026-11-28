@@ -275,22 +275,22 @@ shot(T.d60, ({ at, dur }) => (
     <Chip at={rel(at, 'examw')} dur={dur - rel(at, 'examw')} x={70} y={372} text="ЭКЗАМЕН" color={C.red} size={22} />
   </Sc>
 ))
-// 18 results in the order they are read: L 7.0, R 6.0, S 5.5, W 5.0 -> mean 5.875 -> overall 6.0
+// 18 results in the order they are read: L 8.0, R 6.0, S 6.5, W 5.0 -> mean 6.375 -> overall 6.5
 shot(T.result, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="sky" zoom={[1.0, 1.04]}>
     <BigTitle at={0.05} dur={dur - 0.05} y={200} text="РЕЗУЛЬТАТ" size={40} />
-    <Scores5 at={0.2} dur={dur - 0.2} rows={[['LISTENING', 5.0, 7.0, C.blue3], ['READING', 5.0, 6.0, C.yellow], ['SPEAKING', 5.0, 5.5, '#f08a9a'], ['WRITING', 5.0, 5.0, C.mint]]}
+    <Scores5 at={0.2} dur={dur - 0.2} rows={[['LISTENING', 5.0, 8.0, C.blue3], ['READING', 5.0, 6.0, C.yellow], ['SPEAKING', 5.0, 6.5, '#f08a9a'], ['WRITING', 5.0, 5.0, C.mint]]}
       times={[rel(at, 'rL') - 0.2, rel(at, 'rR') - 0.2, rel(at, 'rS') - 0.2, rel(at, 'rW') - 0.2]} />
-    <Layer at={rel(at, 'overall')} dur={dur - rel(at, 'overall')} centre animate={popScale(0.35)}>{box(170, 708, 380, 110, C.yellow, C.navy1)}{Tx(190, 748, 200, 22, C.white, 'ОБЩИЙ')}{Tx(360, 734, 170, 52, C.yellow, '6.0', 'right')}</Layer>
+    <Layer at={rel(at, 'overall')} dur={dur - rel(at, 'overall')} centre animate={popScale(0.35)}>{box(170, 708, 380, 110, C.yellow, C.navy1)}{Tx(190, 748, 200, 22, C.white, 'ОБЩИЙ')}{Tx(360, 734, 170, 52, C.yellow, '6.5', 'right')}</Layer>
   </Sc>
 ))
-// 19 the answer: understand — yes; speak and write — no; a trainer for the ears, not a teacher
+// 19 the answer: understand — yes; speak — halfway; write — no; a trainer for the ears, not a teacher
 shot(T.q, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="end" zoom={[1.0, 1.06]}>
     <BigTitle at={0.05} dur={dur - 0.05} y={250} text="ТАК МОЖНО?" size={40} />
     <Chip at={rel(at, 'understand')} dur={dur - rel(at, 'understand')} x={70} y={330} text="ПОНИМАТЬ — ДА" color={C.mint} fg={C.ink} size={18} />
-    <Chip at={rel(at, 'speakno')} dur={dur - rel(at, 'speakno')} x={70} y={392} text="ГОВОРИТЬ — НЕТ" color={C.red} size={18} />
-    <Chip at={rel(at, 'speakno') + 0.6} dur={dur - rel(at, 'speakno') - 0.6} x={70} y={454} text="ПИСАТЬ — НЕТ" color={C.red} size={18} />
+    <Chip at={rel(at, 'speakno')} dur={dur - rel(at, 'speakno')} x={70} y={392} text="ГОВОРИТЬ — НАПОЛОВИНУ" color={C.gold} fg={C.ink} size={16} />
+    <Chip at={rel(at, 'writeno')} dur={dur - rel(at, 'writeno')} x={70} y={454} text="ПИСАТЬ — НЕТ" color={C.red} size={18} />
     <Chip at={rel(at, 'trainer')} dur={dur - rel(at, 'trainer')} x={70} y={530} text="ТРЕНАЖЁР ДЛЯ УШЕЙ" color={C.gold} fg={C.ink} size={18} />
   </Sc>
 ))
