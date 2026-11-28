@@ -63,19 +63,19 @@ const EyesEars = ({ at, dur }) => (
   </Layer>
 )
 // subtitles on the laptop screen (world space: plate px, the screen's bottom band is y 690-770)
-const Sub = ({ at, dur, text, col = C.white, size = 26 }) => (
+const Sub = ({ at, dur, text, col = C.white, size = 22 }) => (
   <Layer at={at} dur={dur} centre animate={[{ property: 'opacity', keyframes: [{ at: 0, value: 0 }, { at: 0.06, value: 1 }] }]}>
     <text x={30} y={text.includes('\n') ? 668 : 700} width={660} fontFamily={FONT} fontWeight={400} fontSize={size} color={col} align="center" lineHeight={1.35}
       strokeColor={C.ink} strokeWidth={7} shadow={{ x: 3, y: 3, blur: 0, color: C.ink }}>{text}</text>
   </Layer>
 )
-// the phrase notebook: lines appear on their words
+// the phrase notebook, compact, on the sitcom wall above the friends' heads (y 248-368): lines appear on their words
 const Notebook = ({ at, dur, lines }) => (
   <Layer at={at} dur={dur} animate={popSlide()}>
-    <rect x={70} y={262} width={380} height={200} fill={C.ink} /><rect x={76} y={268} width={368} height={188} fill="#fff3b0" />
-    <rect x={76} y={300} width={368} height={3} fill="#e8a0a0" />
-    {Tx(96, 280, 330, 13, '#6a4a3a', 'ТЕТРАДЬ ФРАЗ')}
-    {lines.map(([s, lt], i) => <Layer at={Math.min(lt, dur - 0.1)} dur={dur - Math.min(lt, dur - 0.1)} centre animate={popScale(0.18)}>{Tx(96, 322 + i * 42, 340, 18, C.ink, s)}</Layer>)}
+    <rect x={70} y={248} width={380} height={120} fill={C.ink} /><rect x={75} y={253} width={370} height={110} fill="#fff3b0" />
+    <rect x={75} y={276} width={370} height={2} fill="#e8a0a0" />
+    {Tx(92, 260, 330, 11, '#6a4a3a', 'ТЕТРАДЬ ФРАЗ')}
+    {lines.map(([s, lt], i) => <Layer at={Math.min(lt, dur - 0.1)} dur={dur - Math.min(lt, dur - 0.1)} centre animate={popScale(0.18)}>{Tx(92, 286 + i * 26, 340, 15, C.ink, s)}</Layer>)}
   </Layer>
 )
 const talk = (k, from, to, period = 0.26, on = 0.13) => { const o = []; for (let t = from; t < to - 0.05; t += period) o.push([k, t, on]); return o }
