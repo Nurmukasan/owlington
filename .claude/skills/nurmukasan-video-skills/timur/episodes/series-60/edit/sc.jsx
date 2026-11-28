@@ -256,7 +256,7 @@ shot(J2, ({ at, dur }) => (
 ))
 shot(J3, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="call_um" zoom={[1.06, 1.14]} swaps={every('call_um2', dur, 1.1, 0.4, 0.4).concat(every('call_blink', dur, 1.7, 0.14, 0.9))}>
-    <Say at={0.05} dur={dur - 0.05} x={60} y={290} w={390} en="Uh... I... gonna... um... You know what?.." ru="«Эм... я... собираюсь... это... знаешь что?..»" name="ТИМУР" tab={C.red} tail="right" />
+    <Say at={0.05} dur={dur - 0.05} x={60} y={290} w={390} en="Uh... I'm gonna... um... You know what?.." ru="«Эм... я собираюсь... это... знаешь что?..»" name="ТИМУР" tab={C.red} tail="right" />
   </Sc>
 ))
 // 16 he understood every word, but never said one sentence of his own
