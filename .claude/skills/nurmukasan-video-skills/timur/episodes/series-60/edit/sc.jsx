@@ -93,7 +93,20 @@ const Sc = ({ base, zoom = [1, 1.06], panY, ...o }) => {
 
 // --- shots ---------------------------------------------------------------
 export const SHOTS = []
+export const VID = {}
 const shot = (t, fn) => SHOTS.push([t > 0 ? t - 0.08 : 0, fn])
+// a show clip on the laptop screen (screen.py composited every frame onto the classic screen plate)
+const Vid = ({ k, from = 0 }) => <media file={VID[k]} x={0} y={0} width={W} height={H} fit="fill" trimStart={from} />
+// falling snow for the «Winter is coming» joke (screen space)
+const Snow = ({ at, dur, n = 46 }) => {
+  const o = []
+  for (let i = 0; i < n; i++) {
+    const x = (i * 157) % W, y0 = -40 - ((i * 263) % 700), sp = 260 + ((i * 71) % 160), s = 6 + (i % 3) * 4
+    o.push(<rect x={x} y={y0} width={s} height={s} fill="#ffffff" opacity={0.85} animate={[{ property: 'offsetY', keyframes: [{ at: 0, value: 0 }, { at: dur, value: sp * dur }] }, { property: 'offsetX', keyframes: [{ at: 0, value: 0 }, { at: dur, value: (i % 2 ? 30 : -30) * dur }] }]} />)
+  }
+  return <Layer at={at} dur={dur}>{o}</Layer>
+}
+const frost = (a = 0.28) => <rect x={0} y={0} width={W} height={H} fill="#9fd3ff" animate={[{ property: 'opacity', keyframes: [{ at: 0, value: 0 }, { at: 0.25, value: a }] }]} />
 
 // 01 cold open on the sitcom itself: the question as a title, laughing friends on screen
 shot(0, ({ at, dur }) => (
@@ -138,40 +151,41 @@ shot(T.day0, ({ at, dur }) => (
     {stamp(dur, rel(at, 'mock0'), 'MOCK · ДЕНЬ 0', ['LISTENING 5.0', 'READING   5.0', 'WRITING   5.0', 'SPEAKING  5.0'].map((s, i) => [s, Math.max(0.2, rel(at, 'all5') - rel(at, 'mock0') - 0.3 + i * 0.12)]), '5.0', Math.max(0.8, rel(at, 'all5') - rel(at, 'mock0') + 0.4), C.red, 330)}
   </Sc>
 ))
-// 05 stage 1: Russian subtitles — he gets every joke
+// 05 stage 1: «Friends» with native-language subtitles — he gets every joke
 shot(T.ph1, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="laugh" zoom={[1.0, 1.06]} swaps={every('laugh_b', dur, 0.5, 0.22, rel(at, 'excited'))}>
-    {hud('ЭТАП 1', 1)}{st(rel(at, 'rusub'), '0', '5.0', '-')}{st(dur, '0', '5.0', 'RU', rel(at, 'rusub'), [[2, 0]])}
+    {hud('ЭТАП 1', 1)}{st(rel(at, 'native1'), '0', '5.0', '-')}{st(dur, '0', '5.0', 'РОДН', rel(at, 'native1'), [[2, 0]])}
     <BigTitle at={0.05} dur={dur - 0.05} y={256} text="ЭТАП 1" size={48} />
-    <Chip at={rel(at, 'rusub')} dur={dur - rel(at, 'rusub')} x={70} y={336} text="RU СУБТИТРЫ" color={C.red} size={20} />
-    <Chip at={rel(at, 'joke')} dur={dur - rel(at, 'joke')} x={70} y={404} text="ПОНИМАЕТ КАЖДУЮ ШУТКУ" color={C.mint} fg={C.ink} size={14} />
+    <Chip at={rel(at, 'friends')} dur={dur - rel(at, 'friends')} x={70} y={336} text="СЕРИАЛ: ДРУЗЬЯ" color={C.gold} fg={C.ink} size={16} />
+    <Chip at={rel(at, 'native1')} dur={dur - rel(at, 'native1')} x={70} y={396} text="СУБТИТРЫ: РОДНОЙ ЯЗЫК" color={C.red} size={14} />
+    <Chip at={rel(at, 'joke')} dur={dur - rel(at, 'joke')} x={70} y={456} text="ПОНИМАЕТ КАЖДУЮ ШУТКУ" color={C.mint} fg={C.ink} size={14} />
   </Sc>
 ))
-// 06 the sitcom line (her own voice) with Russian subtitles on the screen
+// 06 the sitcom line (her own voice) with native-language subtitles on the screen
 shot(T.show - 0.05, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="tv_talk" zoom={[1.0, 1.05]} swaps={talk('tv_talk2', 0.12, dur - 0.2, 0.24, 0.12)}
     world={[<Sub at={0.1} dur={dur - 0.1} text={'О боже! Ты съел мой сэндвич?\nМОЙ сэндвич?!'} />]}>
-    <Chip at={0.05} dur={dur - 0.05} x={70} y={262} text="RU" color={C.red} size={18} />
+    <Chip at={0.05} dur={dur - 0.05} x={70} y={262} text="СУБТИТРЫ: РОДНОЙ" color={C.red} size={14} />
   </Sc>
 ))
-// 07 ...but he reads it in Russian: his eyes on the subtitles
+// 07 ...but he reads them: his eyes on the subtitles
 shot(T.reads, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="read" zoom={[1.06, 1.14]} swaps={blinks('read_b', [1.2])}>
-    {hud('ЭТАП 1', 1)}{st(dur, '30', '5.0', 'RU')}
-    <Chip at={rel(at, 'rus') - 0.1} dur={dur - rel(at, 'rus') + 0.1} x={70} y={300} text="ЧИТАЕТ ПО-РУССКИ" color={C.red} size={18} />
+    {hud('ЭТАП 1', 1)}{st(dur, '30', '5.0', 'РОДН')}
+    <Chip at={Math.max(0.1, rel(at, 'rus') - 0.3)} dur={dur - Math.max(0.1, rel(at, 'rus') - 0.3)} x={70} y={300} text="ЧИТАЕТ, А НЕ СЛУШАЕТ" color={C.red} size={16} />
   </Sc>
 ))
 // 08 day 20: 60 episodes, mock listening 5.0 — like day 0
 shot(T.d20, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="dull" zoom={[1.0, 1.08]} swaps={every('read_b', dur, 1.8, 0.14, 1.2)}>
-    {hud('ДЕНЬ 20', 2)}{st(rel(at, 'ep60'), '30', '5.0', 'RU')}{st(dur, '60', '5.0', 'RU', rel(at, 'ep60'), [[0, 0]])}
+    {hud('ДЕНЬ 20', 2)}{st(rel(at, 'ep60'), '30', '5.0', 'РОДН')}{st(dur, '60', '5.0', 'РОДН', rel(at, 'ep60'), [[0, 0]])}
     <BigTitle at={0.05} dur={Math.max(0.3, rel(at, 'ep60') - 0.05)} y={256} text="ДЕНЬ 20" size={52} />
     <Counter at={rel(at, 'ep60')} dur={rel(at, 'mockL1') - rel(at, 'ep60')} t1={0.8} values={['30', '45', '60']} y={262} label="СЕРИЙ" color={C.gold} fg={C.yellow} />
     {stamp(dur, rel(at, 'mockL1'), 'LISTENING · MOCK', [['60 СЕРИЙ', 0.3]], '5.0', Math.max(0.5, rel(at, 'l5') - rel(at, 'mockL1')), C.red)}
     <Chip at={rel(at, 'likeday0')} dur={dur - rel(at, 'likeday0')} x={70} y={520} text="КАК В ДЕНЬ 0" color={C.red} size={18} />
   </Sc>
 ))
-// 09 twist: with Russian subtitles the brain reads instead of listening — English becomes background noise
+// 09 twist: with native-language subtitles the brain reads instead of listening
 shot(T.twist, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="read" zoom={[1.1, 1.18]} swaps={blinks('read_b', [2.4, 5.0])}>
     <Glitch at={0} dur={0.3} />
@@ -181,29 +195,40 @@ shot(T.twist, ({ at, dur }) => (
     <Chip at={rel(at, 'noise')} dur={dur - rel(at, 'noise')} x={70} y={440} text="РЕЧЬ = ФОНОВЫЙ ШУМ" color={C.navy3} size={16} />
   </Sc>
 ))
-// 10 stage 2: English subtitles — one episode takes 1.5 hours: pause, rewind, dictionary
+// 10 stage 2: English subtitles and a new show — «Sherlock» (British accent, fast speech)
 shot(T.ph2, ({ at, dur }) => (
+  <Sc at={at} dur={dur} base="focus" zoom={[1.0, 1.05]}>
+    {hud('ЭТАП 2', 2)}{st(rel(at, 'ensub'), '60', '5.0', 'РОДН')}{st(dur, '60', '5.0', 'EN', rel(at, 'ensub'), [[2, 0]])}
+    <BigTitle at={0.05} dur={dur - 0.05} y={256} text="ЭТАП 2" size={48} />
+    <Chip at={rel(at, 'ensub')} dur={dur - rel(at, 'ensub')} x={70} y={336} text="EN СУБТИТРЫ" color={C.blue2} size={20} />
+  </Sc>
+))
+shot(T.sher - 0.15, ({ at, dur }) => (
+  <Sc at={at} dur={dur} base="scr_sher" zoom={[1.0, 1.06]}>
+    <Chip at={0.05} dur={dur - 0.05} x={70} y={262} text="СЕРИАЛ: ШЕРЛОК" color={C.gold} fg={C.ink} size={16} />
+    <Chip at={rel(at, 'accent')} dur={dur - rel(at, 'accent')} x={70} y={322} text="UK АКЦЕНТ" color={C.red} size={16} />
+  </Sc>
+))
+// 11 one episode takes 3 hours instead of 1.5: pause, rewind, dictionary
+shot(T.ep1, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="tired" zoom={[1.0, 1.06]} swaps={every('tired_b', dur, 1.6, 0.18, 1.0)}>
-    {hud('ЭТАП 2', 2)}{st(rel(at, 'ensub'), '60', '5.0', 'RU')}{st(dur, '60', '5.0', 'EN', rel(at, 'ensub'), [[2, 0]])}
-    <BigTitle at={0.05} dur={Math.max(0.3, rel(at, 'ep1') - 0.05)} y={256} text="ЭТАП 2" size={48} />
-    <Chip at={rel(at, 'ensub')} dur={Math.max(0.3, rel(at, 'ep1') - rel(at, 'ensub'))} x={70} y={336} text="EN СУБТИТРЫ" color={C.blue2} size={20} />
-    <Counter at={rel(at, 'ep1')} dur={dur - rel(at, 'ep1')} t1={Math.max(0.6, rel(at, 'h15') - rel(at, 'ep1') + 0.3)} values={['20 МИН', '45 МИН', '1.5 Ч']} y={262} label="ОДНА СЕРИЯ" color={C.red} fg={C.gold} size={36} />
+    {hud('ЭТАП 2', 2)}{st(dur, '60', '5.0', 'EN')}
+    <Counter at={0.05} dur={dur - 0.05} t1={Math.max(0.6, rel(at, 'h3') + 0.3)} values={['1.5 Ч', '2 Ч', '3 Ч']} y={262} label="ОДНА СЕРИЯ" color={C.red} fg={C.gold} size={36} />
     <Chip at={rel(at, 'pause')} dur={dur - rel(at, 'pause')} x={70} y={384} text="ПАУЗА" color={C.navy3} size={16} />
     <Chip at={rel(at, 'rewind')} dur={dur - rel(at, 'rewind')} x={70} y={440} text="ПЕРЕМОТКА" color={C.navy3} size={16} />
     <Chip at={rel(at, 'dict')} dur={dur - rel(at, 'dict')} x={70} y={496} text="СЛОВАРЬ" color={C.navy3} size={16} />
   </Sc>
 ))
-// 11 live phrases: English subtitles on the screen + the phrase notebook
+// 12 live phrases: English subtitles on the Sherlock screen + the phrase notebook
 shot(T.phrases, ({ at, dur }) => {
-  const g = rel(at, 'gonna'), n = rel(at, 'noway'), y = rel(at, 'ykw')
+  const g = rel(at, 'gonna'), n = rel(at, 'noway'), e = rel(at, 'elem')
   return (
-    <Sc at={at} dur={dur} base="tv" zoom={[1.0, 1.05]} swaps={talk('tv_talk2', Math.max(0.1, g - 0.1), dur - 0.2, 0.3, 0.14)}
-      world={[<Sub at={g} dur={n - g} text="I'm gonna..." />, <Sub at={n} dur={y - n} text="No way!" />, <Sub at={y} dur={dur - y} text="You know what?" />]}>
-      <Notebook at={0.15} dur={dur - 0.15} lines={[["I'M GONNA", g], ['NO WAY', n], ['YOU KNOW WHAT?', y]]} />
+    <Sc at={at} dur={dur} base="scr_sher" zoom={[1.0, 1.05]} swaps={[['scr_sher_1', g, n - g], ['scr_sher_2', n, e - n], ['scr_sher_3', e, dur - e]]}>
+      <Notebook at={0.15} dur={dur - 0.15} lines={[["I'M GONNA", g], ['NO WAY', n], ['ELEMENTARY!', e]]} />
     </Sc>
   )
 })
-// 12 day 40: mock listening 6.0, reading 6.0 — subtitles taught fast reading
+// 13 day 40: mock listening 6.0, reading 6.0 — subtitles taught fast reading
 shot(T.d40, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="happy" zoom={[1.0, 1.06]} swaps={blinks('happy_b', [1.4, 4.0])}>
     {hud('ДЕНЬ 40', 3)}{st(rel(at, 'l6'), '120', '5.0', 'EN')}{st(dur, '120', '5.5', 'EN', rel(at, 'l6'), [[1, 0]])}
@@ -212,25 +237,46 @@ shot(T.d40, ({ at, dur }) => (
     <Chip at={rel(at, 'fastread')} dur={dur - rel(at, 'fastread')} x={70} y={520} text="СУБТИТРЫ = БЫСТРОЕ ЧТЕНИЕ" color={C.mint} fg={C.ink} size={13} />
   </Sc>
 ))
-// 13 stage 3: no subtitles — at first he understands half
+// 14 stage 3: no subtitles — «Breaking Bad»: half; «Game of Thrones»: even less (old words, a dozen accents)
 shot(T.ph3, ({ at, dur }) => (
-  <Sc at={at} dur={dur} base="nosub" zoom={[1.0, 1.08]} swaps={every('nosub_b', dur, 1.5, 0.14, 0.9)}>
+  <Sc at={at} dur={dur} base="nosub" zoom={[1.0, 1.06]} swaps={every('nosub_b', dur, 1.5, 0.14, 0.9)}>
     {hud('ЭТАП 3', 4)}{st(rel(at, 'nosub'), '120', '5.5', 'EN')}{st(dur, '120', '5.5', 'НЕТ', rel(at, 'nosub'), [[2, 0]])}
     <BigTitle at={0.05} dur={dur - 0.05} y={256} text="ЭТАП 3" size={48} />
     <Chip at={rel(at, 'nosub')} dur={dur - rel(at, 'nosub')} x={70} y={336} text="БЕЗ СУБТИТРОВ" color={C.red} size={20} />
-    <Meter at={rel(at, 'half')} dur={dur - rel(at, 'half')} label="ПОНИМАЕТ" from={0} to={0.5} t={0.9} col={C.gold} border={C.gold} y={404} />
   </Sc>
 ))
-// 14 day 50: he laughs before the laugh track
+shot(T.bb - 0.1, ({ at, dur }) => (
+  <Sc at={at} dur={dur} base="scr_bb" zoom={[1.0, 1.06]}>
+    <Chip at={0.05} dur={dur - 0.05} x={70} y={262} text="ВО ВСЕ ТЯЖКИЕ" color={C.gold} fg={C.ink} size={16} />
+    <Meter at={Math.max(0.2, rel(at, 'half') - 0.1)} dur={dur - Math.max(0.2, rel(at, 'half') - 0.1)} label="ПОНИМАЕТ" from={0} to={0.5} t={0.8} col={C.gold} border={C.gold} y={330} />
+  </Sc>
+))
+shot(T.got - 0.1, ({ at, dur }) => (
+  <Sc at={at} dur={dur} base="scr_got" zoom={[1.0, 1.05]} world={[<Vid k="got" />]}>
+    <Chip at={0.05} dur={dur - 0.05} x={70} y={262} text="ИГРА ПРЕСТОЛОВ" color={C.blue2} size={16} />
+    <Meter at={0.2} dur={dur - 0.2} label="ПОНИМАЕТ" from={0.5} to={0.3} t={0.9} col={C.red} border={C.red} y={330} />
+  </Sc>
+))
+// 15 why it helps: IELTS listening has British, American and Australian accents
+shot(T.useful, ({ at, dur }) => (
+  <Sc at={at} dur={dur} base="focus" zoom={[1.0, 1.06]}>
+    {hud('ЭТАП 3', 4)}{st(dur, '135', '5.5', 'НЕТ')}
+    <BigTitle at={0.05} dur={dur - 0.05} y={252} text="IELTS LISTENING" size={30} />
+    {[['UK', C.red], ['USA', C.blue2], ['AUS', C.gold]].map(([t, c], i) => (
+      <Chip at={rel(at, 'accents') + i * 0.45} dur={dur - rel(at, 'accents') - i * 0.45} x={70 + i * 130} y={330} text={t} color={c} fg={c === C.gold ? C.ink : C.white} size={20} />))}
+    <Chip at={rel(at, 'more')} dur={dur - rel(at, 'more')} x={70} y={410} text="БОЛЬШЕ СЕРИАЛОВ = ЛЕГЧЕ" color={C.mint} fg={C.ink} size={14} />
+  </Sc>
+))
+// 16 day 50: he laughs before the laugh track
 shot(T.d50, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="laugh3" zoom={[1.0, 1.06]} swaps={every('laugh3_b', dur, 0.45, 0.2, 0.6)}>
     {hud('ДЕНЬ 50', 4)}{st(dur, '150', '5.5', 'НЕТ')}
     <BigTitle at={0.05} dur={dur - 0.05} y={256} text="ДЕНЬ 50" size={52} />
-    <Meter at={0.2} dur={dur - 0.2} label="ПОНИМАЕТ" from={0.5} to={0.95} t={1.4} col={C.mintL} y={336} />
+    <Meter at={0.2} dur={dur - 0.2} label="ПОНИМАЕТ" from={0.3} to={0.95} t={1.4} col={C.mintL} y={336} />
     <Chip at={rel(at, 'laughtrack')} dur={dur - rel(at, 'laughtrack')} x={70} y={440} text="СМЕЁТСЯ РАНЬШЕ ЗАКАДРА" color={C.gold} fg={C.ink} size={14} />
   </Sc>
 ))
-// 15 day 55: Jake calls (their own lines): Jake on the screen, Timur at the laptop
+// 17 day 55: Jake calls (their own lines): Jake on the screen, Timur at the laptop
 shot(T.d55, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="call" zoom={[1.0, 1.05]}>
     {hud('ДЕНЬ 55', 5)}{st(dur, '165', '5.5', 'НЕТ')}
@@ -259,15 +305,15 @@ shot(J3, ({ at, dur }) => (
     <Say at={0.05} dur={dur - 0.05} x={60} y={290} w={390} en="Uh... I'm gonna... um... You know what?.." ru="«Эм... я собираюсь... это... знаешь что?..»" name="ТИМУР" tab={C.red} tail="right" />
   </Sc>
 ))
-// 16 he understood every word, but never said one sentence of his own
+// 18 he understood every word, but hardly said a sentence of his own
 shot(T.understood, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="call_um2" zoom={[1.0, 1.06]} swaps={every('call_blink', dur, 1.6, 0.14, 1.0)}>
     {hud('ДЕНЬ 55', 5)}{st(dur, '165', '5.5', 'НЕТ')}
     <Chip at={0.1} dur={dur - 0.1} x={70} y={262} text="ПОНИМАЕТ: ВСЁ" color={C.mint} fg={C.ink} size={18} />
-    <Chip at={rel(at, 'notsaid')} dur={dur - rel(at, 'notsaid')} x={70} y={326} text="СВОИХ ФРАЗ ВСЛУХ: 0" color={C.red} size={16} />
+    <Chip at={rel(at, 'notsaid')} dur={dur - rel(at, 'notsaid')} x={70} y={326} text="СВОИХ ФРАЗ ВСЛУХ: ~0" color={C.red} size={16} />
   </Sc>
 ))
-// 17 day 60: the exam
+// 19 day 60: the exam — and the speaking question about winter («Winter is coming.»)
 shot(T.d60, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="hall" zoom={[1.0, 1.06]}>
     {hud('ДЕНЬ 60', 5)}{st(dur, '180', '5.5', 'НЕТ', 0.4, [[0, 0]])}
@@ -275,7 +321,25 @@ shot(T.d60, ({ at, dur }) => (
     <Chip at={rel(at, 'examw')} dur={dur - rel(at, 'examw')} x={70} y={372} text="ЭКЗАМЕН" color={C.red} size={22} />
   </Sc>
 ))
-// 18 results in the order they are read: L 8.0, R 6.0, S 6.5, W 5.0 -> mean 6.375 -> overall 6.5
+const E1 = splitAt('exam', /^winter$/i), E2 = splitAt('exam', /coming/i)
+shot(T.exam - 0.05, ({ at, dur }) => (
+  <Sc at={at} dur={dur} base="examA" zoom={[1.0, 1.05]} swaps={talk('examA_talk', 0.15, dur - 0.2)}>
+    <Say at={0.1} dur={dur - 0.1} y={300} en="So, what's the weather like in your city in winter?" ru="«Какая погода в вашем городе зимой?»" name="EXAMINER" tab={C.grey2} tail="center" />
+  </Sc>
+))
+shot(E1, ({ at, dur }) => (
+  <Sc at={at} dur={dur} base="examB_epic" zoom={[1.0, 1.14]} swaps={[['examB_epic_talk', 0.1, Math.max(0.2, dur - 0.5)]]}>
+    {frost(0.3)}
+    <Snow at={0} dur={dur} />
+    <Say at={0.1} dur={dur - 0.1} y={300} en="Winter is coming." ru="«Зима близко.»" name="ТИМУР" tab={C.red} tail="center" size={30} />
+  </Sc>
+))
+shot(E2, ({ at, dur }) => (
+  <Sc at={at} dur={dur} base="examA_huh" zoom={[1.0, 1.05]} swaps={talk('examA_talk', Math.max(0.3, dur * 0.35), dur - 0.2)}>
+    <Say at={0.1} dur={dur - 0.1} y={300} en="...Right. Could you tell me a little more?" ru="«...Так. Можете рассказать подробнее?»" name="EXAMINER" tab={C.grey2} tail="center" />
+  </Sc>
+))
+// 20 results in the order they are read: L 8.0, R 6.0, S 6.5, W 5.0 -> mean 6.375 -> overall 6.5
 shot(T.result, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="sky" zoom={[1.0, 1.04]}>
     <BigTitle at={0.05} dur={dur - 0.05} y={200} text="РЕЗУЛЬТАТ" size={40} />
@@ -284,7 +348,7 @@ shot(T.result, ({ at, dur }) => (
     <Layer at={rel(at, 'overall')} dur={dur - rel(at, 'overall')} centre animate={popScale(0.35)}>{box(170, 708, 380, 110, C.yellow, C.navy1)}{Tx(190, 748, 200, 22, C.white, 'ОБЩИЙ')}{Tx(360, 734, 170, 52, C.yellow, '6.5', 'right')}</Layer>
   </Sc>
 ))
-// 19 the answer: understand — yes; speak — halfway; write — no; a trainer for the ears, not a teacher
+// 21 the answer: understand — yes; speak — halfway; write — no; a trainer for the ears
 shot(T.q, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="end" zoom={[1.0, 1.06]}>
     <BigTitle at={0.05} dur={dur - 0.05} y={250} text="ТАК МОЖНО?" size={40} />
@@ -294,20 +358,28 @@ shot(T.q, ({ at, dur }) => (
     <Chip at={rel(at, 'trainer')} dur={dur - rel(at, 'trainer')} x={70} y={530} text="ТРЕНАЖЁР ДЛЯ УШЕЙ" color={C.gold} fg={C.ink} size={18} />
   </Sc>
 ))
-// 20 how to watch: English subtitles, repeat aloud, 5 phrases an episode
-shot(T.tip1, ({ at, dur }) => (
-  <Sc at={at} dur={dur} base="happy" zoom={[1.0, 1.06]} swaps={blinks('happy_b', [2.0, 4.6])}>
-    <RuleCard at={0.05} dur={dur - 0.05} title="КАК СМОТРЕТЬ" sub="3 ПРАВИЛА" tab="СОВЕТ СОВЫ" y={292} color={C.mintL} />
-    <Chip at={0.15} dur={dur - 0.15} x={70} y={446} text="1. EN СУБТИТРЫ" color={C.blue2} size={16} />
-    <Chip at={rel(at, 'tip2')} dur={dur - rel(at, 'tip2')} x={70} y={502} text="2. ПОВТОРЯЙ ВСЛУХ" color={C.mint} fg={C.ink} size={16} />
-    <Chip at={rel(at, 'tip3')} dur={dur - rel(at, 'tip3')} x={70} y={558} text="3. 5 ФРАЗ ИЗ СЕРИИ" color={C.gold} fg={C.ink} size={16} />
+// 22 how to watch: the level ladder sitcoms -> detective/drama -> fantasy
+shot(T.how, ({ at, dur }) => (
+  <Sc at={at} dur={dur} base="happy" zoom={[1.0, 1.06]} swaps={blinks('happy_b', [1.8, 4.2])}>
+    <BigTitle at={0.05} dur={dur - 0.05} y={252} text="КАК СМОТРЕТЬ" size={36} />
+    <Chip at={rel(at, 'sitcom')} dur={dur - rel(at, 'sitcom')} x={70} y={330} text="1. СИТКОМЫ · B1" color={C.mint} fg={C.ink} size={16} />
+    <Chip at={rel(at, 'drama')} dur={dur - rel(at, 'drama')} x={70} y={390} text="2. ДЕТЕКТИВЫ, ДРАМЫ · B2" color={C.gold} fg={C.ink} size={14} />
+    <Chip at={rel(at, 'fantasy')} dur={dur - rel(at, 'fantasy')} x={70} y={450} text="3. ФЭНТЕЗИ · C1" color={C.red} size={16} />
   </Sc>
 ))
-// 21 call to action: the owl checks
+// 23 watch an episode twice, repeat aloud, 5 phrases an episode
+shot(T.twice, ({ at, dur }) => (
+  <Sc at={at} dur={dur} base="end" zoom={[1.0, 1.06]}>
+    <RuleCard at={0.05} dur={dur - 0.05} title="СЕРИЮ — ДВАЖДЫ" sub="EN СУБТ. → БЕЗ" tab="СОВЕТ СОВЫ" y={292} color={C.mintL} />
+    <Chip at={rel(at, 'tip2')} dur={dur - rel(at, 'tip2')} x={70} y={446} text="ПОВТОРЯЙ ВСЛУХ" color={C.mint} fg={C.ink} size={16} />
+    <Chip at={rel(at, 'tip3')} dur={dur - rel(at, 'tip3')} x={70} y={502} text="5 ФРАЗ ИЗ СЕРИИ" color={C.gold} fg={C.ink} size={16} />
+  </Sc>
+))
+// 24 call to action: the owl checks
 shot(T.cta, ({ at, dur }) => (
   <Sc at={at} dur={dur} base="owl_open" zoom={[1.0, 1.1]} swaps={[['owl_wink', rel(at, 'check') + 0.5, dur]]}>
-    <BigTitle at={0.1} dur={dur - 0.1} y={250} text="С СУБТИТРАМИ" size={34} />
-    <BigTitle at={0.5} dur={dur - 0.5} y={320} text="ИЛИ БЕЗ?" size={34} color={C.white} under={C.blue2} />
+    <BigTitle at={0.1} dur={dur - 0.1} y={250} text="КАКОЙ СЕРИАЛ" size={32} />
+    <BigTitle at={0.5} dur={dur - 0.5} y={320} text="ПОМОГ ТЕБЕ?" size={32} color={C.white} under={C.blue2} />
     <Chip at={rel(at, 'comments')} dur={dur - rel(at, 'comments')} x={110} y={420} text="ПИШИ В КОММЕНТАХ" color={C.mint} fg={C.ink} size={20} />
   </Sc>
 ))

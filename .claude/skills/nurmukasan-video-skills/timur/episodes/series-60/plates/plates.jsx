@@ -60,10 +60,6 @@ const jscreen = ({ jake = {}, me = {} } = {}) => [
   boxes([[-6, 156, 156, 4, '#605f71'], [-12, 160, 168, 26, '#8d8b9c'], [-14, 186, 172, 4, '#605f71'], [-20, 190, 190, 90, C.woodD], [-20, 190, 190, 3, C.woodL]]),
   boxes(Array.from({ length: 4 }, (_, r) => Array.from({ length: 12 }, (_, c) => [6 + c * 11 - r, 163 + r * 5, 9, 3, '#a9a8bb'])).flat()),
 ]
-// 3b. over-the-shoulder laptop shot (ots.py projects each show onto the screen in perspective):
-// the room and desk without a laptop, and Timur's back alone on magenta (keyed, it occludes the lid's lower-left corner)
-const otsRoom = () => [bedroomNight({ lampOn: true }), lampGlow(600, 840, 360, 0.2), deskFront({ y: DESK, lamp: false }), Owl({ x: 94 * P, y: 74 * P, p: 5, eyes: 'open' })]
-const otsBack = () => [BoyBack({ x: -60, y: 820, p: 16 })]
 // 4. exam sets, the night sky and the owl close-up
 const examA = ({ mouth = 'closed', eyes = 'open' } = {}) => [examRoom(), Examiner({ x: 280, y: 640, p: 10, mouth, eyes }), examProps(), BoyBack({ x: -30, y: 930, p: 18 })]
 const examB = (o = {}) => [examRoom(), Boy({ x: 280, y: 640, p: 10, mode: 'arms', ...o }), examProps(170, true), ExaminerBack({ x: 470, y: 930, p: 18 })]
@@ -102,7 +98,6 @@ export const PLATES = {
   end: watch({ day: true, books: true, eyes: 'happy', mouth: 'smile', owl: 'happy' }),
   tv: tv(), tv_talk: tv({ b: { mouth: 'wide' }, a: { eyes: 'wide', mouth: 'o' } }), tv_talk2: tv({ b: { mouth: 'open' }, a: { eyes: 'wide', mouth: 'o' } }), tv_laugh: tv({ a: { eyes: 'happy', mouth: 'grin' }, b: { eyes: 'happy', mouth: 'grin' } }),
   jscreen: jscreen(), jscreen_talk: jscreen({ jake: { mouth: 'open' } }), jscreen_q: jscreen({ jake: { brow: 'up' }, me: { eyes: 'wide', sweat: true } }),
-  ots_room: otsRoom(), ots_back: otsBack(),
   examA: examA(), examA_talk: examA({ mouth: 'open' }), examA_huh: examA({ eyes: 'wide' }),
   examB_epic: examB({ eyes: 'fierce', mouth: 'flat' }), examB_epic_talk: examB({ eyes: 'fierce', mouth: 'open' }),
   examB_um: examB({ eyes: 'wide', mouth: 'o', sweat: true }), examB_blink: examB({ eyes: 'closed', sweat: true }),
